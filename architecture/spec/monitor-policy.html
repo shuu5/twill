@@ -92,7 +92,7 @@ tail -F .mailbox/administrator/inbox.jsonl 2&gt;/dev/null \
 <p>旧 cld-observe-any LLM evaluator (debounce 60s + pane content + mtime + completion phrase regex の 4 AND) を mail emitter pattern に置換:</p>
 
 <pre><code># administrator polling cycle 内で composite check (admin-cycle.sh)
-check_idle_completed() {
+check_idle_completed {
   local target_window=$1
   local debounce_sec=60
   local now=$(date +%s)
@@ -210,7 +210,7 @@ fi</code></pre>
   <li><strong>Implementation Patterns &amp; Best Practices</strong>: <a href="https://www.mindstudio.ai/blog/claude-code-monitor-tool-background-processes">mindstudio.ai (verified)</a></li>
   <li><strong>File-Based Signaling Patterns</strong>: <a href="https://www.mindstudio.ai/blog/claude-code-monitor-tool-background-processes-2">mindstudio.ai/blog (verified)</a></li>
   <li><strong>Claude Code Plugins Reference</strong>: <a href="https://code.claude.com/docs/en/plugins-reference">code.claude.com/docs/en/plugins-reference</a></li>
-  <li><strong>Phase I dig (本 session)</strong>: agent 2 (claude-code-guide) cross-AI bias 低減 audit、4 件 judgment 確定</li>
+  <li><strong>Phase I dig (過去 session)</strong>: agent 2 (claude-code-guide) cross-AI bias 低減 audit、4 件 judgment 確定</li>
 </ul>
 
 </body>

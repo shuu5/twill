@@ -15,7 +15,7 @@
   <h1>spawn protocol — 10 role spawn + file mailbox + plugin 化</h1>
   <div class="meta">draft-v3 (2026-05-13、第 5 弾 dig 反映) &middot; twl plugin 化前提 + tmux 公式 verified + flock atomic + JSON Lines &middot; phaser-* SKILL.md (旧 phase-* から rename)</div>
 
-<div class="info"><strong>第 5 弾 dig (2026-05-13) 反映</strong>: skill 名 <code>phase-explore</code>/<code>phase-refine</code>/<code>phase-impl</code>/<code>phase-pr</code> 4 件を <code>phaser-*</code> に rename (sed 機械化)。<code>administrator → phaser → workflow/atomic + specialist</code> の階層 spawn を <a href="boundary-matrix.html">boundary-matrix.html</a> + <a href="overview.html">overview.html</a> 図 1 で表現。<code>Skill()</code> 公式機構 = workflow/atomic spawn、<code>Agent()</code> 公式機構 = specialist spawn (subagent spawn 不可 <span class="vs verified">verified</span>)。詳細: <a href="registry-schema.html#s3">registry-schema.html §3 (10 role × concern matrix)</a>。</div>
+<div class="info"><strong>第 5 弾 dig (2026-05-13) 反映</strong>: skill 名 <code>phase-explore</code>/<code>phase-refine</code>/<code>phase-impl</code>/<code>phase-pr</code> 4 件を <code>phaser-*</code> に rename (sed 機械化)。<code>administrator → phaser → workflow/atomic + specialist</code> の階層 spawn を <a href="boundary-matrix.html">boundary-matrix.html</a> + <a href="overview.html">overview.html</a> 図 1 で表現。<code>Skill</code> 公式機構 = workflow/atomic spawn、<code>Agent</code> 公式機構 = specialist spawn (subagent spawn 不可 <span class="vs verified">verified</span>)。詳細: <a href="registry-schema.html#s3">registry-schema.html §3 (10 role × concern matrix)</a>。</div>
 </header>
 
 <div class="info">
@@ -27,7 +27,7 @@
 <h2>§1. 設計の重要前提: twl plugin 化 (公式 path)</h2>
 
 <div class="critical">
-<strong>本 session の重大発見 (verified)</strong>: <code>claude --skill &lt;name&gt;</code> flag は <strong>存在しない</strong>。Claude Code 公式の skill invoke 方法は:
+<strong>重大発見 (verified)</strong>: <code>claude --skill &lt;name&gt;</code> flag は <strong>存在しない</strong>。Claude Code 公式の skill invoke 方法は:
 <ol>
   <li>twl を plugin として正式化: <code>plugins/twl/.claude-plugin/plugin.json</code> 作成</li>
   <li>plugin として load: <code>claude --plugin-dir plugins/twl</code> or marketplace 経由 <code>/plugin install twl</code></li>
@@ -80,7 +80,7 @@
   <tbody>
     <tr><td>L0 administrator</td><td>user 手動 + <code>--continue</code></td><td><code>admin</code> (固定 1 個)</td><td><code>claude --plugin-dir ./plugins/twl</code> + <code>/twl:administrator</code></td></tr>
     <tr><td>L1 phaser (phaser-*)</td><td>administrator</td><td><code>phaser-&lt;type&gt;-&lt;issue&gt;</code></td><td><code>spawn-tmux.sh</code> wrapper</td></tr>
-    <tr><td>L2 workflow+atomic+specialist</td><td>phaser (Skill() / Agent())</td><td><code>specialist-&lt;name&gt;-&lt;issue&gt;</code> (subagent only)</td><td>公式 Skill / Agent tool</td></tr>
+    <tr><td>L2 workflow+atomic+specialist</td><td>phaser (Skill / Agent)</td><td><code>specialist-&lt;name&gt;-&lt;issue&gt;</code> (subagent only)</td><td>公式 Skill / Agent tool</td></tr>
     <tr><td>独立 tool-*</td><td>user 明示 (or admin、ADR-040 gate)</td><td><code>tool-&lt;name&gt;-&lt;ts&gt;</code></td><td>同上</td></tr>
   </tbody>
 </table>
@@ -111,7 +111,7 @@
 set -euo pipefail
 source "$(dirname "$0")/mailbox.sh"
 
-main() {
+main {
   local window_name skill args cwd mailbox_from
   while [ $# -gt 0 ]; do
     case "$1" in
@@ -159,7 +159,7 @@ main() {
   _emit_admin "spawn-completed" "{\"window\":\"$window_name\",\"skill\":\"$skill\"}"
 }
 
-_wait_session_ready() {
+_wait_session_ready {
   # Phase I 2026-05-15 確定: 3 条件 AND 判定 (CLAUDE.md feedback_inject_queue_verification 知見反映)
   # (a) pane_in_mode=0 (idle、edit mode でない)
   # (b) "Press up to edit queued" 不在 (旧 inject の queue 残留検知)
@@ -194,12 +194,12 @@ _wait_session_ready() {
   return 1
 }
 
-_emit_admin() {
+_emit_admin {
   local event="$1"; local detail="$2"
   mailbox_emit "$mailbox_from" "administrator" "$event" "$detail"
 }
 
-_fail() { echo "spawn-tmux.sh: $*" &gt;&amp;2; exit 1; }
+_fail { echo "spawn-tmux.sh: $*" &gt;&amp;2; exit 1; }
 main "$@"</code></pre>
 
 <p><strong>verify points</strong>: <a class="exp-link" href="../research/experiment-index.html#EXP-010">EXP-010</a> (plugin 起動 + namespace 解決)、<a class="exp-link" href="../research/experiment-index.html#EXP-016">EXP-016</a> (tmux new-window -d)、<a class="exp-link" href="../research/experiment-index.html#EXP-017">EXP-017</a> (format 変数 pane state)。</p>
@@ -252,7 +252,7 @@ flock -x -w 10 9 || exit 1
 set -euo pipefail
 MAILBOX_ROOT="${TWILL_MAILBOX_ROOT:-.mailbox}"
 
-mailbox_emit() {
+mailbox_emit {
   local from="$1" to="$2" event="$3" detail="$4"
   local target_dir="$MAILBOX_ROOT/$to"
   mkdir -p "$target_dir"
@@ -273,7 +273,7 @@ mailbox_emit() {
   ) 9&gt;&gt;"$lock_file"
 }
 
-mailbox_read() {
+mailbox_read {
   local mailbox="$1"
   local inbox="$MAILBOX_ROOT/$mailbox/inbox.jsonl"
   local offset_file="$MAILBOX_ROOT/$mailbox/.read-offset"

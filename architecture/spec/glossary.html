@@ -32,10 +32,10 @@
   </thead>
   <tbody>
     <tr><td><strong>administrator</strong></td><td>(singleton)</td><td><code>skills/administrator/</code></td><td><span class="vs verified">有</span></td><td>L0、長命 main session、user 代理、Project Board status SSoT polling、phaser 群 + 一部 tool spawn (旧 su-observer rebrand、forbidden: orchestrator/controller/supervisor)</td></tr>
-    <tr><td><strong>phaser</strong></td><td><code>phaser-</code></td><td><code>skills/phaser-*/</code></td><td><span class="vs verified">有</span></td><td>L1、別 session window controller、status 遷移 1:1 担当、workflow を Skill() で順次呼ぶ (forbidden: pilot/phase/controller/pilot-phase)。例: <code>phaser-explore</code>/<code>phaser-refine</code>/<code>phaser-impl</code>/<code>phaser-pr</code></td></tr>
+    <tr><td><strong>phaser</strong></td><td><code>phaser-</code></td><td><code>skills/phaser-*/</code></td><td><span class="vs verified">有</span></td><td>L1、別 session window controller、status 遷移 1:1 担当、workflow を Skill で順次呼ぶ (forbidden: pilot/phase/controller/pilot-phase)。例: <code>phaser-explore</code>/<code>phaser-refine</code>/<code>phaser-impl</code>/<code>phaser-pr</code></td></tr>
     <tr><td><strong>tool</strong></td><td><code>tool-</code></td><td><code>skills/tool-*/</code></td><td><span class="vs verified">有</span></td><td>admin/user session 内独立 skill、status 無関係。公式 <code>Tool</code> (Bash/Edit 等) とは大文字 + backtick で区別。例: <code>tool-architect</code>/<code>tool-project</code>/<code>tool-sandbox-runner</code></td></tr>
-    <tr><td><strong>workflow</strong></td><td><code>workflow-</code></td><td><code>skills/workflow-*/</code></td><td><span class="vs verified">無 (<code>disable-model-invocation: true</code>)</span></td><td>L2、phaser/tool から <code>Skill()</code> で呼ばれる sub-workflow、atomic を順次呼ぶ launcher (forbidden: worker)。例: <code>workflow-test-ready</code>/<code>workflow-pr-verify</code></td></tr>
-    <tr><td><strong>atomic</strong></td><td><code>atomic-</code></td><td><code>skills/atomic-*/</code></td><td><span class="vs verified">無 (同上)</span></td><td>最小実行単位、workflow から <code>Skill()</code> で呼ばれる、4-phase lifecycle (pre-check/exec/post-verify/report) を SKILL.md 本文に inline 実装 (forbidden: step/composite)。例: <code>atomic-test-scaffold</code>/<code>atomic-green-impl</code>/<code>atomic-check</code></td></tr>
+    <tr><td><strong>workflow</strong></td><td><code>workflow-</code></td><td><code>skills/workflow-*/</code></td><td><span class="vs verified">無 (<code>disable-model-invocation: true</code>)</span></td><td>L2、phaser/tool から <code>Skill</code> で呼ばれる sub-workflow、atomic を順次呼ぶ launcher (forbidden: worker)。例: <code>workflow-test-ready</code>/<code>workflow-pr-verify</code></td></tr>
+    <tr><td><strong>atomic</strong></td><td><code>atomic-</code></td><td><code>skills/atomic-*/</code></td><td><span class="vs verified">無 (同上)</span></td><td>最小実行単位、workflow から <code>Skill</code> で呼ばれる、4-phase lifecycle (pre-check/exec/post-verify/report) を SKILL.md 本文に inline 実装 (forbidden: step/composite)。例: <code>atomic-test-scaffold</code>/<code>atomic-green-impl</code>/<code>atomic-check</code></td></tr>
     <tr><td><strong>specialist</strong></td><td><code>specialist-</code></td><td><code>agents/specialist-*.md</code> (公式 directory)</td><td><span class="vs verified">有 (公式仕様必須)</span></td><td><code>Agent</code> tool 経由 sub-agent、独立 context window、subagent spawn 不可 (<span class="vs verified">verified</span>、forbidden: worker)。例: <code>specialist-code-reviewer</code>/<code>specialist-spec-review</code></td></tr>
     <tr><td><strong>reference</strong></td><td><code>ref-</code></td><td><code>refs/ref-*.md</code></td><td>概念外</td><td>不変条件 / prompt guide / pitfalls catalog 等の正典 doc (aliases: <code>ref</code>)</td></tr>
     <tr><td><strong>script</strong></td><td>event-based</td><td><code>scripts/hooks/&lt;event&gt;-*.sh</code></td><td>概念外</td><td>hook handler bash (skill 呼び出し用 script = 0 目標、hook 用例外)</td></tr>
@@ -127,7 +127,7 @@
     <tr><th>用語</th><th>定義</th><th>旧用語</th></tr>
   </thead>
   <tbody>
-    <tr><td><strong>atomic</strong></td><td>最小実行単位の skill (workflow から <code>Skill()</code> で呼ばれる)、4-phase lifecycle を SKILL.md 本文に inline 実装</td><td>step (一般語、forbidden)</td></tr>
+    <tr><td><strong>atomic</strong></td><td>最小実行単位の skill (workflow から <code>Skill</code> で呼ばれる)、4-phase lifecycle を SKILL.md 本文に inline 実装</td><td>step (一般語、forbidden)</td></tr>
     <tr><td><strong>lifecycle phase</strong></td><td>atomic SKILL.md 内の 4 phase: pre-check → exec → post-verify → report</td><td>(新概念、atomic 内部用語)</td></tr>
     <tr><td><strong>pre-check</strong></td><td>lifecycle phase 1: atomic 実行前の前提 status verify (e.g. Project Board status 確認、入力 file 存在確認)</td><td>(同上)</td></tr>
     <tr><td><strong>exec</strong></td><td>lifecycle phase 2: LLM 判断による実作業 (test 生成 / 実装 / lint fix 等)</td><td>(同上)</td></tr>
@@ -213,7 +213,7 @@
     <tr><td class="deprecated">controller (role 名)</td><td><code>administrator</code> (L0) / <code>phaser</code> (L1) / <code>tool</code> (independent)</td><td>39</td><td>「旧 type 名」明示 + backtick 引用時のみ例外</td></tr>
     <tr><td class="deprecated">message</td><td><code>mail</code></td><td>10</td><td>一般語の「メッセージ」は容認、技術用語としては禁止</td></tr>
     <tr><td class="deprecated">events directory (<code>.supervisor/events/</code>)</td><td><code>mailbox</code> (<code>.mailbox/&lt;session&gt;/</code>) + <code>inbox.jsonl</code></td><td>(directory)</td><td>歴史的引用は backtick + 「廃止」明示</td></tr>
-    <tr><td class="deprecated">composite (role)</td><td><code>atomic</code> + <code>Agent()</code> spawn</td><td>(廃止)</td><td>第 5 弾 dig Round 6 で廃止確定</td></tr>
+    <tr><td class="deprecated">composite (role)</td><td><code>atomic</code> + <code>Agent</code> spawn</td><td>(廃止)</td><td>第 5 弾 dig Round 6 で廃止確定</td></tr>
     <tr><td class="deprecated">types.yaml (file)</td><td><code>registry.yaml</code> glossary + components + integrity_rules</td><td>(廃止)</td><td>歴史的引用は backtick + 「廃止」明示</td></tr>
     <tr><td class="deprecated">deps.yaml (file)</td><td><code>registry.yaml</code> components + chains</td><td>(廃止)</td><td>歴史的引用は backtick + 「廃止」明示</td></tr>
     <tr><td class="deprecated">step.sh single SSoT (案 3、第 3 弾 dig)</td><td><code>registry.yaml</code> 統合 SSoT (案 4、第 5 弾 dig)</td><td>(廃止)</td><td>歴史的引用は backtick + 「廃止」明示</td></tr>
@@ -236,7 +236,7 @@
   <li><a href="../research/dig-report-tools-2026-05-13.html">dig-report-tools-2026-05-13.md</a> (第 4 弾 dig 独立 artifact)</li>
   <li><a href="../research/dig-report-ssot-2026-05-13.html">dig-report-ssot-2026-05-13.md</a> (第 5 弾 dig 独立 artifact、10 round + 33+ question + vocabulary 6 field + 10 role + registry.yaml 統合 SSoT)</li>
   <li><a href="admin-cycle.html">admin-cycle.html</a> (administrator polling cycle)</li>
-  <li><a href="../research/research-findings.html">research-findings.html</a> (公式 verified 根拠、120 sources + 本 session 16 件 WebFetch 追加)</li>
+  <li><a href="../research/research-findings.html">research-findings.html</a> (公式 verified 根拠、120 sources + 過去 session 16 件 WebFetch 追加)</li>
   <li>既存 <code>plugins/twl/refs/ref-invariants.md</code> (既存 invariant SSoT)</li>
 </ul>
 

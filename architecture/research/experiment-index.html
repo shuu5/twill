@@ -18,7 +18,7 @@
 
 <header class="doc-header">
   <h1>experiment-index — 全 EXP 一覧 (EXP-001〜042)</h1>
-  <div class="meta">draft-v4 (2026-05-15、Phase I 反映) &middot; 42 EXP planned (第 4 弾 dig で 13 件追加 EXP-019〜031、第 5 弾 dig で 7 件追加 EXP-032〜038、Phase I で 4 件追加 EXP-039〜042) &middot; status は本 session 時点 (実行前は <span class="vs verified">verified</span> / <span class="vs deduced">deduced</span> / <span class="vs inferred">inferred</span> 併存、実行で <span class="vs experiment-verified">experiment-verified</span> 化)</div>
+  <div class="meta">draft-v4 (2026-05-15、Phase I 反映) &middot; 42 EXP planned (第 4 弾 dig で 13 件追加 EXP-019〜031、第 5 弾 dig で 7 件追加 EXP-032〜038、Phase I で 4 件追加 EXP-039〜042) &middot; status は過去 session 時点 (実行前は <span class="vs verified">verified</span> / <span class="vs deduced">deduced</span> / <span class="vs inferred">inferred</span> 併存、実行で <span class="vs experiment-verified">experiment-verified</span> 化)</div>
 </header>
 
 <div class="info">
@@ -26,7 +26,7 @@
   <br>
   <strong>運用</strong>: <code>experiments/run-all.sh</code> 実行 → <code>.audit/&lt;run-id&gt;/experiments/index.json</code> 生成 → 本 file の status を update (将来 CI 自動化)。<br>
   <br>
-  <strong>注意</strong>: 本 file は EXP 計画段階の listing。実装 / 実行は次 session で着手 (user 明示「実装はしない、architecture を完璧にしてから」)。
+  <strong>注意</strong>: 本 file は EXP 計画段階の listing。実装 / 実行は将来 task で着手 (user 明示「実装はしない、architecture を完璧にしてから」)。
 </div>
 
 <div class="info" style="background: var(--surface-info); border-left: 4px solid var(--brand);">
@@ -463,7 +463,7 @@
   <dl>
     <dt>status</dt><dd><span class="vs inferred">inferred</span> (本 dig で新規、Idea Issue 起票精度検証)</dd>
     <dt>verify 対象</dt><dd>(a) 既知 problem (e.g. "mailbox-loss") を query で投げて similarity > 0.75 で hit するか、(b) 新規 problem を投げて誤って既存と link されないか (false positive 率測定)</dd>
-    <dt>verify source</dt><dd><code>mcp__doobidoo__memory_search</code> tool interface (mode=hybrid + quality_boost、本 session で実利用、9 hash 蓄積)</dd>
+    <dt>verify source</dt><dd><code>mcp__doobidoo__memory_search</code> tool interface (mode=hybrid + quality_boost、、9 hash 蓄積)</dd>
     <dt>分類</dt><dd>調査 (実 doobidoo に対して N=20+ query で precision/recall 測定)</dd>
     <dt>期待結果</dt><dd>true positive (重複検出) > 80%、false positive (誤検出) < 20%。threshold 0.75 が不適切なら調整</dd>
     <dt>関連 spec</dt><dd><a href="../spec/tool-architecture.html">tool-architecture.html</a> §5.7、<a href="dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a> §3.7</dd>
@@ -508,7 +508,7 @@ $ bash experiments/run-all.sh
 </div>
 
 <div class="exp-block" id="EXP-033">
-  <h3>EXP-033: atomic skill composition (workflow → atomic Skill() 順次呼び出し動作)</h3>
+  <h3>EXP-033: atomic skill composition (workflow → atomic Skill 順次呼び出し動作)</h3>
   <dl>
     <dt>status</dt><dd><span class="vs inferred">inferred</span> → EXP で <span class="vs experiment-verified">experiment-verified</span> 化</dd>
     <dt>verify 対象</dt><dd><code>workflow-test-ready</code> SKILL.md が <code>Skill(atomic-test-scaffold)</code> → <code>Skill(atomic-green-impl)</code> → <code>Skill(atomic-check)</code> の chain を順次実行、各 atomic の 4-phase lifecycle が動作</dd>

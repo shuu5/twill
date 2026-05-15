@@ -57,7 +57,7 @@
 <div class="factor-block">
   <h3>F-3: deploy / verify の分離欠如 + Claude Code stdio MCP 仕様制約 (#1687、5 ヶ月 5 回再発の根本)</h3>
   <p><strong>症状</strong>: <code>mcp-watchdog.sh</code> は実装あるが deploy 経路 (session-start hook) が不在。「実装した = deploy された」という暗黙の前提。5 回再発しているのに毎回「watchdog を改善する」修正で、「watchdog が起動しているか確認する」CI/verification が存在しなかった。</p>
-  <p><strong>本 session で verified された真の root cause</strong> (research session bce9c4e4 + WebFetch <a href="https://github.com/anthropics/claude-code/issues/43177">Issue #43177</a>):</p>
+  <p><strong></strong> (research session bce9c4e4 + WebFetch <a href="https://github.com/anthropics/claude-code/issues/43177">Issue #43177</a>):</p>
   <ul>
     <li><strong>Claude Code は stdio + sdk transport を auto-reconnect から意図的に exclude</strong>。<code>useManageMCPConnections.ts</code> L354-356 でソースコード提示済</li>
     <li>HTTP/SSE/WebSocket のみ exponential backoff (5 attempts、1→2→4→8→16s) で auto-reconnect</li>
@@ -110,7 +110,7 @@
 <table class="bug-table">
   <tbody>
     <tr><td>PR / commit</td><td>PR #1686, merge commit <code>da957682</code></td></tr>
-    <tr><td>root cause</td><td><code>observer-parallel-check.sh</code> (修正前) の <code>_check_parallel_spawn_eligibility()</code> 内、controller_count=0 短絡 path で <code>controller_states=''</code> を強制 reassign、env override が set されていても無条件に上書き。現コード L317-340 で <code>${OBSERVER_PARALLEL_CHECK_STATES+x}</code> を事前 capture して reset skip するよう修正済。</td></tr>
+    <tr><td>root cause</td><td><code>observer-parallel-check.sh</code> (修正前) の <code>_check_parallel_spawn_eligibility</code> 内、controller_count=0 短絡 path で <code>controller_states=''</code> を強制 reassign、env override が set されていても無条件に上書き。現コード L317-340 で <code>${OBSERVER_PARALLEL_CHECK_STATES+x}</code> を事前 capture して reset skip するよう修正済。</td></tr>
     <tr><td>confidence</td><td>verified (現コード L317-340 のコメントに #1663 記載)</td></tr>
     <tr><td>構造的要因</td><td>「chicken-and-egg 回避」というビジネスロジック (controller=0 なら heartbeat skip) が env override テスト用変数を破壊する副作用。変数の reassign が関数途中で複数回 (L311, L337)、どちらが「正」か不明確。テスト isolation と本番ロジックが同じ env 名前空間を共有。</td></tr>
     <tr><td>lesson (MUST)</td><td>env override は関数の冒頭で <code>${VAR+x}</code> で set 状態を capture してから本番ロジックの reassign より前に評価。テスト用 env override と本番ロジックの変数スコープを分離 (SHOULD)。</td></tr>
@@ -134,7 +134,7 @@
 <table class="bug-table">
   <tbody>
     <tr><td>PR / commit</td><td>PR #1690, merge commit <code>96f081e0</code></td></tr>
-    <tr><td>root cause</td><td><code>autopilot-orchestrator.sh</code> の <code>poll_single()</code> L604-614: 並列 Wave で orchestrator が <code>status=done/merge-ready</code> 検出すると即 <code>return 0</code> して cleanup、<code>inject_next_workflow</code> cycle から抜ける。<code>chain-step-completed: &lt;step&gt;</code> terminal phrase emit 後に orchestrator が exit していると次 workflow 送れず phaser stuck。並列 Wave B でも同じ phase-review.json 参照で phase 完了判定誤り。</td></tr>
+    <tr><td>root cause</td><td><code>autopilot-orchestrator.sh</code> の <code>poll_single</code> L604-614: 並列 Wave で orchestrator が <code>status=done/merge-ready</code> 検出すると即 <code>return 0</code> して cleanup、<code>inject_next_workflow</code> cycle から抜ける。<code>chain-step-completed: &lt;step&gt;</code> terminal phrase emit 後に orchestrator が exit していると次 workflow 送れず phaser stuck。並列 Wave B でも同じ phase-review.json 参照で phase 完了判定誤り。</td></tr>
     <tr><td>confidence</td><td>deduced (現コード L33-44 に AC2 audit log handler 追加、<code>inject-next-workflow.sh</code> L634-658 に LAST_INJECTED_STEP bypass)</td></tr>
     <tr><td>構造的要因</td><td>specialist (or atomic) が <code>chain-step-completed</code> emit〜orchestrator inject 完了の間に race window。並列 Wave 間 shared <code>phase-review.json</code> が「他 Wave の PASS」を自分の完了と誤判断 (Bug 3 と複合)。「orchestrator が exit したら誰が next inject するのか」が設計上不明確。</td></tr>
     <tr><td>lesson (MUST)</td><td>orchestrator は specialist (or atomic) が terminal state になるまで exit しない。early exit は audit log に記録。orchestrator の phase 完了判定は自 Wave の state file のみ参照 (shared checkpoint 参照禁止)。</td></tr>
@@ -146,25 +146,25 @@
 <table class="bug-table">
   <tbody>
     <tr><td>PR / commit</td><td>PR #1689, merge commit <code>cecf0a06</code></td></tr>
-    <tr><td>root cause</td><td><code>chain-runner.sh</code> の <code>step_autopilot_detect()</code> L276-295: <code>IS_AUTOPILOT=true</code> を <code>eval</code> で環境変数に展開するだけで、後続 chain step が main worktree 直下で実行されていても guard がなかった。Bug #1674 と組合せると specialist (or atomic) が worktree 作成前に main で起動して chain 進行、test-scaffold が main の source を汚染する risk。</td></tr>
-    <tr><td>confidence</td><td>verified (現コード L367-386 <code>step_cwd_guard()</code> 追加、コメントに「IS_AUTOPILOT=true + orchestrator early-exit」言及)</td></tr>
+    <tr><td>root cause</td><td><code>chain-runner.sh</code> の <code>step_autopilot_detect</code> L276-295: <code>IS_AUTOPILOT=true</code> を <code>eval</code> で環境変数に展開するだけで、後続 chain step が main worktree 直下で実行されていても guard がなかった。Bug #1674 と組合せると specialist (or atomic) が worktree 作成前に main で起動して chain 進行、test-scaffold が main の source を汚染する risk。</td></tr>
+    <tr><td>confidence</td><td>verified (現コード L367-386 <code>step_cwd_guard</code> 追加、コメントに「IS_AUTOPILOT=true + orchestrator early-exit」言及)</td></tr>
     <tr><td>構造的要因</td><td>IS_AUTOPILOT flag は「autopilot から呼ばれているか」を表すが「正しい worktree で動いているか」は別 invariant (Invariant B)。2 つの独立 invariant を 1 つの env var で表現したガード漏れ。chain step が source-touching かどうかを事前確認する仕組みなし。</td></tr>
     <tr><td>lesson (MUST)</td><td>「autopilot モード」と「正しい worktree」は独立 invariant として別々に enforce。source-touching step (test-scaffold, green-impl など) の直前に fail-closed な cwd-guard を必須。</td></tr>
     <tr><td>新 spec で不能化</td><td>specialist (or atomic) を phaser が作成した worktree 内で Agent(run_in_background) として spawn することで、specialist (or atomic) の cwd は phaser が保証する構造。chain-runner の self-check ではなく spawn 経路での構造的保証。</td></tr>
   </tbody>
 </table>
 
-<h3>Bug 7: #1687 twl mcp disconnect (5 回目再発、本 session で root cause verified)</h3>
+<h3>Bug 7: #1687 twl mcp disconnect (5 回目再発)</h3>
 <table class="bug-table">
   <tbody>
     <tr><td>PR / commit</td><td>未マージ (migration <code>Phase 4</code> 対応予定)。過去 4 件 fix: #1506/#1568/#1588/#1612</td></tr>
-    <tr><td>root cause (本 session で <strong>verified</strong>)</td><td>
+    <tr><td>root cause</td><td>
       二重原因:<br>
       (1) <strong>Claude Code upstream 仕様</strong>: stdio + sdk transport は <code>useManageMCPConnections.ts</code> L354-356 で auto-reconnect から意図的に exclude。HTTP/SSE/WebSocket のみ retry。<a href="https://github.com/anthropics/claude-code/issues/43177">Issue #43177 OPEN</a>、修正は 1 行 PR (suggested、未提出)。<br>
       (2) <strong>twl 側 deploy 経路欠如</strong>: <code>plugins/twl/scripts/mcp-watchdog.sh</code> 実装あるが <code>plugins/twl/hooks/hooks.json</code> に session-start hook 登録なし、<code>--daemon</code> flag を呼ぶ経路不在。<br>
       自前 watchdog は orphan 自殺問題 (<a href="https://github.com/anthropics/claude-plugins-official/issues/1478">Issue #1478</a>) で悪循環。
     </td></tr>
-    <tr><td>confidence</td><td><strong>verified</strong> (本 session で WebFetch + ソースコード提示: <code>useManageMCPConnections.ts</code> L354-356 + research session bce9c4e4 で 120 sources 統合)</td></tr>
+    <tr><td>confidence</td><td><strong>verified</strong></td></tr>
     <tr><td>構造的要因</td><td>「実装した = deploy された」という暗黙の前提 + upstream limitation の認識不足。5 回再発するが毎回 watchdog を改善する修正で、upstream 仕様 (stdio reconnect なし) を見ていなかった。サーバー側 watchdog は orphan 自殺で逆効果のリスクあり。</td></tr>
     <tr><td>lesson (MUST)</td><td>新規 daemon/watchdog 実装は「起動 hook」と「起動確認テスト」をセットで実装・merge しなければ Done と見なさない。N 回再発するバグは「同じ修正を繰り返している」というメタシグナル、upstream + 自前の両 root を追う構造的問題。外部依存 (upstream bug) への workaround は docs 明記 + upstream fix 待ち ticket 作成 (SHOULD)。</td></tr>
     <tr><td>新 spec で不能化</td><td>4 段階 migration (<a href="research-findings.html">research-findings.html</a> §4 verified): <code>Phase 1</code> = 自前 watchdog 廃止 + <code>/mcp</code> 手動 retry、<code>Phase 2</code> = stdin EOF graceful exit、<code>Phase 3</code> = HTTP transport 移行、<code>Phase 4</code> = Plugin Monitors (v2.1.105+) + <code>CLAUDE_PLUGIN_DATA</code> 統合。</td></tr>
@@ -245,11 +245,11 @@
 <h2>関連 spec ファイル</h2>
 
 <ul>
-  <li>各 lesson の構造的不能化の詳細実装: <a href="../spec/atomic-verification.html">atomic-verification.html</a> / <a href="../spec/spawn-protocol.html">spawn-protocol.html</a> (outline) / <a href="../spec/gate-hook.html">gate-hook.html</a> (verified content、本 session 更新)</li>
+  <li>各 lesson の構造的不能化の詳細実装: <a href="../spec/atomic-verification.html">atomic-verification.html</a> / <a href="../spec/spawn-protocol.html">spawn-protocol.html</a> (outline) / <a href="../spec/gate-hook.html">gate-hook.html</a> (verified content)</li>
   <li>失敗から導かれる crash failure mode 全体: <a href="../spec/crash-failure-mode.html">crash-failure-mode.html</a></li>
   <li>ADR 全件継承戦略: <a href="../migration/adr-fate-table.html">adr-fate-table.html</a> (ADR-025 Known Gap 4 解消含む)</li>
   <li>不変条件継承戦略: <a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> (不変条件 K/L/R/S 強化)</li>
-  <li>twl MCP 継承戦略: <a href="../spec/twl-mcp-integration.html">twl-mcp-integration.html</a> (Phase 5 本 session 更新)</li>
+  <li>twl MCP 継承戦略: <a href="../spec/twl-mcp-integration.html">twl-mcp-integration.html</a> (Phase 5 )</li>
   <li><strong>verified 根拠 (research session)</strong>: <a href="research-findings.html">research-findings.html</a> §1 KP-3 (stdio MCP auto-reconnect) + §1 KP-4 (watchdog orphan 自殺)</li>
 </ul>
 

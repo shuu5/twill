@@ -18,15 +18,15 @@
 
 <header class="doc-header">
   <h1>research findings — twl MCP 再設計 + 公式 verify 結果</h1>
-  <div class="meta">draft-v2 (2026-05-12) &middot; research session bce9c4e4 (120 sources、Critique PASS) + 本 session WebFetch 5 件 verify</div>
+  <div class="meta">draft-v2 (2026-05-12) &middot; research session bce9c4e4 (120 sources、Critique PASS) + 過去 session WebFetch 5 件 verify</div>
 </header>
 
 <div class="info">
-  <strong>目的</strong>: 本 spec の根拠となる research session の主要 finding を保全 + 本 session で実施した公式 docs WebFetch verify の結果を集約。LLM の知識陳腐化リスクに対する一次 source 引用層として機能。<br>
+  <strong>目的</strong>: 本 spec の根拠となる research session の主要 finding を保全 + 。LLM の知識陳腐化リスクに対する一次 source 引用層として機能。<br>
   <br>
   <strong>session ID</strong>: <code>bce9c4e4</code> (2026-05-12)、6 researcher 並列 + critique PASS、doobidoo hash <code>6fdf1d0b</code><br>
   <br>
-  <strong>snapshot location</strong>: <code>/tmp/research-search-bce9c4e4/</code> (本 session 中 active、final report 503 行 + integrated findings 682 行 + 120 sources)
+  <strong>snapshot location</strong>: <code>/tmp/research-search-bce9c4e4/</code>
 </div>
 
 <h2>§0. エグゼクティブ・サマリー (5 件、verified)</h2>
@@ -249,7 +249,7 @@
   <li><strong><code>GITHUB_TOKEN</code> の Project Board 操作不可</strong> [verified、★]: project scope なし、PAT 必須</li>
 </ol>
 
-<h2>§6b. 本 session 第 3 弾の追加 WebFetch verified (5 件、2026-05-13)</h2>
+<h2>§6b. spec sessionの追加 WebFetch verified (5 件、2026-05-13)</h2>
 
 <table>
   <thead><tr><th>verify 対象</th><th>結果</th><th>source</th></tr></thead>
@@ -286,7 +286,7 @@
 
 <ul>
   <li><strong>「<code>claude --skill</code> flag」は誤</strong>: spawn-tmux.sh 設計を「<code>claude</code> 起動 + slash command inject」または「plugin 化 + namespace」に修正済</li>
-  <li><strong>「Plugin Monitor は未知領域」は訂正</strong>: 公式に <code>monitors/monitors.json</code> schema verified、本 session で <code>Phase 1 PoC</code> に採用</li>
+  <li><strong>「Plugin Monitor は未知領域」は訂正</strong>: 公式に <code>monitors/monitors.json</code> schema verified、<code>Phase 1 PoC</code> に採用</li>
   <li><strong>「fastmcp の deferred-tool pattern」は公式 docs に存在しない</strong>: twl 独自実装 pattern として明示</li>
 </ul>
 
@@ -349,7 +349,7 @@
   <li><strong>critique result</strong>: <code>/tmp/research-search-bce9c4e4/critique-result.md</code> (Critique PASS、9.875 KB)</li>
   <li><strong>workers</strong>: <code>/tmp/research-search-bce9c4e4/workers/researcher-{1..6}.md</code> (各 researcher の調査出力)</li>
   <li><strong>doobidoo hash</strong>: <code>6fdf1d0b69a4d272111ec9fb34052914fab546c1bc6c61cbd4b006c48e4cc345</code> (memory_search で復元可)</li>
-  <li><strong>本 session 追加 doobidoo hash</strong>: 本 session 終了時に追加 (research-findings.html 取り込み完了の記録)</li>
+  <li><strong> doobidoo hash</strong>: 過去 session 終了時に追加 (research-findings.html 取り込み完了の記録)</li>
 </ul>
 
 </body>

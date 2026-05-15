@@ -135,7 +135,7 @@
   <line x1="600" y1="340" x2="660" y2="400" stroke="#388e3c" stroke-width="1.5" marker-end="url(#arrow)"/>
   <line x1="820" y1="340" x2="780" y2="400" stroke="#388e3c" stroke-width="1.5" marker-end="url(#arrow)"/>
   <line x1="820" y1="340" x2="860" y2="400" stroke="#388e3c" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <text x="930" y="370" font-size="10" font-weight="600" fill="#388e3c">Skill() / Agent()</text>
+  <text x="930" y="370" font-size="10" font-weight="600" fill="#388e3c">Skill / Agent</text>
 
   <!-- Layer 2 label -->
   <rect x="10" y="405" width="40" height="50" rx="3" fill="#e8f5e9" stroke="#388e3c" stroke-width="1.5"/>
@@ -213,19 +213,19 @@
 
   <text x="540" y="730" text-anchor="middle" font-size="12" font-style="italic" fill="#555">10 role architecture (administrator / phaser / workflow / atomic / specialist + tool / reference / script / hook / monitor) + 階層型 file mailbox</text>
 </svg>
-<div class="diagram-caption">図 1: 10 role architecture overview — L0 administrator / L1 phaser-* + tool-* (independent) / L2-3 workflow + atomic + specialist。phaser は別 main session、workflow/atomic は Skill() composition、specialist は Agent() で spawn (subagent context)</div>
+<div class="diagram-caption">図 1: 10 role architecture overview — L0 administrator / L1 phaser-* + tool-* (independent) / L2-3 workflow + atomic + specialist。phaser は別 main session、workflow/atomic は Skill composition、specialist は Agent で spawn (subagent context)</div>
 </div>
 
 <h2>4. Key Points (10 role architecture)</h2>
 
 <ul>
   <li><strong>L0 <code>administrator</code></strong> = 1 個、長命 (旧 su-observer rebrand)、user 代理。<code>phaser</code> からの集約 mail のみ受信、context 効率化を保つ</li>
-  <li><strong>L1 <code>phaser-*</code></strong> = サブリーダー、各 status 遷移 (status-transition) を 1 個ずつ担当 (旧 pilot/phase/controller 5 重を <code>phaser</code> 1 語に統一)。<code>workflow</code> を <code>Skill()</code> で呼ぶ、必要なら <code>Agent(specialist-*)</code> も</li>
-  <li><strong>L2 <code>workflow-*</code></strong> = <code>phaser</code>/<code>tool</code> から <code>Skill()</code> で呼ばれる sub-workflow、<code>atomic</code> を順次呼ぶ launcher (<code>disable-model-invocation: true</code>、context budget 外)</li>
+  <li><strong>L1 <code>phaser-*</code></strong> = サブリーダー、各 status 遷移 (status-transition) を 1 個ずつ担当 (旧 pilot/phase/controller 5 重を <code>phaser</code> 1 語に統一)。<code>workflow</code> を <code>Skill</code> で呼ぶ、必要なら <code>Agent(specialist-*)</code> も</li>
+  <li><strong>L2 <code>workflow-*</code></strong> = <code>phaser</code>/<code>tool</code> から <code>Skill</code> で呼ばれる sub-workflow、<code>atomic</code> を順次呼ぶ launcher (<code>disable-model-invocation: true</code>、context budget 外)</li>
   <li><strong>L3 <code>atomic-*</code></strong> = 最小実行単位、4-phase lifecycle (pre-check/exec/post-verify/report) を SKILL.md 本文に inline 実装、必要なら <code>Agent(specialist-*)</code> で specialist spawn</li>
   <li><strong><code>specialist-*</code></strong> (公式 <code>agents/</code> directory) = <code>Agent</code> tool 経由 sub-agent、独立 context window、subagent spawn 不可 (<span class="vs verified">verified</span>)。旧 worker-* 18 件を rename</li>
   <li><strong><code>tool-*</code></strong> = user / admin が直接 invoke、status 遷移と無関係 (<code>tool-architect</code> / <code>tool-project</code> / <code>tool-sandbox-runner</code>、第 4 弾 dig で 4→3 に)</li>
-  <li><strong>spawn 機構</strong> = phaser は tmux new-window + claude code 別 main session、workflow/atomic は <code>Skill()</code> 公式機構、specialist は <code>Agent()</code> 公式機構</li>
+  <li><strong>spawn 機構</strong> = phaser は tmux new-window + claude code 別 main session、workflow/atomic は <code>Skill</code> 公式機構、specialist は <code>Agent</code> 公式機構</li>
   <li><strong>通信機構</strong> = 階層型 file mailbox (4 階層 entity: mailbox &gt; inbox &gt; mail &gt; event、<code>.mailbox/&lt;session&gt;/inbox.jsonl</code> + flock atomic)、pyramid 型集約</li>
   <li><strong>status SSoT</strong> = GitHub Project Board の Status field (6-stage: Idea/Explored/Refined/Implementing/PR Reviewed/Merged、forbidden synonym: <code>state</code>)</li>
   <li><strong>vocabulary SSoT</strong> = <code>registry.yaml#glossary</code>、「1 entity = 1 name」ルール、<code>twl audit --vocabulary</code> 機械検証</li>

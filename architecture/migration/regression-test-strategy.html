@@ -125,7 +125,7 @@
     <tr><td>VP-3</td><td>step verification 動作</td><td><a class="exp-link" href="../research/experiment-index.html#EXP-011">EXP-011</a></td></tr>
     <tr><td>VP-4</td><td>gate hook 動作</td><td><a class="exp-link" href="../research/experiment-index.html#EXP-001">EXP-001-003</a> + <a class="exp-link" href="../research/experiment-index.html#EXP-008">EXP-008</a></td></tr>
     <tr><td>VP-5</td><td>admin polling 動作</td><td><a class="exp-link" href="../research/experiment-index.html#EXP-004">EXP-004</a></td></tr>
-    <tr><td>VP-6</td><td>context 効率化 (admin token &lt; su-observer)</td><td>(token 計測専用 EXP は次 session)</td></tr>
+    <tr><td>VP-6</td><td>context 効率化 (admin token &lt; su-observer)</td><td>(token 計測専用 EXP は将来 task)</td></tr>
     <tr><td>VP-7</td><td>fail-fast at step level</td><td><a class="exp-link" href="../research/experiment-index.html#EXP-012">EXP-012</a></td></tr>
     <tr><td>VP-8</td><td>PR 完遂 (#1660 auto-merge)</td><td>e2e (<code>Phase 1 PoC</code> 内で実行)</td></tr>
     <tr><td>VP-9</td><td>tier 1+2 parallel</td><td><a class="exp-link" href="../research/experiment-index.html#EXP-007">EXP-007</a></td></tr>
@@ -174,7 +174,7 @@ jobs:
 
 <ul>
   <li>file 冒頭: <code>bats_require_minimum_version 1.7.0</code></li>
-  <li><code>setup()</code> / <code>teardown()</code> で <code>$SANDBOX = mktemp -d</code> 採用 (既存 <code>common.bash</code> pattern)</li>
+  <li><code>setup</code> / <code>teardown</code> で <code>$SANDBOX = mktemp -d</code> 採用 (既存 <code>common.bash</code> pattern)</li>
   <li>assertion は組み込み (<code>[ "$status" -eq 0 ]</code>) または <code>bats-assert</code> external (load 必要)</li>
   <li><code>run</code> で <code>$status</code> / <code>$output</code> / <code>${lines[@]}</code> を捕捉</li>
   <li>各 EXP-id を bats 化する場合、file 名 = <code>EXP-NNN-&lt;name&gt;.bats</code></li>
@@ -182,17 +182,17 @@ jobs:
 
 <h2>§7. bats-core 公式 verified syntax 引用</h2>
 
-<p>本 session の WebFetch verified からの引用 <a class="src-link" href="https://bats-core.readthedocs.io/en/stable/writing-tests.html">bats writing-tests</a>:</p>
+<p> WebFetch verified からの引用 <a class="src-link" href="https://bats-core.readthedocs.io/en/stable/writing-tests.html">bats writing-tests</a>:</p>
 
 <pre><code>bats_require_minimum_version 1.7.0
 
-setup() {
+setup {
   load 'test_helper/bats-support/load'
   load 'test_helper/bats-assert/load'
   SANDBOX=$(mktemp -d)
 }
 
-teardown() {
+teardown {
   rm -rf "$SANDBOX"
 }
 

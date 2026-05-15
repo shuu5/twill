@@ -29,7 +29,7 @@
   <strong>位置づけ</strong>: <a href="overview.html">overview.html</a> 図 1 では右独立ボックスとして描画済。L0 administrator / L1 phaser (phase-*) / L2 workflow+specialist (worker-*) の 3 階層とは別、status 遷移と無関係な独立 invoke 群。<br>
   <br>
   <strong>第 4 弾 dig の核心成果</strong>: 旧 4 tool → 3 tool に再構成 (tool-utility 廃止)、各 tool の自律 verify / sandbox 検証 / PR cycle / log 分析 / Idea Issue 起票 etc. の詳細仕様を <code>dig</code> skill 3 軸 × 5 ラウンド = 20 question で確定。<br>
-  source: <a href="../research/dig-report-tools-2026-05-13.html">dig-report-tools-2026-05-13.md</a> (本 session 第 4 弾の独立 dig artifact、12 section / ~470 行)。
+  source: <a href="../research/dig-report-tools-2026-05-13.html">dig-report-tools-2026-05-13.md</a> (spec sessionの独立 dig artifact、12 section / ~470 行)。
 </div>
 
 <h2>§1. 3 tool 概要 (4 tool → 3 tool、tool-utility 廃止)</h2>
@@ -109,7 +109,7 @@
 
 <ul>
   <li>3 tool いずれも user / admin session から env 継承で <code>TWL_AUDIT=1</code> + <code>TWL_AUDIT_DIR</code> を受け取り、<code>.audit/&lt;run-id&gt;/tools/&lt;tool-name&gt;/</code> に出力</li>
-  <li>tool 内部の主要 step (PR 作成 / spec 生成 / Board 設定 / sandbox 実行) は <code>audit_snapshot()</code> で snapshot</li>
+  <li>tool 内部の主要 step (PR 作成 / spec 生成 / Board 設定 / sandbox 実行) は <code>audit_snapshot</code> で snapshot</li>
   <li>tool 別の出力内容:
     <ul>
       <li>tool-architect: spec directory snapshot + specialist-spec-review findings JSON</li>
@@ -229,7 +229,7 @@
 <h3>3.5 spec 全体の verify status 集約</h3>
 
 <ul>
-  <li><a href="../research/experiment-index.html">experiment-index.html</a> (本 session 第 3 弾で確定) が全 EXP-001〜031 の status listing hub</li>
+  <li><a href="../research/experiment-index.html">experiment-index.html</a> (spec sessionで確定) が全 EXP-001〜031 の status listing hub</li>
   <li>個別 spec file は <code>&lt;span class="vs ..."&gt;</code> で claim 単位の status</li>
   <li>将来 CI で自動 status 更新 (実行結果 → badge 更新)</li>
   <li>本 dig (第 4 弾) で EXP-019〜031 が新規追加 (合計 31 EXP)</li>
@@ -554,8 +554,8 @@ spawn_tmux \
 <h3>7.3 禁止経路 (Inv 関連)</h3>
 
 <ul>
-  <li>phase-* (pilot) が tool-* を <code>Skill()</code> で呼ぶ → <strong>MUST NOT</strong> (ADR-040 違反)</li>
-  <li>worker-* (worker) が tool-* を <code>Skill()</code> で呼ぶ → <strong>MUST NOT</strong></li>
+  <li>phase-* (pilot) が tool-* を <code>Skill</code> で呼ぶ → <strong>MUST NOT</strong> (ADR-040 違反)</li>
+  <li>worker-* (worker) が tool-* を <code>Skill</code> で呼ぶ → <strong>MUST NOT</strong></li>
   <li>cross-stack invoke (旧 su-observer ↔ 新 administrator 経由の tool-* 呼び出し) → dual-stack 期間中 MUST NOT</li>
   <li>tool-architect 以外が <code>architecture/spec/</code> を edit → <strong>MUST NOT</strong> (層 1: hook deny、§3.4)</li>
 </ul>

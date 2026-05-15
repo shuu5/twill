@@ -90,7 +90,7 @@
       <td>ADR-043</td>
       <td><code>plugins/twl/architecture/decisions/ADR-043-twill-radical-rebuild.md</code></td>
       <td>radical rebuild 設計の正典 (10 role + registry.yaml + 命名 policy)</td>
-      <td><span class="vs verified">Proposed (本 session 完了)</span></td>
+      <td><span class="vs verified">Proposed</span></td>
       <td>13 / 27</td>
       <td>本 spec directory 全体を supplement として参照</td>
     </tr>
@@ -147,13 +147,13 @@
       <td><code>invariant-fate-table.html</code></td>
       <td>architecture/spec/</td>
       <td>A-X 24 件 fate audit (保全 / 強化 / 部分 Superseded / 新規)</td>
-      <td><span class="vs verified">本 session で Inv U rename banner 追加</span></td>
+      <td><span class="vs verified"></span></td>
     </tr>
     <tr>
       <td><code>adr-fate-table.html</code></td>
       <td>architecture/spec/</td>
       <td>ADR 43 件 fate audit + ADR-043 supersedes chain</td>
-      <td><span class="vs verified">本 session で ADR-043 定義ブロック更新</span></td>
+      <td><span class="vs verified"></span></td>
     </tr>
   </tbody>
 </table>
@@ -205,7 +205,7 @@
       <td>2</td>
       <td><code>ref-invariants.md</code> (A-N 14 件のまま) と <code>invariant-fate-table.html</code> (A-X 24 件)</td>
       <td><span class="vs deduced">完全 drift (overview.html §8 で「訂正課題」と既に記載)</span></td>
-      <td>本 session 次 step で ref-invariants.md を A-X (24 件) に rename + Pilot/Worker rename + Inv U rename</td>
+      <td>過去 session 次 step で ref-invariants.md を A-X (24 件) に rename + Pilot/Worker rename + Inv U rename</td>
     </tr>
     <tr>
       <td>3</td>
@@ -452,7 +452,7 @@ token_thresholds:
       <td><code>phaser-</code></td>
       <td><span class="vs verified">有</span></td>
       <td>Skill, Bash, Read, mcp__twl__*, Agent</td>
-      <td>workflow-* (<code>Skill()</code>) + specialist-* (<code>Agent()</code>、直接 spawn 可、ただし通常は atomic 経由)</td>
+      <td>workflow-* (<code>Skill</code>) + specialist-* (<code>Agent</code>、直接 spawn 可、ただし通常は atomic 経由)</td>
       <td><span class="vs verified">skills + sub-agents docs</span></td>
       <td><a href="#vocab-phaser">§4</a></td>
     </tr>
@@ -472,7 +472,7 @@ token_thresholds:
       <td><code>workflow-</code></td>
       <td><span class="vs verified">無 (<code>disable-model-invocation: true</code>)</span></td>
       <td>Skill, Bash</td>
-      <td>atomic-* (Skill() 経由)</td>
+      <td>atomic-* (Skill 経由)</td>
       <td><span class="vs verified">skills docs: disable-model-invocation</span></td>
       <td><a href="#vocab-workflow">§4</a></td>
     </tr>
@@ -482,7 +482,7 @@ token_thresholds:
       <td><code>atomic-</code></td>
       <td><span class="vs verified">無 (同上)</span></td>
       <td>Bash, Read, Write, Edit, Skill, Agent</td>
-      <td>specialist-* (Agent() 経由、必要時のみ)</td>
+      <td>specialist-* (Agent 経由、必要時のみ)</td>
       <td><span class="vs verified">skills + sub-agents docs</span></td>
       <td><a href="#vocab-atomic">§4</a></td>
     </tr>
@@ -597,7 +597,7 @@ glossary:
     aliases: []
     forbidden: [worker]
     context: L2 role (phaser から spawn)
-    description: phaser / tool から Skill() で呼ばれる sub-workflow、atomic を順次呼ぶ launcher
+    description: phaser / tool から Skill で呼ばれる sub-workflow、atomic を順次呼ぶ launcher
     examples: [workflow-test-ready, workflow-pr-verify, workflow-pr-merge]
 
   atomic:
@@ -606,7 +606,7 @@ glossary:
     forbidden: [step, composite]
     context: minimum unit (workflow から呼ばれる)
     description: |
-      最小実行単位の skill。workflow から `Skill()` で呼ばれる。
+      最小実行単位の skill。workflow から `Skill` で呼ばれる。
       内部で必要なら `Agent(specialist-*)` で specialist spawn。
       4-phase lifecycle (pre-check / exec / post-verify / report) を内部実装。
     examples: [atomic-test-scaffold, atomic-green-impl, atomic-check]
@@ -764,7 +764,7 @@ glossary:
     <tr><td><code>tool-project</code></td><td>GitHub Project board 操作 (status update / kanban view 等)</td><td>tool-project</td><td>同上</td></tr>
     <tr><td><code>tool-sandbox-runner</code></td><td>sandbox 環境での EXP 実行 + lesson 抽出</td><td>tool-sandbox-runner</td><td>同上</td></tr>
     <tr><td><code>atomic-execution</code></td><td>workflow から呼ばれる minimum unit、4-phase lifecycle</td><td>atomic-* (全)</td><td>administrator が <code>ssot_excludes</code> で除外宣言</td></tr>
-    <tr><td><code>specialist-review</code></td><td>code-reviewer / security-reviewer / arch-doc-reviewer 等の専門 review</td><td>specialist-* (全)</td><td>Agent() spawn 経由</td></tr>
+    <tr><td><code>specialist-review</code></td><td>code-reviewer / security-reviewer / arch-doc-reviewer 等の専門 review</td><td>specialist-* (全)</td><td>Agent spawn 経由</td></tr>
     <tr><td><code>monitor-mcp-health</code></td><td>MCP server health log tail (disconnect/error 通知)</td><td>monitor-twl-mcp-health</td><td>Plugin Monitor、Inv X の verify 経路</td></tr>
     <tr><td><code>hook-spec-write-boundary</code></td><td>spec 領域への write 禁止 hook (PreToolUse / Edit|Write)</td><td>hook-spec-write-boundary</td><td>PreToolUse hook</td></tr>
     <tr><td><code>hook-gate-phaser</code></td><td>phaser-* invocation の前提 status verify (Inv W)</td><td>hook-gate-phaser</td><td>PreToolUse / Skill hook</td></tr>
@@ -831,19 +831,19 @@ glossary:
 
 <h2 id="s6">§6. vocabulary audit 統合設計</h2>
 
-<div class="info">本節は <a href="../migration/rebuild-plan.html">rebuild-plan.html</a> EXP-038 (vocabulary audit) の設計基盤。<code>audit_collect()</code> の section 11 として実装する。</div>
+<div class="info">本節は <a href="../migration/rebuild-plan.html">rebuild-plan.html</a> EXP-038 (vocabulary audit) の設計基盤。<code>audit_collect</code> の section 11 として実装する。</div>
 
-<h3>6.1 audit_vocabulary() pseudo-code</h3>
+<h3>6.1 audit_vocabulary pseudo-code</h3>
 
 <pre><code>def audit_vocabulary(registry_yaml, spec_dir, code_dir) -&gt; list[dict]:
     """vocabulary table に基づき forbidden 語の使用を機械検出。"""
     glossary = registry_yaml['glossary']
     items = []
-    for entity_name, entry in glossary.items():
+    for entity_name, entry in glossary.items:
         forbidden = entry.get('forbidden', [])
         for forbidden_word in forbidden:
             # spec/*.html、cli/twl/**/*.py、plugins/twl/**/*.sh、*.md を grep
-            for file in glob_files():
+            for file in glob_files:
                 for line, content in enumerate(file):
                     # word boundary 厳密 (正規表現 \b で囲む)
                     if matches_word_boundary(content, forbidden_word):

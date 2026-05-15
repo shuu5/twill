@@ -128,12 +128,12 @@
     <tr>
       <td><a href="gate-hook.html"><code>gate-hook.html</code></a></td>
       <td><span class="badge done">done</span></td>
-      <td>PreToolUse gate + hook 実装 (公式 verified schema、tier 1+2 階層防御、本 session 更新)</td>
+      <td>PreToolUse gate + hook 実装 (公式 verified schema、tier 1+2 階層防御)</td>
     </tr>
     <tr>
       <td><a href="admin-cycle.html"><code>admin-cycle.html</code></a></td>
       <td><span class="badge done">done</span></td>
-      <td>administrator polling cycle 6-step + 不変条件 I-1〜I-7 + 案 2 先行実装 (本 session content 化)</td>
+      <td>administrator polling cycle 6-step + 不変条件 I-1〜I-7 + 案 2 先行実装</td>
     </tr>
     <tr>
       <td><a href="tool-architecture.html"><code>tool-architecture.html</code></a></td>
@@ -143,7 +143,7 @@
   </tbody>
 </table>
 
-<h3>D. 既存 plugin との接続 (新規、本 session 追加)</h3>
+<h3>D. 既存 plugin との接続 </h3>
 
 <table>
   <thead>
@@ -188,7 +188,7 @@
     <tr>
       <td><a href="../migration/dual-stack-routing.html"><code>dual-stack-routing.html</code></a></td>
       <td><span class="badge done">done</span></td>
-      <td>su-observer 旧 vs administrator 新 共存ルール + state 分離 + 移行完了判定 (本 session content 化)</td>
+      <td>su-observer 旧 vs administrator 新 共存ルール + state 分離 + 移行完了判定</td>
     </tr>
   </tbody>
 </table>
@@ -208,17 +208,17 @@
     <tr>
       <td><a href="changelog.html"><code>changelog.html</code></a></td>
       <td><span class="badge done">done</span></td>
-      <td>本 spec の変更履歴 (draft-v1 → draft-v2 → 本 session の HTML 統一)</td>
+      <td>本 spec の変更履歴 (draft-v1 → draft-v2 →  HTML 統一)</td>
     </tr>
     <tr>
       <td><a href="../research/research-findings.html"><code>research-findings.html</code></a></td>
       <td><span class="badge done">done</span></td>
-      <td>research session bce9c4e4 (120 sources、Critique PASS) + 本 session WebFetch 計 10 件 verified の集約 (前 session + 第 3 弾)</td>
+      <td>research session bce9c4e4 (120 sources、Critique PASS) + 過去 session WebFetch 計 10 件 verified の集約 (前 session + 第 3 弾)</td>
     </tr>
     <tr>
       <td><a href="../research/sandbox-experiment.html"><code>sandbox-experiment.html</code></a></td>
       <td><span class="badge done">done</span></td>
-      <td><strong>sandbox experiment architecture</strong> — 4-state verification status + EXP-id 体系 + 既存 sandbox 機能継承 (本 session 第 3 弾新規)</td>
+      <td><strong>sandbox experiment architecture</strong> — 4-state verification status + EXP-id 体系 + 既存 sandbox 機能継承 (spec session新規)</td>
     </tr>
     <tr>
       <td><a href="../research/experiment-index.html"><code>experiment-index.html</code></a></td>
@@ -238,7 +238,7 @@
     <tr>
       <td><code>common.css</code></td>
       <td><span class="badge done">done</span></td>
-      <td>共通 stylesheet (note DESIGN.md 部分採用 token、本 session で 4-state status + EXP/src link class 追加)</td>
+      <td>共通 stylesheet (note DESIGN.md 部分採用 token)</td>
     </tr>
     <tr>
       <td><a href="../archive/draft-v1.html"><code>draft-v1.html</code></a></td>
@@ -308,53 +308,11 @@
   <li><a href="../migration/rebuild-plan.html">rebuild-plan.html</a> — <code>Phase 1</code>-4 plan + <code>Phase 1 PoC</code> 手順</li>
 </ol>
 
-<h2>進捗 status (2026-05-15 時点、Phase F-J 完遂後)</h2>
+<h2>進捗 status</h2>
 
-<table>
-  <thead>
-    <tr><th style="width: 24%">status</th><th style="width: 8%">数</th><th>file</th></tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><span class="badge done">done</span></td>
-      <td>28</td>
-      <td>A 全体把握 (3): README / overview / failure-analysis &middot; B 既存資産継承 (3): adr-fate-table / invariant-fate-table / pitfalls-inheritance &middot; C 新 architecture (8): boundary-matrix / crash-failure-mode / atomic-verification / spawn-protocol / gate-hook / admin-cycle / tool-architecture / registry-schema &middot; D 既存接続 (2): twl-mcp-integration / ssot-design &middot; E 削除移行 (4): deletion-inventory / rebuild-plan / regression-test-strategy / dual-stack-routing &middot; F 補助 (5): glossary / changelog / research-findings / sandbox-experiment / experiment-index &middot; <strong>G Phase I/J extension (3): monitor-policy / hooks-mcp-policy / architecture-graph</strong> (合計 28 HTML、+ archive 1 = 29 HTML + 2 MD = 31 file)</td>
-    </tr>
-    <tr>
-      <td><span class="badge done">done</span></td>
-      <td>0</td>
-      <td>全 outline → content 化完了</td>
-    </tr>
-    <tr>
-      <td><span class="badge archive">archive</span></td>
-      <td>1</td>
-      <td>draft-v1</td>
-    </tr>
-  </tbody>
-</table>
+<p>spec dir 内 18 file (17 HTML + common.css) は全 content 化完了 (badge=done)。draft-v1.html (115 KB) は archive/ に移動済 (rollback 用)。詳細な変更履歴は <a href="changelog.html">changelog.html</a>、実装作業 log は <a href="../archive/changelog-impl.html">archive/changelog-impl.html</a> 参照。</p>
 
-<p><strong>本 session 第 3 弾の追加</strong>:</p>
-<ul>
-  <li>新規 2 file: <code>sandbox-experiment.html</code> (experiment hyperlink architecture) + <code>experiment-index.html</code> (EXP-001〜018 一覧)</li>
-  <li>content 化 4 file: spawn-protocol / deletion-inventory / regression-test-strategy / pitfalls-inheritance</li>
-  <li>boundary-matrix: admin / pilot / worker / tool-* 全列詳細化</li>
-  <li>主要更新: overview (新原則 9 条に拡張)、twl-mcp-integration (plugin 化 + Plugin Monitor)、rebuild-plan (<code>Phase 1 PoC</code> に twl plugin 化 + EXP STEP 0 追加)、research-findings (本 session 5 件 verify + 重大訂正)</li>
-  <li>本 session で公式 docs 5 件 WebFetch verified (claude CLI <code>--skill</code> 不存在 + Plugin Monitor + gh project + bats-core + tmux)</li>
-  <li>twl plugin 化 + experiment-id hyperlink architecture を新 spec 設計に組み込み (長期安定 + living document)</li>
-</ul>
-
-<p><strong>本 session 第 4 弾の追加 (2026-05-13、dig)</strong>:</p>
-<ul>
-  <li>新規 1 file: <code>dig-report-tools-2026-05-13.html</code> (独立 dig artifact、12 section / ~510 行、3 軸 × 5 ラウンド = 20 question)</li>
-  <li><strong>tool-* 仕様 finalization</strong>: 4 tool → <strong>3 tool</strong> 構成 (tool-utility 廃止、tool-self-improve → tool-sandbox-runner rename) + 自律 verify 2 層 + 軽量 PR cycle + sandbox catalog</li>
-  <li>新規 EXP 13 件追加: EXP-019〜031 (GitHub Project write boundary × 5 / template × 2 / tool-architect verify × 3 / tool-sandbox-runner × 2 / 将来 × 1)</li>
-  <li>新規 helper 7 件: verify-coverage.sh / pre-tool-use-spec-write-boundary.sh / specialist-spec-review.md / problem-patterns.yaml / sandbox manifest (per sandbox) / project_setup.py / twill-templates 別 repo</li>
-  <li>本 dig で公式 docs 3 件 WebFetch re-verify (plugins / hooks / gh project — claude --plugin-dir + permissionDecision enum + 15 write-capable sub-commands)</li>
-  <li>主要更新: tool-architecture (全面書き直し) + experiment-index (EXP-019〜031 追加) + sandbox-experiment (catalog 確定) + deletion-inventory (tool-utility 廃止 + helper 7 件追加) + rebuild-plan (VP-13〜VP-16 追加) + boundary-matrix (3 tool 構成) + glossary (新 11 用語) + README (本 file) + changelog (第 4 弾履歴) + ADR-043 (Decision 追記)</li>
-  <li><strong>dig-report verify status</strong>: 57 claim を 4-state 分類 (verified 19 / deduced 18 / inferred→EXP 13 / inferred→実装 7)</li>
-</ul>
-
-<p><strong>累積</strong> (本 session 通算): 公式 docs 計 <strong>13 件</strong> WebFetch verified (前 session 第 2 弾 5 + 第 3 弾 5 + 第 4 弾 3)、実測行数訂正 (chain-runner 1714 / chain.py 905 / bats 250 / pitfalls 23 sections / co-utility 79 / co-self-improve 144)、verified 数十件。</p>
+<!-- 旧 status table / session 追加 listing / 累積 段落は archive/changelog-impl.html に履歴保存 -->
 
 <h2>関連 (本 spec の外)</h2>
 
@@ -362,7 +320,7 @@
   <li><code>architecture/archive/decisions/</code> — 旧 ADR (7 件: ADR-0006〜0011a/0011b)、<a href="../migration/adr-fate-table.html">adr-fate-table.html</a> で fate 議論済</li>
   <li><code>plugins/twl/refs/ref-invariants.md</code> — 既存 invariant SSoT (<a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> で audit、ref-invariants.md 自体の drift 課題あり)</li>
   <li><code>cli/twl/src/twl/mcp_server/</code> — 既存 twl MCP server (本 spec <a href="twl-mcp-integration.html">twl-mcp-integration.html</a> で継承戦略決定)</li>
-  <li>doobidoo Memory MCP: 本 session の lesson 5+ 件保存済 (<code>hash 6ef844e9 / 74b7cdf7 / 7727b59f / 24e80e43 / e61dd3e3</code>)</li>
+  <li>doobidoo Memory MCP:  lesson 5+ 件保存済 (<code>hash 6ef844e9 / 74b7cdf7 / 7727b59f / 24e80e43 / e61dd3e3</code>)</li>
   <li><code>architecture/decisions/</code> — 新 architecture ADR の配置先 (<a href="../decisions/ADR-0012-administrator-rebrand.md">ADR-0012 administrator rebrand (Proposed)</a> 起票済、以降の ADR は順次起票)</li>
 </ul>
 

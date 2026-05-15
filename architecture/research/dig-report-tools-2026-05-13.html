@@ -23,7 +23,7 @@
 
 <h1 id="dig-report-tool-finalization-2026-05-13">dig report — tool-* 仕様 finalization (2026-05-13)</h1>
 <p><strong>目的</strong>: tool-<em> (旧 tool-architect / tool-project / tool-utility / tool-self-improve の 4 件) の責務 / 境界 / 詳細仕様を <code>dig</code> skill で対話的に詰めた結果をまとめる。</em><em>spec 本体への反映は別途実施</em>*。</p>
-<p><strong>source</strong>: 本 session で <code>dig</code> skill を 3 軸 × 5 ラウンド = 20 question 実施。</p>
+<p><strong>source</strong>: <code>dig</code> skill を 3 軸 × 5 ラウンド = 20 question 実施。</p>
 <p><strong>user の核心意図</strong>:
 - 長期安定する仕組みを最初の設計段階で作り込む
 - 公式 verify を sandbox で実機検証 + hyperlink で spec 表現
@@ -360,7 +360,7 @@
 <td>§3.5 jsonl path</td>
 <td><code>~/.claude/projects/$(encoded $(pwd))/*.jsonl</code></td>
 <td>[verified]</td>
-<td>既存 jsonl 監視で実体験済 (本 session の <code>7775f0cd-...jsonl</code> 参照)</td>
+<td>既存 jsonl 監視で実体験済</td>
 </tr>
 <tr>
 <td>§3.5 tmux 命名</td>
@@ -390,7 +390,7 @@
 <td>§3.7 doobidoo</td>
 <td><code>mcp__doobidoo__memory_search</code> mode=hybrid</td>
 <td>[verified]</td>
-<td>既存 MCP server tool interface (本 session で実利用、9 hash 蓄積)</td>
+<td>既存 MCP server tool interface</td>
 </tr>
 <tr>
 <td>§3.7 similarity threshold</td>
@@ -664,7 +664,7 @@
 - plugin scope で配置</p>
 <h3 id="15-spec-verify-status">1.5 spec 全体の verify status 集約</h3>
 <ul>
-<li><code>experiment-index.html</code> (本 session 第 3 弾で確定) が全 EXP-001〜018 の status listing hub</li>
+<li><code>experiment-index.html</code> (spec sessionで確定) が全 EXP-001〜018 の status listing hub</li>
 <li>個別 spec file は <code>&lt;span class="vs ..."&gt;</code> で claim 単位の status</li>
 <li>将来 CI で自動 status 更新 (実行結果 → badge 更新)</li>
 </ul>

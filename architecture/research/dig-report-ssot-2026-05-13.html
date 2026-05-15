@@ -23,7 +23,7 @@
 
 <h1 id="dig-report-ssot-policy-10-role-finalization-2026-05-13-5-dig">dig report — SSoT 体系 + 命名 policy + 10 role 統合 finalization (2026-05-13、第 5 弾 dig 完成版)</h1>
 <p><strong>目的</strong>: twill plugin の SSoT 構造、命名規則、role 体系、隠れ重複を <code>dig</code> skill で対話的に詰めて 1 から再設計する。前 spec に内在した 5 矛盾 + 多数の用語衝突 (pilot/phase/controller 5 重 / worker/workflow 5 重 / step 5 重 / agent 4 重 / tool 4 重 / state/status 二重 / mail-event-message 3 重 etc.) を解消し、<strong>1 entity = 1 name + registry.yaml 統合 SSoT + 命名衝突 audit 機械化</strong> を達成する設計を確立。</p>
-<p><strong>source</strong>: 本 session で <code>dig</code> skill を <strong>10 round × 平均 4 question = 33+ question</strong> 実施。公式 docs 4 件再 WebFetch verify (plugins / skills / sub-agents / plugins-reference)。</p>
+<p><strong>source</strong>: <code>dig</code> skill を <strong>10 round × 平均 4 question = 33+ question</strong> 実施。公式 docs 4 件再 WebFetch verify (plugins / skills / sub-agents / plugins-reference)。</p>
 <p><strong>user の核心意図</strong> (Round 1-10 通算):
 - SSoT を「ただ呼ぶだけ」ではなく <strong>階層構造 + グルーピング</strong> で表現
 - SSoT 間の <strong>独立性を機械検証</strong> (重複があれば SSoT ではない)
@@ -77,7 +77,7 @@
 <td><code>workflow-</code></td>
 <td>skills/</td>
 <td>無 (<code>disable-model-invocation: true</code>)</td>
-<td>phaser/tool から <code>Skill()</code> 呼び出し、atomic 集合</td>
+<td>phaser/tool から <code>Skill</code> 呼び出し、atomic 集合</td>
 </tr>
 <tr>
 <td>5</td>
@@ -85,7 +85,7 @@
 <td><code>atomic-</code></td>
 <td>skills/</td>
 <td>無 (同上)</td>
-<td>workflow から <code>Skill()</code> 呼び出し、最小実行単位</td>
+<td>workflow から <code>Skill</code> 呼び出し、最小実行単位</td>
 </tr>
 <tr>
 <td>6</td>
@@ -93,7 +93,7 @@
 <td><code>specialist-</code></td>
 <td>agents/ (公式 directory)</td>
 <td>有 (公式仕様)</td>
-<td><code>Agent()</code> tool 経由 sub-agent</td>
+<td><code>Agent</code> tool 経由 sub-agent</td>
 </tr>
 <tr>
 <td>7</td>
@@ -231,7 +231,7 @@
 <td>skills docs verbatim「Custom commands have been merged into skills」</td>
 </tr>
 <tr>
-<td><code>Agent()</code> が subagent spawn の唯一経路</td>
+<td><code>Agent</code> が subagent spawn の唯一経路</td>
 <td>[verified]</td>
 <td>sub-agents docs verbatim</td>
 </tr>
@@ -290,10 +290,10 @@
 <h3 id="exp-dig-7">新規 EXP (本 dig 由来 7 件)</h3>
 <ul>
 <li>EXP-032: registry.yaml audit (重複検出 + concern 整合性 + 命名衝突)</li>
-<li>EXP-033: atomic skill composition (workflow → atomic Skill() 順次呼び出し)</li>
+<li>EXP-033: atomic skill composition (workflow → atomic Skill 順次呼び出し)</li>
 <li>EXP-034: registry.yaml ↔ 実 SKILL.md frontmatter 整合性</li>
 <li>EXP-035: <code>disable-model-invocation: true</code> で context budget 効果 measure</li>
-<li>EXP-036: specialist Agent() spawn from atomic (<code>allowed-tools: [Skill, Agent]</code> declare)</li>
+<li>EXP-036: specialist Agent spawn from atomic (<code>allowed-tools: [Skill, Agent]</code> declare)</li>
 <li>EXP-037: doobidoo cross-machine MCP の Tailscale 経由安定性</li>
 <li><strong>EXP-038</strong>: <code>twl audit --vocabulary</code> の命名衝突検出 (<code>phaser</code> 単独語 + forbidden list + 公式名衝突)</li>
 </ul>
@@ -440,11 +440,11 @@
 <pre><code class="language-python">def audit_vocabulary(registry_yaml, spec_dir, code_dir) -&gt; list[dict]:
     glossary = registry_yaml['glossary']
     items = []
-    for entity_name, entry in glossary.items():
+    for entity_name, entry in glossary.items:
         forbidden = entry.get('forbidden', [])
         for forbidden_word in forbidden:
             # spec/*.html、cli/twl/**/*.py、plugins/twl/**/*.sh、*.md を grep
-            for file in glob_files():
+            for file in glob_files:
                 for line, content in enumerate(file):
                     # word boundary 厳密 (正規表現 \b で囲む)
                     if matches_word_boundary(content, forbidden_word):
@@ -473,7 +473,7 @@
 <li><strong>location</strong>: <code>plugins/twl/skills/phaser-*/SKILL.md</code></li>
 <li><strong>prefix</strong>: <code>phaser-</code></li>
 <li><strong>description</strong>: 有 (administrator が AI 判断で select)</li>
-<li><strong>役割</strong>: L1、別 session window controller、status 遷移 1:1 (Idea→Explored / Explored→Refined / Refined→Implementing / Implementing→PR Reviewed)、workflow を Skill() で順次呼ぶ</li>
+<li><strong>役割</strong>: L1、別 session window controller、status 遷移 1:1 (Idea→Explored / Explored→Refined / Refined→Implementing / Implementing→PR Reviewed)、workflow を Skill で順次呼ぶ</li>
 <li><strong>allowed-tools</strong>: <code>[Skill, Bash, Read, mcp__twl__*]</code>、必要なら <code>Agent</code> 追加</li>
 <li><strong>rename source</strong>: 旧 pilot / phase / phase-* / controller (1 語化、Round 9 確定)</li>
 </ul>
@@ -491,7 +491,7 @@
 <li><strong>location</strong>: <code>plugins/twl/skills/workflow-*/SKILL.md</code></li>
 <li><strong>prefix</strong>: <code>workflow-</code></li>
 <li><strong>frontmatter</strong>: <code>disable-model-invocation: true</code>、description 省略</li>
-<li><strong>役割</strong>: phaser/tool から <code>Skill()</code> 呼び出し、atomic を順次呼ぶ launcher</li>
+<li><strong>役割</strong>: phaser/tool から <code>Skill</code> 呼び出し、atomic を順次呼ぶ launcher</li>
 <li><strong>allowed-tools</strong>: <code>[Skill, Bash]</code>、必要なら <code>Agent</code></li>
 </ul>
 <h3 id="35-atomic-atomic-test-scaffold-atomic-green-impl-etc">3.5 atomic (atomic-test-scaffold / atomic-green-impl / etc.)</h3>
@@ -499,7 +499,7 @@
 <li><strong>location</strong>: <code>plugins/twl/skills/atomic-*/SKILL.md</code></li>
 <li><strong>prefix</strong>: <code>atomic-</code></li>
 <li><strong>frontmatter</strong>: <code>disable-model-invocation: true</code>、description 省略</li>
-<li><strong>役割</strong>: 最小実行単位、workflow から <code>Skill()</code> 呼び出し、内部で必要なら <code>Agent(specialist-*)</code> で specialist spawn</li>
+<li><strong>役割</strong>: 最小実行単位、workflow から <code>Skill</code> 呼び出し、内部で必要なら <code>Agent(specialist-*)</code> で specialist spawn</li>
 <li><strong>allowed-tools</strong>: <code>[Bash, Read, Write, Edit, Skill, Agent]</code></li>
 <li><strong>lifecycle</strong>: atomic SKILL.md 本文に 4-phase (pre-check → exec → post-verify → report) を inline 記述</li>
 </ul>
@@ -575,7 +575,7 @@ glossary:
     aliases: []
     forbidden: [worker]
     context: L2 role (phaser から spawn)
-    description: phaser / tool から Skill() で呼ばれる sub-workflow、atomic を順次呼ぶ launcher
+    description: phaser / tool から Skill で呼ばれる sub-workflow、atomic を順次呼ぶ launcher
     examples: [workflow-test-ready, workflow-pr-verify, workflow-pr-merge]
 
   atomic:
@@ -584,7 +584,7 @@ glossary:
     forbidden: [step, composite]
     context: minimum unit (workflow から呼ばれる)
     description: |
-      最小実行単位の skill。workflow から `Skill()` で呼ばれる。
+      最小実行単位の skill。workflow から `Skill` で呼ばれる。
       内部で必要なら `Agent(specialist-*)` で specialist spawn。
       4-phase lifecycle (pre-check / exec / post-verify / report) を内部実装。
     examples: [atomic-test-scaffold, atomic-green-impl, atomic-check]
@@ -1258,7 +1258,7 @@ allowed-tools: [Bash, Read, Edit, Agent]
 <h3 id="101-registryyaml">10.1 registry.yaml 実装詳細</h3>
 <ul>
 <li>audit <code>--vocabulary</code> の false positive 抑制 (文脈解析: backtick 引用、説明文の単語 vs 実 component name)</li>
-<li><code>audit_collect()</code> への vocabulary section 統合</li>
+<li><code>audit_collect</code> への vocabulary section 統合</li>
 <li>types.py <code>_FALLBACK_TOKEN_THRESHOLDS</code> の registry.yaml 自動生成 logic</li>
 </ul>
 <h3 id="102-policy">10.2 命名 policy の例外処理</h3>
@@ -1294,7 +1294,7 @@ allowed-tools: [Bash, Read, Edit, Agent]
 <li><strong>公式仕様準拠が drift 防止の基盤</strong>: twl 独自 type は公式 component kind と mapping 明示必須</li>
 <li><strong>description 有/無は context budget 管理の鍵</strong>: <code>disable-model-invocation: true</code> で外す</li>
 <li><strong>commands legacy + skills 統合</strong>: radical rebuild の機会、commands/ 117 件を全件 skills/ migrate</li>
-<li><strong>specialist 呼び出しは Agent() のみ</strong>: 公式制約、composite role は不要に</li>
+<li><strong>specialist 呼び出しは Agent のみ</strong>: 公式制約、composite role は不要に</li>
 <li><strong>hook + monitor も SSoT 一体管理</strong>: registry.yaml に統合</li>
 <li><strong>role-prefix で全 file 識別可能</strong>: specialist-/phaser-/workflow-/atomic-/ref-</li>
 <li><strong>1 entity = 1 name ルール</strong>: pilot/phase/controller 5 重のような multi-name は SSoT 違反</li>

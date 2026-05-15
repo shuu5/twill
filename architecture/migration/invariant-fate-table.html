@@ -90,7 +90,7 @@ specification も「全 chain step は 4-phase lifecycle」→「全 atomic skil
   <tbody>
     <tr><td><strong>B</strong></td><td>Worktree lifecycle phaser 専任</td><td><strong>強化</strong>: 新 spec の 10 role 全層 spawn 設計で、atomic も自分の worktree 内で動作する前提が固まる。<code>spawn-tmux.sh</code> helper で「phaser が atomic 用 worktree を事前作成、atomic/specialist は使用のみ」を機械化</td></tr>
     <tr><td><strong>G</strong></td><td>クラッシュ検知保証</td><td><strong>強化</strong>: <a href="../spec/crash-failure-mode.html">crash-failure-mode.html</a> で administrator/phaser/specialist (subagent) の crash 検知 + recovery を仕様化、SLA + 検知閾値を明示</td></tr>
-    <tr><td><strong>K</strong></td><td>phaser 実装禁止</td><td><strong>強化</strong>: 新 spec の phaser 責務 boundary 仕様で「phaser は workflow/atomic を Skill() で / specialist を Agent() で spawn・mail 集約・status 遷移のみ、コード変更禁止」を SKILL.md MUST + atomic post-verify (src diff = phaser のみは fail) で機械化</td></tr>
+    <tr><td><strong>K</strong></td><td>phaser 実装禁止</td><td><strong>強化</strong>: 新 spec の phaser 責務 boundary 仕様で「phaser は workflow/atomic を Skill で / specialist を Agent で spawn・mail 集約・status 遷移のみ、コード変更禁止」を SKILL.md MUST + atomic post-verify (src diff = phaser のみは fail) で機械化</td></tr>
   </tbody>
 </table>
 
@@ -121,7 +121,7 @@ specification も「全 chain step は 4-phase lifecycle」→「全 atomic skil
       </ul>
     </dd>
     <dt>根拠</dt><dd>Issue #1577 (budget format documenting)、CLAUDE.md auto memory <code>feedback_budget_display_misread.md</code>。</dd>
-    <dt>検証方法</dt><dd>bats <code>ref-invariants-structure.bats</code> Q section 存在 + count ≥ 17 assertion (本 session で実装済)。</dd>
+    <dt>検証方法</dt><dd>bats <code>ref-invariants-structure.bats</code> Q section 存在 + count ≥ 17 assertion。</dd>
     <dt>影響範囲</dt>
     <dd>
       <ul>
@@ -180,7 +180,7 @@ specification も「全 chain step は 4-phase lifecycle」→「全 atomic skil
       <ul>
         <li><strong>旧</strong>: <code>plugins/twl/scripts/step.sh</code> (第 3 弾 dig 案 3) — <strong>廃止</strong> (Phase 3 cutover)</li>
         <li><strong>新</strong>: atomic SKILL.md 7 件 (atomic-test-scaffold / atomic-green-impl / atomic-check / atomic-pr-test / atomic-ac-verify / atomic-phase-review / atomic-pr-cycle-report)、各 SKILL.md 本文に 4-phase inline 実装</li>
-        <li>workflow SKILL.md は atomic を <code>Skill()</code> で順次呼ぶ launcher (verify 詳細 inline なし)</li>
+        <li>workflow SKILL.md は atomic を <code>Skill</code> で順次呼ぶ launcher (verify 詳細 inline なし)</li>
       </ul>
     </dd>
   </dl>
@@ -203,7 +203,7 @@ specification も「全 chain step は 4-phase lifecycle」→「全 atomic skil
     <dt>影響範囲</dt>
     <dd>
       <ul>
-        <li><code>cli/twl/src/twl/autopilot/checkpoint.py</code> の <code>_checkpoint_dir()</code> (per-issue 必須化、<code>--shared</code> 明示なしは fail)</li>
+        <li><code>cli/twl/src/twl/autopilot/checkpoint.py</code> の <code>_checkpoint_dir</code> (per-issue 必須化、<code>--shared</code> 明示なしは fail)</li>
         <li><code>plugins/twl/scripts/autopilot-cleanup.sh</code> (<code>--scope</code> 必須化、または完全廃止)</li>
       </ul>
     </dd>
@@ -309,7 +309,7 @@ specification も「全 chain step は 4-phase lifecycle」→「全 atomic skil
 <h2>audit 方法</h2>
 
 <ul>
-  <li>既存 invariant 19 件: <code>ref-invariants.md</code> を本 session で Read 済 (verified)</li>
+  <li>既存 invariant 19 件: <code>ref-invariants.md</code> を)</li>
   <li>新規 invariant T-X: 9 P0 bug 分析 (<a href="../research/failure-analysis.html">failure-analysis.html</a>) の lesson から導出</li>
   <li>confidence: 既存 = verified (file read 済)、新規 = deduced (本 spec 設計から)</li>
 </ul>

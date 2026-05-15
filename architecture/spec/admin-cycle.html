@@ -34,7 +34,7 @@
 <h2>§1. 公式 CronCreate 制約 (verified、設計に重大影響)</h2>
 
 <div class="critical">
-<strong>重要な公式制約</strong> (本 session で WebFetch verified):
+<strong>重要な公式制約</strong>:
 <ul>
   <li><strong>session-scoped only</strong>: scheduled tasks は <em>current conversation</em> に live、session 死亡で task も死亡。新 conversation 開始で全 task clear</li>
   <li><strong><code>durable: true</code> は BROKEN</strong> (<a href="https://github.com/anthropics/claude-code/issues/40228">Issue #40228 OPEN</a>): 公式 schema には記載なし、output に "Session-only" と表示、<code>~/.claude/scheduled_tasks.json</code> は作成されない</li>
@@ -208,7 +208,7 @@
 
 <pre><code># administrator/SKILL.md Step 0 (session 起動時)
 # 1. CronList で既存 task 確認 (resume 時)
-existing = CronList()
+existing = CronList
 admin_cycle_task = existing.filter(lambda t: t.prompt.startswith("admin-cycle"))
 
 # 2. 不在なら CronCreate (recurring=true、durable 引数なし)
@@ -369,10 +369,10 @@ fi</code></pre>
 <h2>§11. verify source</h2>
 
 <ul>
-  <li><strong>Claude Code Scheduled tasks docs</strong>: <a href="https://code.claude.com/docs/en/scheduled-tasks">code.claude.com/docs/en/scheduled-tasks</a> (本 session WebFetch verified)</li>
+  <li><strong>Claude Code Scheduled tasks docs</strong>: <a href="https://code.claude.com/docs/en/scheduled-tasks">code.claude.com/docs/en/scheduled-tasks</a></li>
   <li><strong>Issue #40228 (CronCreate durable bug)</strong>: <a href="https://github.com/anthropics/claude-code/issues/40228">github.com/anthropics/claude-code/issues/40228</a> (OPEN、stale)</li>
   <li><strong>research session bce9c4e4</strong>: KP-6 (PreToolUse + MCP shadow tier)、KP-2 (gh project item-edit 単発)、§6-4 (SessionStart hook 制約)</li>
-  <li><strong>Agent C 分析 (本 session)</strong>: 案 2 先行実装の feasibility analysis、~245 行で su-observer + chain-runner 依存より縮小</li>
+  <li><strong>Agent C 分析 (過去 session)</strong>: 案 2 先行実装の feasibility analysis、~245 行で su-observer + chain-runner 依存より縮小</li>
 </ul>
 
 </body>

@@ -31,7 +31,7 @@
 <h2>§1. 公式 hook schema (verified、draft-v1 から訂正)</h2>
 
 <div class="critical">
-<strong>draft-v1 の誤り</strong> (verified、本 session で発覚):
+<strong>draft-v1 の誤り</strong> (verified):
 <ul>
   <li><code>"matchers"</code> (複数形) は <strong>誤</strong> → 公式は <code>"matcher"</code> (単数)</li>
   <li><code>{{tool.skill_name}}</code> / <code>{{matcher.expected_status}}</code> の template 変数展開は <strong>非サポート</strong>。すべての context は stdin JSON で渡される</li>
@@ -254,12 +254,12 @@ if mcp is not None:
 
 <pre><code>def _get_project_status(issue_num: int) -&gt; str:
     """gh project item-list でキャッシュ、5 min TTL"""
-    cache = _load_cache()
-    if cache.get(issue_num, {}).get("ttl") &gt; time.time():
+    cache = _load_cache
+    if cache.get(issue_num, {}).get("ttl") &gt; time.time:
         return cache[issue_num]["status"]
 
     # gh project field-list で field_id を 1 回キャッシュ
-    proj_num = _resolve_project_number()
+    proj_num = _resolve_project_number
     result = subprocess.run(
         ["gh", "project", "item-list", str(proj_num),
          "--owner", "shuu5", "--format", "json"],
@@ -429,7 +429,7 @@ fi</code></pre>
 <h2>§13. verify source</h2>
 
 <ul>
-  <li><strong>Claude Code Hooks 公式 docs</strong>: <a href="https://code.claude.com/docs/en/hooks">https://code.claude.com/docs/en/hooks</a> (本 session で WebFetch verified)</li>
+  <li><strong>Claude Code Hooks 公式 docs</strong>: <a href="https://code.claude.com/docs/en/hooks">https://code.claude.com/docs/en/hooks</a></li>
   <li><strong>research session bce9c4e4</strong>: <code>/tmp/research-search-bce9c4e4/02-final-report.md</code> §4 (120 sources、Critique PASS、doobidoo hash <code>6fdf1d0b</code>)</li>
   <li>verified 内容:
     <ul>

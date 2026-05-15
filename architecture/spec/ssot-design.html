@@ -35,7 +35,7 @@
   </ol>
   旧 <code>chain.py</code> + <code>chain-steps.sh</code> + <code>chain-runner.sh</code> + <code>cli/twl/types.yaml</code> + 第 3 弾 dig <code>step.sh framework</code> を全廃。<br>
   <br>
-  <strong>source</strong>: 本 session 第 5 弾 dig (10 round × 平均 4 question)、公式 docs 4 件再 WebFetch verify、ADR-022 Context、code-explorer agent C 深掘り。
+  <strong>source</strong>: spec session dig (10 round × 平均 4 question)、公式 docs 4 件再 WebFetch verify、ADR-022 Context、code-explorer agent C 深掘り。
 </div>
 
 <h2>§1. 三重化問題の verified 物証 (歴史的記録、保全)</h2>
@@ -49,7 +49,7 @@
   <tbody>
     <tr>
       <td><code>cli/twl/src/twl/autopilot/chain.py</code></td>
-      <td>L30-49 <code>CHAIN_STEPS</code> (18 atomic リスト)。L27 コメント「SSoT for chain definitions」と宣言。同 file 内に <code>STEP_TO_WORKFLOW</code>、<code>CHAIN_STEP_DISPATCH</code>、<code>CHAIN_STEP_COMMAND</code>、<code>CHAIN_METADATA</code> の 5 dict 保有。<code>export_deps_chains()</code> と <code>export_chain_steps_sh()</code> で他 2 file 生成</td>
+      <td>L30-49 <code>CHAIN_STEPS</code> (18 atomic リスト)。L27 コメント「SSoT for chain definitions」と宣言。同 file 内に <code>STEP_TO_WORKFLOW</code>、<code>CHAIN_STEP_DISPATCH</code>、<code>CHAIN_STEP_COMMAND</code>、<code>CHAIN_METADATA</code> の 5 dict 保有。<code>export_deps_chains</code> と <code>export_chain_steps_sh</code> で他 2 file 生成</td>
     </tr>
     <tr>
       <td><code>plugins/twl/scripts/chain-steps.sh</code></td>
@@ -70,7 +70,7 @@
   <li>deps.yaml にのみ存在する atomic: <code>worktree-create</code>, <code>e2e-screening</code>, <code>merge-gate</code>, <code>auto-merge</code>, <code>fix-phase</code>, <code>warning-fix</code>, <code>pr-cycle-analysis</code>, <code>arch-phase-review</code>, <code>arch-fix-phase</code>, <code>post-fix-verify</code> (旧 llm dispatch 時代)</li>
 </ul>
 
-<p>追加の verified 物証 (本 session 確認):</p>
+<p>追加の verified 物証:</p>
 
 <ul>
   <li><code>chain-runner.sh</code> L1864-1910 の case 文に <strong>chain.py <code>CHAIN_STEPS</code> 外の atomic が大量に登録</strong>: <code>worktree-create</code>, <code>cwd-guard</code>, <code>board-status-update</code> (alias), <code>board-archive</code>, <code>next-step</code>, <code>dispatch-info</code>, <code>llm-delegate</code>, <code>llm-complete</code>, <code>chain-status</code>, <code>post-fix-verify</code>, <code>auto-merge</code>, <code>pr-comment-*</code>, <code>autopilot-detect</code>, <code>resolve-issue-num</code>, <code>resolve-project-root</code>, <code>record-pr</code></li>
@@ -87,12 +87,12 @@
   </thead>
   <tbody>
     <tr>
-      <td><code>cli/twl/src/twl/validation/audit.py</code> L198-282 <code>audit_chain_integrity()</code></td>
+      <td><code>cli/twl/src/twl/validation/audit.py</code> L198-282 <code>audit_chain_integrity</code></td>
       <td>deps.yaml workflow calls × chain-runner.sh dispatch 関数 (<code>step_&lt;func&gt;</code>) の整合性。<strong>chain.py CHAIN_STEPS とは比較していない</strong></td>
     </tr>
     <tr>
-      <td><code>cli/twl/src/twl/chain/integrity.py</code> <code>check_deps_integrity()</code></td>
-      <td>chain.py <code>CHAIN_STEPS</code> ≡ chain-steps.sh <code>CHAIN_STEPS</code> (完全一致) + chain.py <code>CHAIN_STEPS ∩ STEP_TO_WORKFLOW.keys()</code> ⊆ deps.yaml.chains flatten (包含のみ)</td>
+      <td><code>cli/twl/src/twl/chain/integrity.py</code> <code>check_deps_integrity</code></td>
+      <td>chain.py <code>CHAIN_STEPS</code> ≡ chain-steps.sh <code>CHAIN_STEPS</code> (完全一致) + chain.py <code>CHAIN_STEPS ∩ STEP_TO_WORKFLOW.keys</code> ⊆ deps.yaml.chains flatten (包含のみ)</td>
     </tr>
   </tbody>
 </table>
@@ -121,7 +121,7 @@
 <div class="cons">bash 側 (chain-runner.sh) から chain.py 直接呼び出し不可、引き続き chain-steps.sh 経由 export 必要、本質は「dispatch + metadata の 2 重 SSoT」のままで mitigation</div>
 
 <h3>案 3 (廃案、第 3 弾 dig 採用 → 第 5 弾 dig で廃案化): <code>step.sh</code> 単一 SSoT</h3>
-<div class="pros">1 step = 1 <code>steps/&lt;name&gt;.sh</code> file = SSoT、 <code>_verify_&lt;name&gt;()</code> 関数で post-verify rule 同 file 内に、最も「分散 SSoT」原則に忠実</div>
+<div class="pros">1 step = 1 <code>steps/&lt;name&gt;.sh</code> file = SSoT、 <code>_verify_&lt;name&gt;</code> 関数で post-verify rule 同 file 内に、最も「分散 SSoT」原則に忠実</div>
 <div class="cons"><strong>第 5 弾 dig 発覚問題</strong>: (1) step は forbidden 一般語、atomic が canonical、(2) <code>step.sh framework</code> の <code>step::run</code> bash 呼び出しは公式 skill 機構 (Skill tool + atomic SKILL.md) と二重 framework になる、(3) vocabulary / types.yaml と独立した別 SSoT を作るため SSoT 多重化解消にならない</div>
 
 <h2>§4. 案 4 registry.yaml 統合 SSoT (第 5 弾 dig 確定)</h2>
@@ -233,7 +233,7 @@ allowed-tools: [Bash, Read, Edit, Agent]
     <tr><td class="deprecated"><code>plugins/twl/scripts/chain-runner.sh</code></td><td>1714 行の bash orchestration、case 文に chain.py 外 atomic が散在</td><td>workflow SKILL.md (公式 Skill 機構) + atomic SKILL.md (4-phase inline)</td></tr>
     <tr><td class="deprecated"><code>plugins/twl/deps.yaml</code></td><td>chain section + types section の二重 SSoT</td><td><code>registry.yaml#components</code> + <code>#chains</code></td></tr>
     <tr><td class="deprecated"><code>cli/twl/types.yaml</code></td><td>component 型 SSoT、新型との drift</td><td><code>registry.yaml#components</code> + <code>#integrity_rules</code></td></tr>
-    <tr><td class="deprecated"><code>cli/twl/src/twl/chain/integrity.py</code> <code>check_deps_integrity()</code></td><td>chain.py / chain-steps.sh / deps.yaml の整合検証、本廃止により不要</td><td><code>twl audit --registry</code> (新規) で registry.yaml integrity_rules 適用</td></tr>
+    <tr><td class="deprecated"><code>cli/twl/src/twl/chain/integrity.py</code> <code>check_deps_integrity</code></td><td>chain.py / chain-steps.sh / deps.yaml の整合検証、本廃止により不要</td><td><code>twl audit --registry</code> (新規) で registry.yaml integrity_rules 適用</td></tr>
     <tr><td class="deprecated">第 3 弾 dig <code>step.sh framework</code> (案 3、未実装)</td><td>step は forbidden、公式 skill 機構と二重</td><td>atomic SKILL.md 本文 inline 4-phase lifecycle</td></tr>
   </tbody>
 </table>
@@ -284,7 +284,7 @@ allowed-tools: [Bash, Read, Edit, Agent]
   <li><a href="../research/failure-analysis.html">failure-analysis.html</a> (9 P0 bug + 横断要因 F-1〜F-4 (F-4 用語 SSoT 不在は第 5 弾 dig 追加))</li>
   <li><a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> (Inv U "Atomic skill verification" 旧 "Step verification framework" から rename)</li>
   <li><a href="../migration/adr-fate-table.html">adr-fate-table.html</a> (ADR-022 = chain SSoT 三重化定義、本 ADR-043 で Superseded)</li>
-  <li><a href="../research/research-findings.html">research-findings.html</a> (公式 verified 根拠、120 sources + 本 session 16 件 WebFetch 追加)</li>
+  <li><a href="../research/research-findings.html">research-findings.html</a> (公式 verified 根拠、120 sources + 過去 session 16 件 WebFetch 追加)</li>
   <li><a href="../research/dig-report-ssot-2026-05-13.html">dig-report-ssot-2026-05-13.md</a> (第 5 弾 dig 独立 artifact、10 round + 33+ question + 921 行)</li>
 </ul>
 

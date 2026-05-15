@@ -18,7 +18,7 @@
 <div class="info">
   <strong>目的</strong>: <a href="../spec/admin-cycle.html">administrator</a> (新、案 2 先行実装) と <code>su-observer</code> (旧) が併存する <code>Phase 2</code> 期間中、各 Issue がどちらの flow で処理されるかの判定基準と routing 機構を仕様化する。移行完了 (<code>Phase 3 cutover</code>) 判定基準も明示。<br>
   <br>
-  <strong>verified context</strong>: Agent C 分析 (本 session) — 「administrator 単独稼働 + pilot/worker 未実装」段階での safe degradation 設計が前提。
+  <strong>verified context</strong>: Agent C 分析 (過去 session) — 「administrator 単独稼働 + pilot/worker 未実装」段階での safe degradation 設計が前提。
 </div>
 
 <h2>§1. routing 判定の SSoT</h2>
@@ -128,15 +128,15 @@ STEPS:
 
 <h2>§8. 案 2 先行実装での dual-stack 早期開始</h2>
 
-<p><a href="../spec/admin-cycle.html">admin-cycle.html</a> 案 2 を本 session 後の次 session で実装する場合、dual-stack は以下の段階で進む:</p>
+<p><a href="../spec/admin-cycle.html">admin-cycle.html</a> 案 2 を過去 session 後の将来 task で実装する場合、dual-stack は以下の段階で進む:</p>
 
 <table>
   <thead>
     <tr><th>段階</th><th>状態</th><th>動作</th></tr>
   </thead>
   <tbody>
-    <tr><td>0: spec 完璧化</td><td>本 session</td><td>spec 完了、実装なし</td></tr>
-    <tr><td>1: 案 2 最小実装</td><td>次 session</td><td>administrator + 3 helper (mailbox.sh / spawn-tmux.sh / admin-cycle.sh) 実装、pilot/worker 未実装</td></tr>
+    <tr><td>0: spec 完璧化</td><td>過去 session</td><td>spec 完了、実装なし</td></tr>
+    <tr><td>1: 案 2 最小実装</td><td>将来 task</td><td>administrator + 3 helper (mailbox.sh / spawn-tmux.sh / admin-cycle.sh) 実装、pilot/worker 未実装</td></tr>
     <tr><td>2: 並列稼働開始</td><td>次々 session</td><td><code>stack:new</code> label 自動付与 Action 追加、su-observer と並列稼働</td></tr>
     <tr><td>3: phaser-* 順次実装</td><td>段階的</td><td>phaser-impl / phaser-pr 等を順次実装、対応する <code>stack:new</code> Issue を新 stack で処理</td></tr>
     <tr><td>4: 安定稼働</td><td>10+ Issue 完遂</td><td>cutover 判定 + user 承認</td></tr>

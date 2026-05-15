@@ -102,7 +102,7 @@
 
 <div class="info"><strong>§3.2 Step 2 post-verify verdict policy (Phase I dig Q4 確定 2026-05-15)</strong>: Step 2 の post-verify が判定する verdict は <strong>"PASS" 以外は全て exit 1 として phaser に fail 通知</strong> (厳格)。
 <ul>
-  <li>specialist が <code>Agent()</code> return value で "PASS" 以外 (FAIL / WARNING / unknown / 空文字 等) を返した場合は全て fail 扱い</li>
+  <li>specialist が <code>Agent</code> return value で "PASS" 以外 (FAIL / WARNING / unknown / 空文字 等) を返した場合は全て fail 扱い</li>
   <li>bash 機械検証で grep / exit code が non-zero なら exit 1</li>
   <li>"WARNING" を中間状態として通すと verify_checks の意味が曖昧化、phaser 側で 3 値判定の複雑さ増加 → 厳格 binary (PASS / FAIL) を採用</li>
   <li>specialist の minor finding は <code>findings_count: N</code> として report に含めるが、verdict は PASS 維持 (specialist が独立判断、phaser は findings_count のみ判断材料に)</li>
@@ -197,7 +197,7 @@ allowed-tools: [Bash, Read, Edit, Agent]
 <ul>
   <li><a href="registry-schema.html">registry-schema.html</a> (10 role × concern matrix + atomic role 定義)</li>
   <li><a href="glossary.html">glossary.html</a> §7 (atomic skill verification 機構の用語)</li>
-  <li><a href="ssot-design.html">ssot-design.html</a> §5 (atomic skill composition pattern + workflow → atomic Skill() chain)</li>
+  <li><a href="ssot-design.html">ssot-design.html</a> §5 (atomic skill composition pattern + workflow → atomic Skill chain)</li>
   <li><a href="overview.html">overview.html</a> §6 (構造的欠陥 4 種、本 file は欠陥 1 「自己申告 step」の不能化機構)</li>
   <li><a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> (Inv U "Atomic skill verification" 旧 "Step verification framework")</li>
   <li><a href="../research/experiment-index.html">experiment-index.html</a> (EXP-011/012 atomic lifecycle repurpose、EXP-033 atomic composition、EXP-035 disable-model-invocation 効果)</li>

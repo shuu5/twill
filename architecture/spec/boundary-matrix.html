@@ -41,15 +41,15 @@
       <td><strong>spawn 元</strong></td>
       <td>user 直接起動</td>
       <td><code>administrator</code> (admin-cycle.sh)</td>
-      <td><code>phaser</code> から <code>Skill()</code> (workflow/atomic) または <code>Agent()</code> (specialist)</td>
+      <td><code>phaser</code> から <code>Skill</code> (workflow/atomic) または <code>Agent</code> (specialist)</td>
       <td>user 明示 (tool-architect / tool-sandbox-runner は admin も可)</td>
       <td><code>phaser</code> SKILL.md として動作</td>
     </tr>
     <tr>
       <td><strong>spawn 先</strong></td>
       <td><code>phaser</code> + tool-architect / tool-sandbox-runner (限定、ADR-040 gate)</td>
-      <td>workflow / atomic (<code>Skill()</code>) + specialist (<code>Agent()</code>)</td>
-      <td>specialist は spawn 禁止 (公式制約 <span class="vs verified">verified</span>)、workflow/atomic は <code>Skill()</code> chain 続行 + <code>Agent(specialist-*)</code> 可</td>
+      <td>workflow / atomic (<code>Skill</code>) + specialist (<code>Agent</code>)</td>
+      <td>specialist は spawn 禁止 (公式制約 <span class="vs verified">verified</span>)、workflow/atomic は <code>Skill</code> chain 続行 + <code>Agent(specialist-*)</code> 可</td>
       <td>(spawn 禁止)</td>
       <td>—</td>
     </tr>
@@ -80,7 +80,7 @@
     <tr>
       <td><strong>verification framework</strong></td>
       <td>(利用しない)</td>
-      <td>workflow を <code>Skill()</code> で呼ぶ、各 atomic の 4-phase post-verify を確認</td>
+      <td>workflow を <code>Skill</code> で呼ぶ、各 atomic の 4-phase post-verify を確認</td>
       <td>atomic SKILL.md 本文に 4-phase lifecycle (pre-check/exec/post-verify/report) を inline 実装 (Inv U "Atomic skill verification")</td>
       <td>(利用しない、status と無関係)</td>
       <td>—</td>
@@ -89,7 +89,7 @@
       <td><strong>gate hook</strong></td>
       <td>(対象外)</td>
       <td>PreToolUse gate 適用 (Inv W) — <code>phaser</code> invocation 時に前提 status verify</td>
-      <td>(対象外、<code>Skill()</code>/<code>Agent()</code> 公式機構の内側)</td>
+      <td>(対象外、<code>Skill</code>/<code>Agent</code> 公式機構の内側)</td>
       <td>(対象外、status と無関係)</td>
       <td>—</td>
     </tr>
@@ -130,12 +130,12 @@
 
 <dl class="inv-row" style="display: grid; grid-template-columns: 160px 1fr; gap: 6px 14px; margin: 12px 0;">
   <dt>spawn 元</dt><dd><code>administrator</code> (<code>admin-cycle.sh</code> step 4)。spawn-tmux.sh wrapper 経由</dd>
-  <dt>spawn 先</dt><dd><code>workflow-*</code> (<code>Skill()</code>) + 必要時 <code>specialist-*</code> (<code>Agent()</code>)。atomic は workflow から呼ばれる</dd>
+  <dt>spawn 先</dt><dd><code>workflow-*</code> (<code>Skill</code>) + 必要時 <code>specialist-*</code> (<code>Agent</code>)。atomic は workflow から呼ばれる</dd>
   <dt>status 遷移</dt><dd><strong>遷移実行専任</strong>。<code>gh project item-edit --single-select-option-id</code> を 1 回のみ実行。担当 status-transition の 1 遷移のみ責任 (<code>phaser-impl</code> なら Refined → Implementing)</dd>
   <dt>scope</dt><dd><strong>1 phaser = 1 Issue・1 status-transition 専任</strong> (Phase I dig Q3 確定 2026-05-15)。複数 Issue の sequential 処理や複数 status-transition の連続処理は MUST NOT。mailbox lifecycle = phaser invocation lifecycle (担当完了で <code>.mailbox/&lt;phaser-name&gt;/</code> を <code>.mailbox/archive/</code> に archive)</dd>
   <dt>mailbox</dt><dd>受信: atomic/specialist から <code>.mailbox/&lt;phaser-name&gt;/inbox.jsonl</code>。送信: <strong>administrator mailbox に要約 mail のみ</strong> (pyramid 集約)。送受信両方を行う唯一の layer。<code>&lt;phaser-name&gt;</code> 解決は <code>TWL_PHASER_NAME</code> env 経由 (<a href="spawn-protocol.html#s3">spawn-protocol.html §3</a> + <a href="atomic-verification.html#s3">atomic-verification.html §3.1</a>)</dd>
   <dt>worktree</dt><dd><strong>lifecycle 専任</strong> (Inv B)。<code>git worktree add</code> (phaser 開始時) + <code>git worktree remove</code> (phaser 完了時)。atomic/specialist は worktree を自ら作成・削除しない</dd>
-  <dt>verification framework</dt><dd>workflow を <code>Skill()</code> で呼び、各 atomic の 4-phase post-verify 結果を mailbox から確認。phaser 自身は atomic SKILL.md 本文を実行しない</dd>
+  <dt>verification framework</dt><dd>workflow を <code>Skill</code> で呼び、各 atomic の 4-phase post-verify 結果を mailbox から確認。phaser 自身は atomic SKILL.md 本文を実行しない</dd>
   <dt>gate hook</dt><dd><strong>PreToolUse gate 対象</strong> (Inv W)。gate hook handler (旧 phase-gate.sh) (tier 1) + twl_phase_gate_check (tier 2) が <code>phaser</code> invocation 時に発火、前提 status 不一致なら deny + administrator notify</dd>
   <dt>audit 出力</dt><dd><code>.audit/&lt;run-id&gt;/phaser/&lt;name&gt;/</code> 配下に phaser lifecycle 全 event 記録</dd>
   <dt>送信 mail event</dt><dd><code>phase-started</code> / <code>phase-progress</code> / <code>phase-completed</code> / <code>phase-failed</code> / <code>merge-gate-failed</code></dd>
@@ -148,18 +148,18 @@
 <h3>workflow + atomic + specialist (L2-3) の責務</h3>
 
 <dl class="inv-row" style="display: grid; grid-template-columns: 160px 1fr; gap: 6px 14px; margin: 12px 0;">
-  <dt>spawn 元</dt><dd>workflow / atomic: <code>phaser</code> または上位 workflow から <code>Skill()</code> 公式機構。specialist: <code>phaser</code> または atomic から <code>Agent()</code> 公式機構</dd>
-  <dt>spawn 先</dt><dd><strong>specialist は spawn 禁止</strong> (subagent spawn 不可 <span class="vs verified">verified</span>)。workflow/atomic は <code>Skill()</code> chain 続行可、atomic 内で <code>Agent(specialist-*)</code> 可</dd>
+  <dt>spawn 元</dt><dd>workflow / atomic: <code>phaser</code> または上位 workflow から <code>Skill</code> 公式機構。specialist: <code>phaser</code> または atomic から <code>Agent</code> 公式機構</dd>
+  <dt>spawn 先</dt><dd><strong>specialist は spawn 禁止</strong> (subagent spawn 不可 <span class="vs verified">verified</span>)。workflow/atomic は <code>Skill</code> chain 続行可、atomic 内で <code>Agent(specialist-*)</code> 可</dd>
   <dt>status 遷移</dt><dd><strong>更新禁止</strong>。<code>phaser</code> 経由のみ。<code>gh project item-edit</code> 実行は MUST NOT。atomic/specialist は <code>phaser</code> に mail で報告し、<code>phaser</code> が status を遷移</dd>
   <dt>mailbox</dt><dd>atomic は <code>phaser</code> mailbox (<code>.mailbox/&lt;phaser-name&gt;/inbox.jsonl</code>) にのみ書き込み (4-phase report で <code>step-*</code> event を emit)。specialist は subagent context で結果 return、mailbox 書き込みなし</dd>
   <dt>worktree</dt><dd>atomic は自身の worktree 内での実作業のみ (cwd-guard Inv B)、<code>phaser</code> が作成した worktree 内で <code>git checkout</code>/<code>edit</code>/<code>test</code> 実行。他 Issue の worktree に触れることは MUST NOT (Inv V)。specialist は worktree 不要 (Read only)</dd>
-  <dt>verification framework</dt><dd><strong>atomic SKILL.md 本文に 4-phase lifecycle (pre-check → exec → post-verify → report) を inline 実装 MUST</strong> (Inv U "Atomic skill verification")。self-report-only 禁止。workflow は atomic を順次 <code>Skill()</code> で呼ぶ launcher (verify 詳細 inline なし)。specialist は独立判断、自己 verify は subagent prompt 内で完結</dd>
-  <dt>gate hook</dt><dd>対象外。Skill()/Agent() 公式機構の内側で PreToolUse gate 発火しない。gate は spawn する <code>phaser</code> の invocation 時に発火済み</dd>
+  <dt>verification framework</dt><dd><strong>atomic SKILL.md 本文に 4-phase lifecycle (pre-check → exec → post-verify → report) を inline 実装 MUST</strong> (Inv U "Atomic skill verification")。self-report-only 禁止。workflow は atomic を順次 <code>Skill</code> で呼ぶ launcher (verify 詳細 inline なし)。specialist は独立判断、自己 verify は subagent prompt 内で完結</dd>
+  <dt>gate hook</dt><dd>対象外。Skill/Agent 公式機構の内側で PreToolUse gate 発火しない。gate は spawn する <code>phaser</code> の invocation 時に発火済み</dd>
   <dt>audit 出力</dt><dd>atomic: <code>.audit/&lt;run-id&gt;/atomic/&lt;name&gt;/</code> 配下に 4-phase 全 event 記録。specialist: <code>.audit/&lt;run-id&gt;/specialist/&lt;name&gt;/</code> 配下に Agent return 記録</dd>
   <dt>送信 mail event</dt><dd>atomic: <code>step-started</code> / <code>step-completed</code> / <code>step-precheck-failed</code> / <code>step-postverify-failed</code>。specialist: mail 送信なし (Agent return value で完結)</dd>
   <dt>内部 spawn</dt><dd>atomic 内 <code>Agent(specialist-*)</code> 可、specialist は spawn 禁止 (公式 verified)</dd>
   <dt>checkpoint</dt><dd><code>.mailbox/&lt;phaser-name&gt;/</code> または per-phaser パスが必須 (Inv V)。共通 path への write は <code>--shared</code> フラグ明示 + audit log 必須</dd>
-  <dt>Monitor primitive</dt><dd><strong>使用不可</strong> (<a href="monitor-policy.html">monitor-policy.html</a> §2)。run-to-completion 型のため Monitor 不要、<code>Skill()</code> / <code>Agent()</code> の return value または mail emit (atomic のみ) で十分</dd>
+  <dt>Monitor primitive</dt><dd><strong>使用不可</strong> (<a href="monitor-policy.html">monitor-policy.html</a> §2)。run-to-completion 型のため Monitor 不要、<code>Skill</code> / <code>Agent</code> の return value または mail emit (atomic のみ) で十分</dd>
 </dl>
 
 <h3>tool-* (3 件、独立) の責務 (第 4 弾 dig)</h3>
@@ -188,11 +188,11 @@
     <tr><td>administrator</td><td>phaser</td><td>許可</td><td>spawn-tmux.sh</td></tr>
     <tr><td>administrator</td><td>tool-* (一部)</td><td>限定許可</td><td>tool-architect / tool-sandbox-runner のみ、ADR-040 gate</td></tr>
     <tr><td>administrator</td><td>atomic/specialist</td><td><strong>禁止</strong></td><td>(Inv I-4 pyramid)</td></tr>
-    <tr><td>phaser</td><td>workflow/atomic</td><td>許可</td><td><code>Skill()</code> 公式機構</td></tr>
-    <tr><td>phaser</td><td>specialist</td><td>許可</td><td><code>Agent()</code> 公式機構</td></tr>
+    <tr><td>phaser</td><td>workflow/atomic</td><td>許可</td><td><code>Skill</code> 公式機構</td></tr>
+    <tr><td>phaser</td><td>specialist</td><td>許可</td><td><code>Agent</code> 公式機構</td></tr>
     <tr><td>phaser</td><td>administrator</td><td>許可 (mail)</td><td><code>.mailbox/administrator/inbox.jsonl</code> へ要約 mail</td></tr>
     <tr><td>phaser</td><td>tool-*</td><td><strong>禁止</strong></td><td>(tool-* は user/administrator invoke のみ)</td></tr>
-    <tr><td>atomic</td><td>specialist</td><td>許可</td><td><code>Agent()</code> 公式機構、必要時のみ</td></tr>
+    <tr><td>atomic</td><td>specialist</td><td>許可</td><td><code>Agent</code> 公式機構、必要時のみ</td></tr>
     <tr><td>atomic</td><td>phaser</td><td>許可 (mail)</td><td><code>.mailbox/&lt;phaser&gt;/inbox.jsonl</code> へ step event</td></tr>
     <tr><td>atomic</td><td>administrator / 他 atomic</td><td><strong>禁止</strong></td><td>(Inv I-4)</td></tr>
     <tr><td>specialist</td><td>(spawn 一切)</td><td><strong>禁止</strong></td><td>(subagent spawn 不可 <span class="vs verified">verified</span>)</td></tr>
