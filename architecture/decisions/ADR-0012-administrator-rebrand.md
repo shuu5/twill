@@ -25,13 +25,14 @@
 2. **`su-compact` (command) → `admin-compact` (command)** — 本 ADR で新規確定
 3. **関連 script (`su-{pre,post,session}-compact.sh`) → `admin-{pre,post,session}-compact.sh`** — 機械 rename (migration phase 実施)
 4. **administrator の責務に「knowledge externalization (compaction trigger)」を追加** — `admin-cycle.html` 末尾 + `monitor-policy.html` administrator scope 記述で正典化
+5. **`registry.yaml` `components` section に `admin-compact` entry 新設** — SSoT (Authority) との連動を機械化 (Phase 5 で `plugins/twl/registry.yaml:356-365` に物理 add 済、role: `reference` (registry-schema.html §3 の 10 role 規約準拠))
 
 ## Rationale
 
 - naming 統一: `su-*` prefix 撤廃、`admin-*` で administrator 配下 command を明示
 - spec の整合性: `administrator` role が compaction trigger も担当することを明確化
 - migration の precondition 確定: 実 rename 時の name mapping が ADR-0012 で固定
-- SSoT (registry.yaml) との連動: `admin-compact` entry を `components` section に新設 (本 ADR Decision 4)
+- SSoT (Authority `plugins/twl/registry.yaml`) との連動: `admin-compact` entry を `components` section に新設 (本 ADR Decision 5)
 
 ## Consequences
 
@@ -57,7 +58,7 @@
 ## Related
 
 - `architecture/spec/glossary.html` §11 (deprecated table、本 ADR で `su-compact → admin-compact` 行追加)
-- `architecture/spec/registry.yaml` components (本 ADR で `admin-compact` entry 新設)
+- `plugins/twl/registry.yaml` components (本 ADR で `admin-compact` entry 新設、Phase 5 で物理 add 済)
 - `architecture/spec/admin-cycle.html` (§11 補足 administrator 責務 — knowledge externalization 追記)
 - `architecture/spec/monitor-policy.html` (administrator scope に compaction trigger 注記)
 - 旧 ADR (`architecture/archive/decisions/ADR-0006〜0011a/0011b`) — 本 ADR は新 architecture ADR の最初 (ADR-0012)

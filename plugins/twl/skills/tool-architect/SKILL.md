@@ -19,12 +19,6 @@ spawnable_by:
 
 architecture/spec/ HTML 編集の唯一 author。twill plugin の新仕様 (architecture spec) を管理する。
 
-## 重要 note (transient、本 doc 作成時点で dir 構造移行中)
-
-本 SKILL.md および [`refs/spec-management-rules.md`](refs/spec-management-rules.md) は、**新 dir 構造 (`architecture/spec/` を spec SSoT として flat 化)** を前提として記述している。本 doc 作成時点では旧 sub-dir 構造 (`architecture/spec/twill-plugin-rebuild/`) が active であり、後続作業で flat 化される。
-
-flat 化完了まで、本 doc の `architecture/spec/<file>.html` という path 記述は実体的に `architecture/spec/twill-plugin-rebuild/<file>.html` を指す。spec-write-boundary hook は `*architecture/spec/*` で sub-dir 全 nest を包含するため、移行期間中も R-7 (caller marker) は正しく enforce される。本 note は flat 化完了時点で削除される。
-
 ## architecture/ ディレクトリ構造 (SSoT)
 
 ```

@@ -62,7 +62,7 @@
 
 <ul>
   <li><strong>new</strong> (7): plugins/twl/skills/{phaser-impl, atomic-test-scaffold, atomic-green-impl, atomic-check, tool-architect, tool-project, tool-sandbox-runner}/SKILL.md</li>
-  <li><strong>modified</strong> (2): plugins/twl/skills/workflow-test-ready/SKILL.md (137 行 → 94 行、新 architecture rewrite) / architecture/spec/twill-plugin-rebuild/changelog.html (本 entry)</li>
+  <li><strong>modified</strong> (2): plugins/twl/skills/workflow-test-ready/SKILL.md (137 行 → 94 行、新 architecture rewrite) / architecture/spec/changelog.html (本 entry)</li>
 </ul>
 
 <h3>Phase 1 PoC C4 完遂判定 + Cluster 5 (PoC #1660 + ADR-043) 着手 ready</h3>
@@ -111,7 +111,7 @@
 <h3>編集 file (本 followup、計 2 file)</h3>
 
 <ul>
-  <li><strong>modified</strong> (2): <code>test-fixtures/experiments/common.bash</code> (python3 function override 追加、~13 行) / <code>architecture/spec/twill-plugin-rebuild/changelog.html</code> (本 entry、誤認識 admit + 訂正)</li>
+  <li><strong>modified</strong> (2): <code>test-fixtures/experiments/common.bash</code> (python3 function override 追加、~13 行) / <code>architecture/spec/changelog.html</code> (本 entry、誤認識 admit + 訂正)</li>
 </ul>
 
 <h3>累積 commit 13 件目 (前 c5f563b5)、Cluster 4 (atomic SKILL) 着手 ready (真の hard gate 達成)</h3>
@@ -173,7 +173,7 @@
 <h3>編集 / 新規 file (Phase 1 PoC C3、計 4 file)</h3>
 
 <ul>
-  <li><strong>modified</strong> (4): <code>plugins/twl/.claude-plugin/plugin.json</code> (5 行 → 21 行 metadata 完備) / <code>.mcp.json</code> (github-readonly 一度追加→削除) / <code>plugins/twl/registry.yaml</code> (§4 hooks-monitors 3 hook + 1 monitor 追記、1 monitor drift fix) / <code>architecture/spec/twill-plugin-rebuild/changelog.html</code> (本 entry)</li>
+  <li><strong>modified</strong> (4): <code>plugins/twl/.claude-plugin/plugin.json</code> (5 行 → 21 行 metadata 完備) / <code>.mcp.json</code> (github-readonly 一度追加→削除) / <code>plugins/twl/registry.yaml</code> (§4 hooks-monitors 3 hook + 1 monitor 追記、1 monitor drift fix) / <code>architecture/spec/changelog.html</code> (本 entry)</li>
   <li><strong>new</strong>: なし (registry-audit.sh は既存 lib/twl-audit-registry.sh で sufficient)</li>
 </ul>
 
@@ -239,7 +239,7 @@
 
 <ul>
   <li><strong>new</strong> (4): <code>plugins/twl/scripts/lib/mailbox.sh</code> / <code>plugins/twl/scripts/lib/spawn-tmux.sh</code> / <code>plugins/twl/scripts/admin-cycle.sh</code> / <code>plugins/twl/monitors/monitors.json</code></li>
-  <li><strong>modified</strong> (1): <code>architecture/spec/twill-plugin-rebuild/changelog.html</code> (本 entry)</li>
+  <li><strong>modified</strong> (1): <code>architecture/spec/changelog.html</code> (本 entry)</li>
 </ul>
 
 <h3>Phase 1 PoC C2 完遂判定 + Cluster 3 (registry + plugin scaffold) 着手 ready</h3>
@@ -301,7 +301,7 @@
 <h3>編集 / 新規 file (Phase 1 PoC C1、計 6 file)</h3>
 
 <ul>
-  <li><strong>modified</strong> (5): <code>plugins/twl/hooks/hooks.json</code> (5 hook → 8 hook 拡張) / <code>plugins/twl/scripts/hooks/pre-tool-use-phase-gate.sh</code> (再生成、Phase 6 fix 統合) / <code>architecture/spec/twill-plugin-rebuild/hooks-mcp-policy.html</code> (§5.2 Stage 戦略追加) / <code>architecture/spec/twill-plugin-rebuild/experiment-index.html</code> (EXP-043 追加) / <code>architecture/spec/twill-plugin-rebuild/changelog.html</code> (本 entry)</li>
+  <li><strong>modified</strong> (5): <code>plugins/twl/hooks/hooks.json</code> (5 hook → 8 hook 拡張) / <code>plugins/twl/scripts/hooks/pre-tool-use-phase-gate.sh</code> (再生成、Phase 6 fix 統合) / <code>architecture/spec/hooks-mcp-policy.html</code> (§5.2 Stage 戦略追加) / <code>architecture/spec/experiment-index.html</code> (EXP-043 追加) / <code>architecture/spec/changelog.html</code> (本 entry)</li>
   <li><strong>new</strong> (1): <code>plugins/twl/scripts/hooks/post-tool-use-failure-learn.sh</code> (~45 行)</li>
 </ul>
 
@@ -369,7 +369,7 @@
 
 <ul>
   <li><strong>modified</strong> (8): README.html / monitor-policy.html / hooks-mcp-policy.html / spawn-protocol.html / crash-failure-mode.html / atomic-verification.html / tool-architecture.html / scripts/spec-anchor-link-check.py</li>
-  <li><strong>new</strong> (2): architecture/spec/twill-plugin-rebuild/architecture-graph.html (~440 行) / .github/workflows/spec-link-check.yml (~40 行)</li>
+  <li><strong>new</strong> (2): architecture/spec/architecture-graph.html (~440 行) / .github/workflows/spec-link-check.yml (~40 行)</li>
 </ul>
 
 <h3>Phase J scope 完遂 + Phase 1 PoC C1 着手 ready</h3>
@@ -456,8 +456,8 @@
 <ul>
   <li><code>plugins/twl/refs/ref-specialist-output-schema.md</code>: <code>experiment-integrity</code> category enum 追加</li>
   <li><code>experiments/run-all.sh</code>: Pre-run audit phase に audit-status-log.py 追加 (WARN-only mode、CRITICAL でも abort しない、multi-stage upgrade pattern 想定)</li>
-  <li><code>architecture/spec/twill-plugin-rebuild/registry-schema.html</code>: §10.2.1 multi-stage upgrade pattern SSoT 化 (4 sub-pattern: 1 commit multi-stage / audit 必須 / API_LIMITATION 例外 / 跳躍禁止 case)</li>
-  <li><code>architecture/spec/twill-plugin-rebuild/experiment-index.html</code>: EXP-014/017/038 の verify_source URL 追加 (cross-AI re-audit findings 対応)</li>
+  <li><code>architecture/spec/registry-schema.html</code>: §10.2.1 multi-stage upgrade pattern SSoT 化 (4 sub-pattern: 1 commit multi-stage / audit 必須 / API_LIMITATION 例外 / 跳躍禁止 case)</li>
+  <li><code>architecture/spec/experiment-index.html</code>: EXP-014/017/038 の verify_source URL 追加 (cross-AI re-audit findings 対応)</li>
   <li><code>experiments/EXP-022-view-switch.smoke.sh</code> / <code>experiments/EXP-023-filter-groupby.smoke.sh</code>: introspection result を SMOKE_LOG_FILE に記録、verify_checks actual_output に server-side evidence embed (re-audit traceability 確保)</li>
 </ul>
 
@@ -505,7 +505,7 @@
 
 <ul>
   <li><code>experiments/run-all.sh</code>: smoke branch 実装 (SKIP-only → smoke.sh spawn + stdout JSON capture)、smoke fixtures setup/teardown trap (EXIT/INT/TERM)、smoke crash (exit!=0 + JSON 空) を FAIL 集計</li>
-  <li><code>architecture/spec/twill-plugin-rebuild/experiment-index.html</code>: 6 EXP block の status badge を inferred / verified → experiment-verified に upgrade、smoke_path code 追加 (gen-manifest.py 自動抽出条件)</li>
+  <li><code>architecture/spec/experiment-index.html</code>: 6 EXP block の status badge を inferred / verified → experiment-verified に upgrade、smoke_path code 追加 (gen-manifest.py 自動抽出条件)</li>
 </ul>
 
 <h3>API_LIMITATION findings (Phase G で要対応)</h3>
@@ -533,7 +533,7 @@
 
 <ul>
   <li><code>registry-schema.html</code> (新規) — registry.yaml 9 section schema + 10 role × concern matrix + vocabulary 6 field schema + Authority/Reference/Derived 階層図 + vocabulary audit 統合設計 + 公式名衝突回避ルール + 命名 policy + 変更管理。他 spec file の参照基盤</li>
-  <li><code>dig-report-ssot-2026-05-13.md</code> (新規) — 第 5 弾 dig 独立 artifact、13 section / ~921 行 (10 round + 33+ question 全件 transparency)</li>
+  <li><code>dig-report-ssot-2026-05-13.html</code> (新規) — 第 5 弾 dig 独立 artifact、13 section / ~921 行 (10 round + 33+ question 全件 transparency)</li>
 </ul>
 
 <h3>rename (本 session 第 5 弾、1 file)</h3>
@@ -659,7 +659,7 @@
 <h3>新規追加 (本 session 第 4 弾、1 file)</h3>
 
 <ul>
-  <li><code>dig-report-tools-2026-05-13.md</code> (新規) — 独立 dig artifact、12 section / ~510 行 (verify status legend + 各 section の verify status + 57 claim 分類含む)。spec 本体への反映は別途実施 (本 changelog 参照)</li>
+  <li><code>dig-report-tools-2026-05-13.html</code> (新規) — 独立 dig artifact、12 section / ~510 行 (verify status legend + 各 section の verify status + 57 claim 分類含む)。spec 本体への反映は別途実施 (本 changelog 参照)</li>
 </ul>
 
 <h3>全面書き直し (本 session 第 4 弾、1 file)</h3>

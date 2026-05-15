@@ -352,15 +352,17 @@ components:
       - atomic-execution
     description_required: true
 
-  # === L0 administrator 配下 command ===
+  # === L0 administrator 配下 command (entity kind=command、role=reference) ===
   - name: admin-compact
-    role: command
+    role: reference
+    kind: command
     file: commands/admin-compact.md
     concern: knowledge externalization (compaction trigger)
     description: |
       administrator 配下の compaction 知識外部化 command。
       Long-term Memory 保存 + Working Memory 退避 + /compact 提案。
       旧 `su-compact` を rebrand (ADR-0012 確定、実 rename は migration phase)。
+      role=reference (10 role schema 準拠)、kind=command (entity 種別、user-invocable command)。
     status: spec-confirmed-rename-pending
     description_required: true
 

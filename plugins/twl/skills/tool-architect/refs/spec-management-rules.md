@@ -4,12 +4,6 @@ tool-architect が `architecture/spec/` を管理する規律 ref doc。R-1〜R-
 
 [tool-architect SKILL.md](../SKILL.md) からの参照 doc。
 
-## 重要 note (transient)
-
-本 doc は新 dir 構造 (`architecture/spec/` を spec SSoT として flat 化) を前提として記述している。本 doc 作成時点では旧 sub-dir 構造 (`architecture/spec/twill-plugin-rebuild/`) が active であり、後続作業で flat 化される。
-
-flat 化完了まで、本 doc の `architecture/spec/<file>.html` という path 記述は実体的に `architecture/spec/twill-plugin-rebuild/<file>.html` を指す。本 note は flat 化完了時点で削除される。
-
 ## R-1: index 追加 MUST
 
 新 file 追加時に `architecture/spec/README.html` の index table に entry を追加すること。
@@ -79,7 +73,7 @@ flat 化完了まで、本 doc の `architecture/spec/<file>.html` という pat
 orphan 検出時は exit 1。
 
 ### 機械検証の limitation
-- 検証 scope: spec_dir 内 (現 `architecture/spec/twill-plugin-rebuild/`) の file 間 link のみ
+- 検証 scope: spec_dir 内 (`architecture/spec/`) の file 間 link のみ
 - 外部 dir (`research/`, `archive/` 等) からの inbound link は spec_dir 内 file としては自動カウントされない
 - `external_relative` (`../research/foo.html`) は spec_dir 外を指すため inbound カウント対象外
 - `./foo.html` (same-dir relative) は cross_file_html として inbound カウント対象 (Phase 1B fix)
