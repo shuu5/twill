@@ -15,6 +15,69 @@
   <div class="meta">本 spec の変更履歴</div>
 </header>
 
+<h2>2026-05-15 Phase 1 PoC Cluster 1 — hook foundation (keep 5 + new 3 hook) + Stage 戦略確定 + EXP-043 + Phase 6 review 10 件 fix</h2>
+
+<h3>核心成果</h3>
+
+<ol>
+  <li><strong>hook foundation 設置</strong>: minimal 5 hook 維持 (worktree-boundary / host-safety / deps-yaml-guard / pre-compact / post-compact) + 新規 3 hook 追加 = 計 8 hook。Phase 1 PoC 着手 ready 状態</li>
+  <li><strong>新規 3 hook</strong>:
+    <ul>
+      <li><code>pre-tool-use-spec-write-boundary.sh</code> (既存 script、本 commit で hooks.json 登録): TWL_TOOL_CONTEXT env 判定で <code>architecture/spec/*</code> 書込みを tool-architect 専任化 (VP-14)</li>
+      <li><code>pre-tool-use-phase-gate.sh</code> (新規 ~50 行、tier 1 fast path のみ): Skill matcher + <code>if: "Skill(phaser-*)"</code> + <code>TWL_PHASE_GATE_BYPASS=1</code> 厳格 bypass、tier 2 (MCP <code>twl_phase_gate_check</code>) は C3/C5 で wire (VP-4 / VP-9 / VP-10)</li>
+      <li><code>post-tool-use-failure-learn.sh</code> (新規 ~45 行、Stage A command hook): PostToolUseFailure Bash matcher、<code>additionalContext</code> で LLM に <code>mcp__doobidoo__memory_store</code> 促進 (旧 <code>post-tool-use-bash-error.sh</code> 置換)</li>
+    </ul>
+  </li>
+  <li><strong>Stage 戦略確定 (user 確定 2026-05-15)</strong>: failure-learn は 3 段階 migration plan:
+    <ul>
+      <li><strong>Stage A</strong> (本 commit): command hook、verified safe pattern (gate-hook.html §2 stdin JSON verified)</li>
+      <li><strong>Stage B</strong> (Phase 2): EXP-043 で <code>mcp_tool</code> hook template 変数展開 empirical verify</li>
+      <li><strong>Stage C</strong> (Phase 2 以降、EXP-043 verified 後): <code>mcp_tool</code> hook 直接 (Stage A script は archive)</li>
+    </ul>
+  </li>
+  <li><strong>EXP-043 新規追加</strong>: <code>mcp_tool</code> hook template 変数 (<code>${tool_input.command}</code>/<code>${error_type}</code>/<code>${error}</code>/<code>${tool_name}</code>) 展開 empirical verify、Stage C migration trigger。status: <span class="vs inferred">inferred</span> (Phase 2 smoke で <span class="vs experiment-verified">experiment-verified</span> 化予定)</li>
+  <li><strong>hook 個別 re-evaluation (user 指摘で実施)</strong>: Plan の "minimal 3 hook" 縮退は古い、各 hook の新 architecture 上の position を agent × 2 並列 で個別調査 (gate-hook.html / hooks-mcp-policy.html / deletion-inventory.html / ssot-design.html 横断)。結果: keep 5 + new 3 + drop 5 + migrate 1 (旧 bash-error→failure-learn Stage A)</li>
+</ol>
+
+<h3>Phase 6 review (cross-AI bias 低減、3 並列 sonnet code-reviewer)</h3>
+
+<ul>
+  <li><strong>Agent 1 (hook script quality + functional correctness + spec compliance)</strong>: CRITICAL 3 (phase-gate tier 1 LLM 誤誘導 / set -e 不整合 / Stage 戦略 spec 不明示) + WARN 4 + INFO 2</li>
+  <li><strong>Agent 2 (integration + drift detection + Plan alignment)</strong>: CRITICAL 2 (phaser-* wildcard EXP-041 verify 待ち / hooks-mcp-policy.html §5.2 schema drift) + WARN 3 + INFO 2</li>
+  <li><strong>Agent 3 (simplicity + edge cases + project conventions)</strong>: CRITICAL 0 + WARN 2 + INFO 4</li>
+</ul>
+
+<p>CRITICAL 5 件 (重複統合後) + WARN 主要 5 件 = 計 10 件を本 commit で全 fix:</p>
+<ul>
+  <li>phase-gate.sh tier 1 fast path から JSON 出力削除 (LLM context 汚染回避、tier 2 wire 後に <code>additionalContext</code> 追加予定)</li>
+  <li>phase-gate.sh: <code>set -euo pipefail</code> → <code>set -uo pipefail</code> 統一 (host-safety/spec-write-boundary 同 pattern)</li>
+  <li>phase-gate.sh: BYPASS env を <code>"=1"</code> 厳格 check (W-1 fix、=0/false/任意非空 string 誤発火回避)</li>
+  <li>phase-gate.sh / failure-learn.sh stdin read を <code>cat 2&gt;/dev/null</code> で統一</li>
+  <li>failure-learn.sh: Stage C migration text を header comment に移動 (<code>additionalContext</code> 短縮、LLM 毎回汚染回避)</li>
+  <li>hooks.json <code>_comment_</code>: 廃止 6 hook script archive 残存 (rollback path 確保、Phase 3 cutover で物理削除予定) + EXP-041 verify 待ち明示</li>
+  <li>hooks-mcp-policy.html §5.2: schema を verified 入れ子形式 (matcher + hooks 配列) に修正 + Stage A/B/C 戦略 table 追加 + EXP-043 連携明示</li>
+  <li>experiment-index.html: EXP-043 entry 新規追加 (status: inferred、Phase 2 smoke で empirical verify 予定)</li>
+</ul>
+
+<h3>編集 / 新規 file (Phase 1 PoC C1、計 6 file)</h3>
+
+<ul>
+  <li><strong>modified</strong> (5): <code>plugins/twl/hooks/hooks.json</code> (5 hook → 8 hook 拡張) / <code>plugins/twl/scripts/hooks/pre-tool-use-phase-gate.sh</code> (再生成、Phase 6 fix 統合) / <code>architecture/spec/twill-plugin-rebuild/hooks-mcp-policy.html</code> (§5.2 Stage 戦略追加) / <code>architecture/spec/twill-plugin-rebuild/experiment-index.html</code> (EXP-043 追加) / <code>architecture/spec/twill-plugin-rebuild/changelog.html</code> (本 entry)</li>
+  <li><strong>new</strong> (1): <code>plugins/twl/scripts/hooks/post-tool-use-failure-learn.sh</code> (~45 行)</li>
+</ul>
+
+<h3>Phase 1 PoC C1 完遂判定 + C2 (helper + bats hard gate) 着手 ready</h3>
+
+<p>本 commit で C1 完遂判定 (sanity check):</p>
+<ul>
+  <li><code>hooks.json</code> schema valid (JSON parse OK)</li>
+  <li><code>bash -n</code> syntax check 全 hook PASS</li>
+  <li>functional test 5 件 PASS (phaser-impl → 素通り / 非 phaser → 素通り / BYPASS=1 → allow / BYPASS=0 → 素通り (=1 厳格 verified) / Bash failure → <code>additionalContext</code> emit)</li>
+  <li>broken link 0 維持 (Phase J spec-link-check CI 統合済)</li>
+</ul>
+
+<p>次 cluster (<strong>C2 helper + bats、~6h、hard gate 達成 point</strong>): <code>mailbox.sh</code> / <code>spawn-tmux.sh</code> / <code>phase-gate.sh</code> (lib helper) / <code>admin-cycle.sh</code> stub / <code>verify-coverage.sh</code> + EXP-001/002/003/027/028 bats 5 件 (Cluster 1 配置 hook と組合せで bats 9/9 hard gate 達成)。</p>
+
 <h2>2026-05-15 Phase J navigation infrastructure — broken link 0 達成 + interactive SVG graph 新規 + CI 統合 + Phase 6 review 11 件 fix</h2>
 
 <h3>核心成果</h3>

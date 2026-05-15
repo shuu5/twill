@@ -629,6 +629,20 @@ $ bash experiments/run-all.sh
   </dl>
 </div>
 
+<div class="exp-block" id="EXP-043">
+  <h3>EXP-043: mcp_tool hook template 変数展開 empirical verify (Stage C migration trigger)</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs inferred">inferred</span> (公式 docs に template 変数展開仕様明示なし、Phase 1 PoC C1 user 確定 2026-05-15 新規追加、Phase 2 smoke で <span class="vs experiment-verified">experiment-verified</span> 化予定)</dd>
+    <dt>verify 対象</dt><dd>hooks.json の <code>type: "mcp_tool"</code> hook の <code>input</code> field 内 template 変数 (<code>${tool_input.command}</code> / <code>${error_type}</code> / <code>${error}</code> / <code>${tool_name}</code>) が、Claude Code 公式実装 (Opus 4.7) で正しく展開されて MCP tool に渡されるか empirical verify。<a href="hooks-mcp-policy.html#s5">hooks-mcp-policy.html §5.2</a> の Stage C (<code>PostToolUseFailure + mcp__doobidoo__memory_store</code> 直接連携) への migration trigger</dd>
+    <dt>verify source</dt><dd>未 (Phase 2 で smoke 実装 + 実機 fire 後に <code>https://code.claude.com/docs/en/hooks</code> + smoke log URL 設定)</dd>
+    <dt>分類</dt><dd>smoke (<code>experiments/EXP-043-mcp-tool-hook-template-expansion.smoke.sh</code>、Phase 2 で実装)</dd>
+    <dt>期待結果</dt><dd>(a) <code>hooks.json</code> に <code>type: "mcp_tool"</code> hook (dummy memory_store target) を追加、(b) Bash 失敗 (<code>false</code> 等) を fire、(c) doobidoo memory に <code>${tool_input.command}</code> 展開後の値 (<code>"false"</code>) が記録されるか check、(d) <code>${error_type}</code> / <code>${error}</code> / <code>${tool_name}</code> も同様 verify。<strong>experiment-verified upgrade 条件 = (c) AND (d) 全 4 変数の展開成功</strong>。展開 fail なら Stage A command hook 継続、success なら Stage C migration (Stage A script を archive)</dd>
+    <dt>verify_checks</dt><dd>JSON schema: <code>{template_expanded: bool, recorded_command: string, recorded_error: string, recorded_error_type: string, recorded_tool_name: string}</code></dd>
+    <dt>Phase 1 PoC 関連</dt><dd>Phase 1 PoC C1 (2026-05-15) で Stage A (command hook) 実装、本 EXP の verify 後に Stage C (mcp_tool hook 直接) に migrate</dd>
+    <dt>関連 spec</dt><dd><a href="hooks-mcp-policy.html#s5">hooks-mcp-policy.html §5.2 Stage 戦略</a></dd>
+  </dl>
+</div>
+
 <h2>関連 spec</h2>
 
 <ul>

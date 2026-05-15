@@ -100,28 +100,73 @@
 
 <p>tool 実行失敗時の <code>PostToolUseFailure</code> hook で <code>mcp__doobidoo__memory_store</code> を呼び、失敗 pattern を doobidoo memory に <code>type: feedback</code> として自動保存する。将来同 pattern が memory_search hit したら LLM が warning 表示。</p>
 
-<h3>5.2 実装 (Phase 1 PoC scope)</h3>
+<h3>5.2 実装 Stage 戦略 (Phase 1 PoC C1 user 確定 2026-05-15)</h3>
 
-<pre><code># .claude/settings.json PostToolUseFailure entry (Phase 1 PoC 新規)
-# 実 hook input field (Phase 6 review CRITICAL-1 fix): tool_name / tool_input / error / error_type / is_interrupt / is_timeout
-# verified source: plugins/twl/scripts/hooks/post-tool-use-bash-error.sh
+<p>mcp_tool hook の template 変数展開 (<code>${tool_input.command}</code> 等) は公式 docs に明示なし → 段階的 migration strategy 採用:</p>
+
+<table>
+  <thead>
+    <tr><th>Stage</th><th>Phase</th><th>hook type</th><th>memory_store 経路</th><th>verify</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>A</strong></td><td>Phase 1 PoC C1 (実装済 2026-05-15)</td><td><code>command</code></td><td>script → <code>additionalContext</code> → LLM が memory_store</td><td>verified safe (command hook stdin JSON、gate-hook.html §2 verified)</td></tr>
+    <tr><td><strong>B</strong></td><td>Phase 2 (EXP-043 fire)</td><td>—</td><td>—</td><td>mcp_tool hook の template 変数展開 empirical verify (<a class="exp-link" href="experiment-index.html#EXP-043">EXP-043</a>)</td></tr>
+    <tr><td><strong>C</strong></td><td>Phase 2 以降 (EXP-043 verified 後)</td><td><code>mcp_tool</code></td><td>hook 直接 → doobidoo memory_store</td><td>EXP-043 で template 変数展開 verified なら migrate、Stage A script を archive</td></tr>
+  </tbody>
+</table>
+
+<h4>5.2.1 Stage A 実装 (Phase 1 PoC C1、command hook)</h4>
+
+<pre><code># plugins/twl/hooks/hooks.json (公式 verified 入れ子 schema、Phase 6 review C-2 fix)
 {
-  "PostToolUseFailure": [
-    {
-      "matcher": "Bash",
-      "type": "mcp_tool",
-      "tool": "mcp__doobidoo__memory_store",
-      "input": {
-        "content": "Bash failure: ${tool_input.command} → ${error_type}: ${error}",
-        "metadata": {
-          "type": "feedback",
-          "tags": ["bash-failure", "auto-learned", "${tool_name}"]
-        }
-      },
-      "outputType": "log"
-    }
-  ]
-}</code></pre>
+  "hooks": {
+    "PostToolUseFailure": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/hooks/post-tool-use-failure-learn.sh",
+            "timeout": 10000
+          }
+        ]
+      }
+    ]
+  }
+}
+
+# post-tool-use-failure-learn.sh 内で stdin JSON parse、additionalContext で LLM に memory_store 促進
+# 実装参照: plugins/twl/scripts/hooks/post-tool-use-failure-learn.sh</code></pre>
+
+<h4>5.2.2 Stage C 目標 (Phase 2 以降、mcp_tool hook 直接、EXP-043 verified 前提)</h4>
+
+<pre><code># mcp_tool hook 直接形式 (EXP-043 で template 変数展開 verified 後に migrate、現時点では未 verified)
+{
+  "hooks": {
+    "PostToolUseFailure": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "mcp_tool",
+            "tool": "mcp__doobidoo__memory_store",
+            "input": {
+              "content": "Bash failure: ${tool_input.command} → ${error_type}: ${error}",
+              "metadata": {
+                "type": "feedback",
+                "tags": ["bash-failure", "auto-learned", "${tool_name}"]
+              }
+            },
+            "outputType": "log"
+          }
+        ]
+      }
+    ]
+  }
+}
+
+# 実 hook input field (Phase 6 review CRITICAL-1 fix): tool_name / tool_input / error / error_type / is_interrupt / is_timeout
+# verified source (旧): plugins/twl/scripts/hooks/post-tool-use-bash-error.sh (archive、Stage A script 経由で置換済)</code></pre>
 
 <h3>5.3 制約</h3>
 
