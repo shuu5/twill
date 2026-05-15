@@ -35,19 +35,32 @@
   <li><strong>session marker 残存 fix</strong>: glossary §8.5 「第 F 弾」削除、changelog L55/L125 「(本 Phase 7)」を実 commit hash (<code>b8c82764</code> / <code>4ffdeb37</code>) に置換。anchor id <code>phase-feature-dev</code> → <code>2026-05-15-3rd</code> (旧 phase- prefix を anchor id から除去)。</li>
 </ol>
 
-<h3>累積 commit (Q2/Q3 サイクル)</h3>
+<h3>累積 commit (Q2/Q3/Q1 サイクル、本 session 内で Q1 完遂)</h3>
 
 <ul>
   <li><code>8b5a4fc0</code> — Q2: tool-architecture.html drift fix + Clean redesign 整合性宣言 + SKILL.md/refs/ 双方向 cross-ref</li>
   <li><code>e664181f</code> — Q3: 全 spec drift 一括 fix + 内容矛盾解消 (8 file)</li>
-  <li>(本 commit) — Q3 補足: changelog update + session marker fix</li>
+  <li><code>f60c5e2f</code> — Q3 補足: changelog Q2/Q3 entry 追加 + session marker fix (anchor id rename 含)</li>
+  <li><code>98a2b4ed</code> — Q3 dig: HIGH 4 (Inv 件数 / event 名 / ADR-045 / workflow Skill) + MED 2 (boundary tool-* / monitors SSoT) = 6 件解消</li>
+  <li><code>e09e0384</code> — Q1 graph: Okabe-Ito colorblind-safe palette + legend size 凡例 + ADR-0012 cross-dir edge + hub size 4px → 6px 差</li>
+  <li><code>347fed64</code> — Q1 README: emoji 削除 + draft-vN を status badge done に統一 + Phase 6 Agent 1 WARN 3 件 fix (column width / archive R-1 例外 / common.css 言及)</li>
+  <li><code>6b13c828</code> — Q1 AI readability: machine-readable index section (<dl> 33 entry、dir/category/badge/desc semantic structure)</li>
+  <li>(本 commit) — changelog Q1 完遂反映</li>
 </ul>
 
-<h3>defer された task</h3>
+<h3>Q1 完遂サマリ (graph + README visual polish + 論理構造改善)</h3>
+
+<ol>
+  <li><strong>graph polish</strong>: Okabe-Ito colorblind-safe palette (cat-mig sky blue / cat-res yellow / cat-dec vermillion、warm-tone 近似 cat-res/cat-dec 区別解消)、cluster-bg opacity 0.08 → 0.06、hub size r=26 → r=28 (regular r=22 との 6px 差視認性向上)、legend に regular/hub 2 circle size 凡例追加、legend translate (800 → 810、decisions cluster overlap risk 解消)、README → ADR-0012 cross-dir edge 追加。</li>
+  <li><strong>README polish</strong>: emoji 📊 全削除 (2 箇所)、draft-v5 (2026-05-15、dir-first refactoring) → status badge done 統一 (他 spec 18 file と完全一貫)、Phase 6 Agent 1 WARN 3 件 fix (table column width 30% 統一 / archive R-1 例外注記 / SSoT § common.css 例外言及)。</li>
+  <li><strong>AI readability</strong>: README に新 section 'machine-readable index (AI 用 semantic structure)' 追加。<code>&lt;dl&gt;</code> 形式で 33 entry (HTML 29 + MD 3 + CSS 1) を listing、各 entry に dir / category / badge / desc + hub marker。SSoT は上部 directory tables、本 section は derived view (machine-readable mirror) と明示。AI が parse しやすい semantic structure を確保。</li>
+</ol>
+
+<h3>残 defer task (別 phase、scope 巨大 or implementation 要)</h3>
 
 <ul>
-  <li><strong>Q1: graph + README visual polish</strong> (Phase 6 review WARN-3〜10): cluster-bg 色衝突軽減、4 sub-intensity colorblind compatibility、legend node size 凡例完備、hub size 4px 差視認性、cross-dir edge 拡充。</li>
-  <li><strong>Q3 曖昧点 13 件</strong> (overview 不変条件数 / pilot failure mail event 名 / boundary-matrix tool-* 表記 / ADR-045 timeline / etc): /dig skill で個別 dig (本 session 内予定)。</li>
+  <li><strong>Q3 曖昧点 LOW 7 件</strong>: admin-cycle helper 数 (4 vs 5) / Inv E fate / hooks-mcp Inv H-3 outputType decision 適用範囲 / monitor-policy Phase H smoke 命名スキーム / twl-mcp controller_size の reference/script/hook/monitor 適用 / glossary 「一般語 worker process」許容範囲 (現状 vocabulary policy として保全)。別 session で対応推奨</li>
+  <li><strong>CI automation Phase 2/3 実装</strong> (spec-management-rules.md roadmap): R-1/R-2/R-5/R-6 機械化 script 群、R-9 graph auto-gen。別 phase で実装</li>
 </ul>
 
 <h2 id="2026-05-15-2nd">2026-05-15 (2nd): architecture spec dir-first 精緻 refactoring (feature-dev:feature-dev workflow)</h2>
