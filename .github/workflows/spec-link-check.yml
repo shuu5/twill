@@ -22,22 +22,24 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Run spec-anchor-link-check
+      - name: Run spec-anchor-link-check (broken + orphan)
         id: link-check
         run: |
           set -o pipefail
-          python3 scripts/spec-anchor-link-check.py --output text | tee link-check.txt
+          python3 scripts/spec-anchor-link-check.py --check-orphan --output text | tee link-check.txt
           BROKEN=$(grep -oE 'broken: [0-9]+' link-check.txt | grep -oE '[0-9]+' | tail -1)
-          if [ -z "$BROKEN" ]; then
-            echo "::error::Could not parse broken count from link-check output"
+          ORPHAN=$(grep -oE 'orphan: [0-9]+' link-check.txt | grep -oE '[0-9]+' | tail -1)
+          if [ -z "$BROKEN" ] || [ -z "$ORPHAN" ]; then
+            echo "::error::Could not parse broken/orphan count from link-check output"
             exit 2
           fi
           echo "broken_count=$BROKEN" >> "$GITHUB_OUTPUT"
-          if [ "$BROKEN" -gt 0 ]; then
-            echo "::error::Found $BROKEN broken anchor link(s) in architecture/spec/. Fix before merge."
+          echo "orphan_count=$ORPHAN" >> "$GITHUB_OUTPUT"
+          if [ "$BROKEN" -gt 0 ] || [ "$ORPHAN" -gt 0 ]; then
+            echo "::error::Found $BROKEN broken / $ORPHAN orphan link(s) in architecture/spec/. Fix before merge."
             exit 1
           fi
-          echo "All spec links OK (broken: 0)"
+          echo "All spec links OK (broken: 0, orphan: 0)"
 
       - name: Upload link-check artifact
         if: always()

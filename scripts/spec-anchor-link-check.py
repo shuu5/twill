@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
-"""spec-anchor-link-check.py — spec ディレクトリの anchor broken link 検出
+"""spec-anchor-link-check.py — spec ディレクトリの anchor broken link / orphan 検出
 
 機械検証:
   HTML/MD ファイルの <a href> と id 宣言を突き合わせ、broken link を報告する。
+  --check-orphan で inbound link 0 の file (orphan) も検出する。
 
 使用方法:
   python3 scripts/spec-anchor-link-check.py [--spec-dir DIR] [--output {text,json}]
                                              [--no-skip-svg-ids] [--no-external]
                                              [--no-include-md]
+                                             [--check-orphan]
+                                             [--entry-points LIST]
 
 終了コード:
-  0 = clean (broken link 0 件)
-  1 = broken link あり
+  0 = clean (broken link 0 件 + orphan 0 件)
+  1 = broken link あり または orphan あり
   2 = wrapper-level error (spec_dir not found 等)
 """
 
@@ -310,6 +313,39 @@ def check_all(
     return broken
 
 
+def find_orphans(spec_dir: Path, entry_points: set[str], include_md: bool = True) -> list[str]:
+    """spec_dir 内で inbound link 0 の file を検出する (R-3 機械検証)。
+
+    Args:
+        spec_dir: 検査対象 dir
+        entry_points: orphan 判定除外 file 名 set (例: {"README.html"})
+        include_md: .md file も対象に含めるか
+
+    Returns:
+        orphan file 名のソート済リスト (spec_dir 相対、basename のみ)
+    """
+    html_files = sorted(spec_dir.glob("*.html"))
+    md_files = sorted(spec_dir.glob("*.md")) if include_md else []
+    all_files = html_files + md_files
+
+    inbound_count: dict[str, int] = {f.name: 0 for f in all_files}
+
+    for src_file in all_files:
+        hrefs = extract_hrefs(src_file)
+        for href_info in hrefs:
+            classified = classify_href(href_info.href)
+            if classified["kind"] in ("cross_file_html", "cross_file_md"):
+                target_name = Path(classified["file"]).name
+                if target_name in inbound_count:
+                    inbound_count[target_name] += 1
+
+    orphans = sorted(
+        f.name for f in all_files
+        if f.name not in entry_points and inbound_count[f.name] == 0
+    )
+    return orphans
+
+
 def _resolve_git_root(cwd: Optional[Path] = None) -> Optional[Path]:
     try:
         r = subprocess.run(
@@ -349,6 +385,14 @@ def main() -> int:
         "--no-include-md", action="store_true", default=False,
         help=".md ファイルのスキャンを無効化",
     )
+    parser.add_argument(
+        "--check-orphan", action="store_true", default=False,
+        help="orphan file (inbound link 0) も検出する (R-3)",
+    )
+    parser.add_argument(
+        "--entry-points", metavar="LIST", default="README.html",
+        help="orphan 判定除外 file (comma-separated、default: README.html)",
+    )
     args = parser.parse_args()
 
     skip_svg_ids = not args.no_skip_svg_ids
@@ -376,6 +420,11 @@ def main() -> int:
         include_md=include_md,
     )
 
+    orphans: list[str] = []
+    if args.check_orphan:
+        entry_points = {ep.strip() for ep in args.entry_points.split(",") if ep.strip()}
+        orphans = find_orphans(spec_dir, entry_points, include_md=include_md)
+
     if args.output == "json":
         payload = {
             "broken": [
@@ -389,14 +438,22 @@ def main() -> int:
             ],
             "broken_count": len(broken),
         }
+        if args.check_orphan:
+            payload["orphans"] = orphans
+            payload["orphan_count"] = len(orphans)
         print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:
         for b in broken:
             print(f"ERROR: {b.source_file}:{b.line} -> {b.href}  [{b.reason}]")
+        if args.check_orphan:
+            for o in orphans:
+                print(f"ORPHAN: {o}  [no inbound link]")
         print()
         print(f"broken: {len(broken)}")
+        if args.check_orphan:
+            print(f"orphan: {len(orphans)}")
 
-    return 1 if broken else 0
+    return 1 if (broken or orphans) else 0
 
 
 if __name__ == "__main__":
