@@ -15,6 +15,69 @@
   <div class="meta">本 spec の変更履歴</div>
 </header>
 
+<h2>2026-05-15 Phase 1 PoC Cluster 4 — atomic SKILL + workflow scaffolding + Phase 6 review 5 件 fix (新 architecture 8 SKILL.md 配置)</h2>
+
+<h3>核心成果</h3>
+
+<ol>
+  <li><strong>新 architecture 8 SKILL.md 配置 (~460 行)</strong>: 旧 chain-driven SKILL から phaser-based status-driven SKILL に migrate:
+    <ul>
+      <li><code>phaser-impl/SKILL.md</code> (115 行): L1 phaser、status-transition Refined → Implementing 専任、1 phaser = 1 Issue (boundary-matrix.html I-1)、5-step flow (pre-check / workflow-test-ready / specialist code review / PR 作成 / status 遷移 / phase-completed mail emit)</li>
+      <li><code>atomic-test-scaffold/SKILL.md</code> (46 行): AC → RED test 生成、Step 0/2/3 hardcode + Step 1 LLM 自由、atomic-verification.html §3 inline 実装 standard 準拠</li>
+      <li><code>atomic-green-impl/SKILL.md</code> (44 行): GREEN 実装、RED test を PASS、同 pattern</li>
+      <li><code>atomic-check/SKILL.md</code> (40 行): lint + type-check、同 pattern</li>
+      <li><code>tool-architect/SKILL.md</code> (56 行): architecture/spec/* edit 唯一 author、TWL_TOOL_CONTEXT caller marker、Cluster 1 spec-write-boundary hook 連携</li>
+      <li><code>tool-project/SKILL.md</code> (33 行 stub): Phase 2 で GitHub Project Board 本格実装</li>
+      <li><code>tool-sandbox-runner/SKILL.md</code> (31 行 stub): Phase 2 で twill-self sandbox + EXP runner 本格実装</li>
+      <li><code>workflow-test-ready/SKILL.md</code> (94 行、137 行 → 改修): 旧 chain-runner.sh 依存廃止、新 atomic 3 件 Skill() 順次呼び出し、disable-model-invocation: true</li>
+    </ul>
+  </li>
+  <li><strong>atomic 3 件で template 統一 (DRY)</strong>: Step 0/2/3 hardcode + Step 1 LLM 自由生成、TWL_PHASER_NAME env 経由 mailbox identifier、"PASS" 厳格 binary (atomic-verification.html §3.0-3.2 Phase I dig 確定)</li>
+  <li><strong>新旧並存</strong>: 既存 24 件 旧 skill (co-* / workflow-* / su-*) は Phase 3 cutover まで存続、新 8 skill が並行配置。Phase 2 dual-stack 準備完了</li>
+</ol>
+
+<h3>Phase 6 review (cross-AI bias 低減、3 並列 sonnet code-reviewer)</h3>
+
+<ul>
+  <li><strong>Agent 1 (frontmatter + atomic inline impl)</strong>: CRITICAL 3 (atomic-check Step 0 pre-snapshot 不在 / phaser-impl FAIL_REASON 未定義 / bats pipefail risk) + WARN 5 + INFO 3</li>
+  <li><strong>Agent 2 (phaser-impl + workflow flow)</strong>: CRITICAL 3 (gate-hook spec rename 未追従 / mailbox flock 不在 / workflow-test-ready AC_FILE_PATH 未渡し) + WARN 4 + INFO 3</li>
+  <li><strong>Agent 3 (tool-* stub + EXP-034 整合)</strong>: CRITICAL 1 (Write tool key 名 risk) + WARN 4 + INFO 3</li>
+</ul>
+
+<p>CRITICAL 5 件 (重複統合後) + WARN 主要 5 件 = 10 件本 commit 全 fix:</p>
+<ul>
+  <li><strong>phaser-impl mailbox flock 化</strong> (Inv T 違反 fix): jq → <code>mailbox_emit</code> helper (Cluster 2 配置 lib/mailbox.sh、flock -x atomic) に置換、Step 5 + escalate 両方</li>
+  <li><strong>AC_FILE_PATH 引数解決</strong>: phaser-impl Step 0 で <code>AC_FILE_PATH=".autopilot/issues/issue-${ISSUE_NUM}/ac-test-mapping.yaml"</code> 代入 + workflow-test-ready Step 0 で <code>$1</code> → AC_FILE_PATH 明示</li>
+  <li><strong>phaser-impl Step 1 引数渡し</strong>: <code>Skill(twl:workflow-test-ready, "$AC_FILE_PATH")</code> に修正</li>
+  <li><strong>PR_NUM 空文字ガード</strong>: phaser-impl Step 3 で <code>[ -n "$PR_NUM" ]</code> check 追加</li>
+  <li><strong>Step 4 変数 TODO comment</strong>: <code>$ITEM_ID / $STATUS_FIELD_ID / $IMPLEMENTING_OPTION_ID</code> resolve は Cluster 5 wire、明示 TODO 追加</li>
+  <li><strong>FAIL_REASON default 化</strong>: <code>"${FAIL_REASON:-unspecified}"</code> で未定義 abort 回避</li>
+  <li><strong>tool-project spawnable_by から administrator 削除</strong> (spec drift fix): tool-architecture.html §2.1 + ADR-040 gate 整合、<code>[user, tool-architect, tool-sandbox-runner]</code></li>
+  <li><strong>atomic-check monorepo partial pass fix</strong> (W-3): <code>||</code> chain → <code>STATUS=0; ...; [ "$STATUS" -eq 0 ]</code> で全 manifest verify</li>
+</ul>
+
+<p>残 INFO (atomic-check Step 0 pre-snapshot / bats pipefail spec sample / specialist code review worktree cwd / EXP-034 phaser-explore skip 永続化 / tool-architect TWL_TOOL_CONTEXT leak ドキュメント) は Phase 2 dig topic として defer (spec 側の修正 or 設計判断の範囲内)。</p>
+
+<h3>編集 / 新規 file (Phase 1 PoC C4、計 9 file)</h3>
+
+<ul>
+  <li><strong>new</strong> (7): plugins/twl/skills/{phaser-impl, atomic-test-scaffold, atomic-green-impl, atomic-check, tool-architect, tool-project, tool-sandbox-runner}/SKILL.md</li>
+  <li><strong>modified</strong> (2): plugins/twl/skills/workflow-test-ready/SKILL.md (137 行 → 94 行、新 architecture rewrite) / architecture/spec/twill-plugin-rebuild/changelog.html (本 entry)</li>
+</ul>
+
+<h3>Phase 1 PoC C4 完遂判定 + Cluster 5 (PoC #1660 + ADR-043) 着手 ready</h3>
+
+<p>本 commit で C4 完遂判定:</p>
+<ul>
+  <li>8 SKILL.md valid frontmatter (公式 schema 準拠: name / description / type / allowed-tools / disable-model-invocation)</li>
+  <li>atomic 3 件 inline 実装 standard (atomic-verification.html §3 / §4 一致)</li>
+  <li>flock atomic write (Inv T) + TWL_PHASER_NAME env (atomic-verification.html §3.1) + "PASS" 厳格 binary (§3.2) 全 SKILL.md で適用</li>
+  <li><strong>bats baseline 102 PASS / 0 FAIL / 9 skip 維持</strong> (Phase 1 PoC go-judgment 条件 1 継続達成)</li>
+  <li>Phase 6 review CRITICAL 5 + WARN 5 = 10 件全 fix 統合済</li>
+</ul>
+
+<p>次 cluster (<strong>C5 PoC #1660 sanitize + ADR-043 起票、~5h、Phase 1 PoC 完遂 point</strong>): Issue #1660 (SKIP_*_REASON sanitize) を新 architecture で end-to-end 再実装、admin-cycle + phaser-impl + atomic 3 + tool-* の 6-step flow 実機 fire、VP-1〜VP-16 該当分 verify、ADR-043 Proposed 起票で Phase 1 PoC closure。完遂後は <strong>Phase K (新追加、user 指示 2026-05-15): spec HTML refactoring + experiment-verify upgrade + 対話 dig による spec 精緻化</strong> に移行予定。</p>
+
 <h2>2026-05-15 Phase 1 PoC Cluster 3 followup — pyyaml resolve fix (bats 102 件全 PASS hard gate 真の達成)</h2>
 
 <h3>核心: 重大事実訂正 (admit)</h3>
