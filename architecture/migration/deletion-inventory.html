@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>twill plugin rebuild — deletion inventory (実測 verified)</title>
-<link rel="stylesheet" href="common.css">
+<link rel="stylesheet" href="../spec/common.css">
 <style>
   header.doc-header { border-bottom: 3px solid var(--danger-fg); }
   .delete-table { font-size: 14px; }
@@ -40,7 +40,7 @@
   <li>制御系 4 語 (orchestrator/controller/supervisor) — <code>administrator</code> に統一、他 3 語は spec から液化 (backtick 引用のみ例外)</li>
   <li>用語多重化 (~2000+ occurrence): pilot/phase/controller 5 重 → <code>phaser</code> 1 語、worker 5 重 → <code>workflow</code>+<code>specialist</code> 2 分割、step 5 重 → <code>atomic</code> 統一、state 2 重 → <code>status</code>、mail/message 3 重 → 4 階層 entity</li>
 </ul>
-詳細: <a href="dig-report-ssot-2026-05-13.md">dig-report-ssot-2026-05-13.md</a> §7 (隠れ重複処理) + §9 (派生する spec 反映影響)</div>
+詳細: <a href="../research/dig-report-ssot-2026-05-13.md">dig-report-ssot-2026-05-13.md</a> §7 (隠れ重複処理) + §9 (派生する spec 反映影響)</div>
 
 <h2>§1. 削除対象 bash orchestration (~5,000 行、実測)</h2>
 
@@ -53,13 +53,13 @@
       <td><code>plugins/twl/scripts/chain-runner.sh</code></td>
       <td>1714</td>
       <td>chain SSoT 三重化解消、step.sh 単一 SSoT</td>
-      <td><a href="ssot-design.html">ssot-design.html</a> step.sh framework (~80 行)</td>
+      <td><a href="../spec/ssot-design.html">ssot-design.html</a> step.sh framework (~80 行)</td>
     </tr>
     <tr>
       <td><code>plugins/twl/scripts/autopilot-orchestrator.sh</code></td>
       <td>1355</td>
       <td>orchestrator 概念廃止、3 階層 spawn で代替</td>
-      <td><a href="spawn-protocol.html">spawn-protocol.html</a> spawn-tmux.sh (~50 行) + <a href="admin-cycle.html">admin-cycle.html</a> admin-cycle.sh (~50 行)</td>
+      <td><a href="../spec/spawn-protocol.html">spawn-protocol.html</a> spawn-tmux.sh (~50 行) + <a href="../spec/admin-cycle.html">admin-cycle.html</a> admin-cycle.sh (~50 行)</td>
     </tr>
     <tr>
       <td><code>plugins/twl/scripts/issue-lifecycle-orchestrator.sh</code></td>
@@ -101,7 +101,7 @@
       <td><code>plugins/twl/scripts/pilot-fallback-monitor.sh</code></td>
       <td>337</td>
       <td>pilot fallback monitor 概念廃止、Inv G crash detection に統合</td>
-      <td><a href="crash-failure-mode.html">crash-failure-mode.html</a></td>
+      <td><a href="../spec/crash-failure-mode.html">crash-failure-mode.html</a></td>
     </tr>
     <tr>
       <td><code>plugins/twl/scripts/chain-steps.sh</code></td>
@@ -113,7 +113,7 @@
       <td><code>plugins/twl/scripts/mcp-watchdog.sh</code></td>
       <td>~120 (推定)</td>
       <td>stdio MCP auto-reconnect 不在 + orphan 自殺問題 (Bug #1687 verified)</td>
-      <td>Plugin Monitor (<code>monitors/monitors.json</code>) <a class="exp-link" href="experiment-index.html#EXP-009">EXP-009</a></td>
+      <td>Plugin Monitor (<code>monitors/monitors.json</code>) <a class="exp-link" href="../research/experiment-index.html#EXP-009">EXP-009</a></td>
     </tr>
     <tr>
       <td><code>plugins/twl/scripts/session-atomic-write.sh</code></td>
@@ -137,7 +137,7 @@
     <tr><td><code>su-observer</code></td><td class="verdict-rebrand">rebrand</td><td><code>administrator</code> (Inv I-1〜I-7 強化)</td></tr>
     <tr><td><code>co-architect</code> (226 行)</td><td class="verdict-rebrand">rebrand</td><td><code>tool-architect</code></td></tr>
     <tr><td><code>co-project</code> (145 行)</td><td class="verdict-rebrand">rebrand</td><td><code>tool-project</code></td></tr>
-    <tr><td><code>co-utility</code> (79 行)</td><td class="verdict-delete">削除 (第 4 弾 dig)</td><td><strong>廃止</strong> (commands は tool-architect / tool-project / admin / tool-sandbox-runner に再分配、詳細 <a href="tool-architecture.html">tool-architecture.html</a> §6)</td></tr>
+    <tr><td><code>co-utility</code> (79 行)</td><td class="verdict-delete">削除 (第 4 弾 dig)</td><td><strong>廃止</strong> (commands は tool-architect / tool-project / admin / tool-sandbox-runner に再分配、詳細 <a href="../spec/tool-architecture.html">tool-architecture.html</a> §6)</td></tr>
     <tr><td><code>co-self-improve</code> (144 行)</td><td class="verdict-rebrand">rebrand</td><td><code>tool-sandbox-runner</code> (第 4 弾 dig で rename、sandbox × feature matrix + Idea Issue 起票)</td></tr>
     <tr><td><code>co-autopilot</code></td><td class="verdict-delete">削除</td><td>administrator + phase-* に分解</td></tr>
     <tr><td><code>co-issue</code></td><td class="verdict-delete">削除</td><td>phaser-refine</td></tr>
@@ -178,7 +178,7 @@
 
 <h2>§4. 削除対象 twl MCP tool (30+ → ~15)</h2>
 
-<p>詳細: <a href="twl-mcp-integration.html">twl-mcp-integration.html</a> §7。要約:</p>
+<p>詳細: <a href="../spec/twl-mcp-integration.html">twl-mcp-integration.html</a> §7。要約:</p>
 
 <table class="delete-table">
   <thead><tr><th>tool</th><th>verdict</th></tr></thead>
@@ -203,11 +203,11 @@
     <tr><th>file</th><th>行数 (見積)</th><th>役割</th><th>verify</th></tr>
   </thead>
   <tbody>
-    <tr><td><code>plugins/twl/scripts/lib/mailbox.sh</code></td><td>~40</td><td>file mailbox send/recv (flock atomic、Inv T)</td><td><a class="exp-link" href="experiment-index.html#EXP-006">EXP-006</a></td></tr>
-    <tr><td><code>plugins/twl/scripts/lib/spawn-tmux.sh</code></td><td>~50</td><td>3 階層共通 spawn (tmux new-window + slash command inject)</td><td><a class="exp-link" href="experiment-index.html#EXP-010">EXP-010</a> + <a class="exp-link" href="experiment-index.html#EXP-016">EXP-016</a></td></tr>
-    <tr><td><code>plugins/twl/scripts/lib/step.sh</code></td><td>~80</td><td>step::run framework (4 phase lifecycle、Inv U)</td><td><a class="exp-link" href="experiment-index.html#EXP-011">EXP-011</a> + <a class="exp-link" href="experiment-index.html#EXP-012">EXP-012</a></td></tr>
-    <tr><td><code>plugins/twl/scripts/lib/phase-gate.sh</code></td><td>~40</td><td>PreToolUse hook tier 1 (粗フィルタ、Inv W)</td><td><a class="exp-link" href="experiment-index.html#EXP-001">EXP-001</a>〜<a class="exp-link" href="experiment-index.html#EXP-003">003</a></td></tr>
-    <tr><td><code>plugins/twl/scripts/lib/admin-cycle.sh</code></td><td>~50</td><td>administrator polling cycle 6-step</td><td><a class="exp-link" href="experiment-index.html#EXP-004">EXP-004</a></td></tr>
+    <tr><td><code>plugins/twl/scripts/lib/mailbox.sh</code></td><td>~40</td><td>file mailbox send/recv (flock atomic、Inv T)</td><td><a class="exp-link" href="../research/experiment-index.html#EXP-006">EXP-006</a></td></tr>
+    <tr><td><code>plugins/twl/scripts/lib/spawn-tmux.sh</code></td><td>~50</td><td>3 階層共通 spawn (tmux new-window + slash command inject)</td><td><a class="exp-link" href="../research/experiment-index.html#EXP-010">EXP-010</a> + <a class="exp-link" href="../research/experiment-index.html#EXP-016">EXP-016</a></td></tr>
+    <tr><td><code>plugins/twl/scripts/lib/step.sh</code></td><td>~80</td><td>step::run framework (4 phase lifecycle、Inv U)</td><td><a class="exp-link" href="../research/experiment-index.html#EXP-011">EXP-011</a> + <a class="exp-link" href="../research/experiment-index.html#EXP-012">EXP-012</a></td></tr>
+    <tr><td><code>plugins/twl/scripts/lib/phase-gate.sh</code></td><td>~40</td><td>PreToolUse hook tier 1 (粗フィルタ、Inv W)</td><td><a class="exp-link" href="../research/experiment-index.html#EXP-001">EXP-001</a>〜<a class="exp-link" href="../research/experiment-index.html#EXP-003">003</a></td></tr>
+    <tr><td><code>plugins/twl/scripts/lib/admin-cycle.sh</code></td><td>~50</td><td>administrator polling cycle 6-step</td><td><a class="exp-link" href="../research/experiment-index.html#EXP-004">EXP-004</a></td></tr>
   </tbody>
   <tfoot>
     <tr><td><strong>小計 (既存 spec)</strong></td><td><strong>~260</strong></td><td>(削除 7,289 行 → 新規 260 行、96% 削減)</td><td></td></tr>
@@ -225,43 +225,43 @@
       <td><code>plugins/twl/scripts/lib/verify-coverage.sh</code></td>
       <td>~50</td>
       <td>tool-architect verify hook 層 2 (PostToolUse、4-state status grep + changelog 漏れ + EXP 漏れを warn)</td>
-      <td><a class="exp-link" href="experiment-index.html#EXP-027">EXP-027</a></td>
+      <td><a class="exp-link" href="../research/experiment-index.html#EXP-027">EXP-027</a></td>
     </tr>
     <tr>
       <td><code>plugins/twl/scripts/hooks/pre-tool-use-spec-write-boundary.sh</code></td>
       <td>~30</td>
       <td>spec edit 所有権 enforce (PreToolUse deny、tool-architect / user 以外を block)</td>
-      <td><a class="exp-link" href="experiment-index.html#EXP-028">EXP-028</a></td>
+      <td><a class="exp-link" href="../research/experiment-index.html#EXP-028">EXP-028</a></td>
     </tr>
     <tr>
       <td><code>plugins/twl/agents/specialist-spec-review.md</code></td>
       <td>~100 (SKILL.md)</td>
       <td>tool-architect PR cycle review agent (1 agent 軽量 review、3 回 fix loop)</td>
-      <td><a class="exp-link" href="experiment-index.html#EXP-029">EXP-029</a></td>
+      <td><a class="exp-link" href="../research/experiment-index.html#EXP-029">EXP-029</a></td>
     </tr>
     <tr>
       <td><code>plugins/twl/sandboxes/_shared/problem-patterns.yaml</code></td>
       <td>~50</td>
       <td>tool-sandbox-runner LLM 分析 pattern catalog (6 件: stuck-loop / mailbox-loss / context-bloat / phase-gate-mistake / step-abort-cascade / subagent-misuse)</td>
-      <td><a class="exp-link" href="experiment-index.html#EXP-030">EXP-030</a></td>
+      <td><a class="exp-link" href="../research/experiment-index.html#EXP-030">EXP-030</a></td>
     </tr>
     <tr>
       <td><code>plugins/twl/sandboxes/&lt;name&gt;/{sandbox.yaml, setup.sh, features.yaml}</code></td>
       <td>~130 (per sandbox × N)</td>
       <td>sandbox manifest (twill-self / ts-nextjs-hono-mono 等)</td>
-      <td><a class="exp-link" href="experiment-index.html#EXP-030">EXP-030</a></td>
+      <td><a class="exp-link" href="../research/experiment-index.html#EXP-030">EXP-030</a></td>
     </tr>
     <tr>
       <td><code>cli/twl/src/twl/validation/project_setup.py</code></td>
       <td>~80</td>
       <td><code>twl_validate_project_setup</code> MCP tool (tool-project の verify-board sub-command が呼ぶ)</td>
-      <td><a class="exp-link" href="experiment-index.html#EXP-024">EXP-024</a></td>
+      <td><a class="exp-link" href="../research/experiment-index.html#EXP-024">EXP-024</a></td>
     </tr>
     <tr>
       <td><code>shuu5/twill-templates</code> (別 git repo)</td>
       <td>repo-level</td>
       <td>template repository (stack 3 件: ts-nextjs-hono-mono / supabase / docker-compose)、git submodule で fetch、tag versioning</td>
-      <td><a class="exp-link" href="experiment-index.html#EXP-025">EXP-025</a> <a class="exp-link" href="experiment-index.html#EXP-026">EXP-026</a></td>
+      <td><a class="exp-link" href="../research/experiment-index.html#EXP-025">EXP-025</a> <a class="exp-link" href="../research/experiment-index.html#EXP-026">EXP-026</a></td>
     </tr>
   </tbody>
   <tfoot>
@@ -272,7 +272,7 @@
 
 <h2>§6. plugin 構造への移行 (新規)</h2>
 
-<p>twl を Claude Code 公式 plugin として正式化 <a class="exp-link" href="experiment-index.html#EXP-010">EXP-010</a>:</p>
+<p>twl を Claude Code 公式 plugin として正式化 <a class="exp-link" href="../research/experiment-index.html#EXP-010">EXP-010</a>:</p>
 
 <table>
   <thead>
@@ -282,7 +282,7 @@
     <tr><td>manifest</td><td>(なし)</td><td><code>plugins/twl/.claude-plugin/plugin.json</code> (新規)</td></tr>
     <tr><td>skills</td><td><code>plugins/twl/skills/</code> (.claude/ 配下と二重?)</td><td>plugin root <code>skills/</code> 一本化</td></tr>
     <tr><td>hooks</td><td><code>plugins/twl/hooks/hooks.json</code> + <code>plugins/twl/scripts/hooks/*.sh</code></td><td>plugin root <code>hooks/hooks.json</code> + plugin-namespaced 参照</td></tr>
-    <tr><td>monitors</td><td>(なし、mcp-watchdog.sh 自前)</td><td>plugin root <code>monitors/monitors.json</code> 新規 <a class="exp-link" href="experiment-index.html#EXP-009">EXP-009</a></td></tr>
+    <tr><td>monitors</td><td>(なし、mcp-watchdog.sh 自前)</td><td>plugin root <code>monitors/monitors.json</code> 新規 <a class="exp-link" href="../research/experiment-index.html#EXP-009">EXP-009</a></td></tr>
     <tr><td>MCP</td><td>repo root <code>.mcp.json</code></td><td>plugin root <code>.mcp.json</code> (plugin scope) + repo root <code>.mcp.json</code> (github 公式 MCP)</td></tr>
     <tr><td>skill invoke</td><td>(無理矢理 inject)</td><td>slash command <code>/twl:&lt;skill&gt;</code> (namespace 強制)</td></tr>
   </tbody>
@@ -404,14 +404,14 @@ mv hooks.json.bak hooks.json
 <h2>§9. 関連 spec</h2>
 
 <ul>
-  <li><a href="ssot-design.html">ssot-design.html</a> chain SSoT 統一 (案 3 step.sh)</li>
-  <li><a href="twl-mcp-integration.html">twl-mcp-integration.html</a> MCP tool inventory</li>
-  <li><a href="spawn-protocol.html">spawn-protocol.html</a> 新規 helper 詳細</li>
+  <li><a href="../spec/ssot-design.html">ssot-design.html</a> chain SSoT 統一 (案 3 step.sh)</li>
+  <li><a href="../spec/twl-mcp-integration.html">twl-mcp-integration.html</a> MCP tool inventory</li>
+  <li><a href="../spec/spawn-protocol.html">spawn-protocol.html</a> 新規 helper 詳細</li>
   <li><a href="rebuild-plan.html">rebuild-plan.html</a> <code>Phase 1</code>-4 削除順序</li>
   <li><a href="dual-stack-routing.html">dual-stack-routing.html</a> <code>Phase 2 dual-stack</code> 期間</li>
   <li><a href="adr-fate-table.html">adr-fate-table.html</a> ADR 43 件継承戦略</li>
   <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> 24 件不変条件</li>
-  <li><a href="sandbox-experiment.html">sandbox-experiment.html</a> 各削除判断の verify EXP</li>
+  <li><a href="../research/sandbox-experiment.html">sandbox-experiment.html</a> 各削除判断の verify EXP</li>
 </ul>
 
 </body>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>experiment-index — 全 EXP 一覧 + status + 結果 (EXP-001〜038)</title>
-<link rel="stylesheet" href="common.css">
+<link rel="stylesheet" href="../spec/common.css">
 <style>
   header.doc-header { border-bottom: 3px solid var(--brand); }
   .exp-block { background: var(--surface-primary); border: 1px solid var(--border-default); border-radius: var(--radius-lg); box-shadow: var(--elevation-1); padding: 16px 20px; margin: 20px 0; }
@@ -41,7 +41,7 @@
 </div>
 
 <div class="legend">
-  <strong>status 凡例</strong> (defining criteria SSoT: <a href="registry-schema.html#s10">registry-schema.html §10</a>):
+  <strong>status 凡例</strong> (defining criteria SSoT: <a href="../spec/registry-schema.html#s10">registry-schema.html §10</a>):
   <span class="vs inferred">inferred</span> 推測のみ、verify source 不明 &middot;
   <span class="vs deduced">deduced</span> spec / docs 読みから推論 (間接) &middot;
   <span class="vs verified">verified</span> 公式 docs / 仕様に直接明記 (URL reachable + domain whitelist) &middot;
@@ -49,7 +49,7 @@
 </div>
 
 <div class="info" style="background: var(--surface-info); border-left: 4px solid var(--brand);">
-  <strong>verify status SSoT (Phase F 2026-05-14 確定)</strong>: 4-state badge の defining criteria は <a href="registry-schema.html#s10">registry-schema.html §10</a> で SSoT 化。<br>
+  <strong>verify status SSoT (Phase F 2026-05-14 確定)</strong>: 4-state badge の defining criteria は <a href="../spec/registry-schema.html#s10">registry-schema.html §10</a> で SSoT 化。<br>
   <br>
   <ul>
     <li><strong>verified</strong>: 公式 docs / 仕様に<strong>直接明記</strong>、URL reachable (<code>experiments/verify-source-check.py</code> で自動検証)</li>
@@ -82,7 +82,7 @@
     <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a></dd>
     <dt>分類</dt><dd>bats unit (mock 可)、<code>test-fixtures/experiments/hooks/EXP-001-hook-matcher-singular.bats</code></dd>
     <dt>期待結果</dt><dd>(a) <code>matcher: "Bash"</code> で hook 発火、(b) <code>matchers: ["Bash"]</code> で hook 発火しない or schema error</dd>
-    <dt>関連 spec</dt><dd><a href="gate-hook.html">gate-hook.html</a> §1.1、<a href="research-findings.html">research-findings.html</a> §7 DC-1</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/gate-hook.html">gate-hook.html</a> §1.1、<a href="research-findings.html">research-findings.html</a> §7 DC-1</dd>
   </dl>
 </div>
 
@@ -94,7 +94,7 @@
     <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a></dd>
     <dt>分類</dt><dd>bats unit (mock 可)、<code>test-fixtures/experiments/hooks/EXP-002-hook-exit-code.bats</code></dd>
     <dt>期待結果</dt><dd>exit 2 で tool denied、exit 1 で tool allowed + error log、exit 0 + JSON で permissionDecision に従う</dd>
-    <dt>関連 spec</dt><dd><a href="gate-hook.html">gate-hook.html</a> §3、<a href="research-findings.html">research-findings.html</a> §7 DC-2</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/gate-hook.html">gate-hook.html</a> §3、<a href="research-findings.html">research-findings.html</a> §7 DC-2</dd>
   </dl>
 </div>
 
@@ -106,7 +106,7 @@
     <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a></dd>
     <dt>分類</dt><dd>bats unit (mock 可)、<code>test-fixtures/experiments/hooks/EXP-003-permission-decision-enum.bats</code></dd>
     <dt>期待結果</dt><dd>4 enum で意図通り動作、不明 enum で error</dd>
-    <dt>関連 spec</dt><dd><a href="gate-hook.html">gate-hook.html</a> §3.1、<a href="twl-mcp-integration.html">twl-mcp-integration.html</a> §1.3</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/gate-hook.html">gate-hook.html</a> §3.1、<a href="../spec/twl-mcp-integration.html">twl-mcp-integration.html</a> §1.3</dd>
   </dl>
 </div>
 
@@ -121,7 +121,7 @@
     <dt>分類</dt><dd>smoke (Claude session 必須、<code>experiments/EXP-004-croncreate-durable-bug-40228.smoke.sh</code>)</dd>
     <dt>期待結果</dt><dd>3 件全て発生 (永続化されない)</dd>
     <dt>代替策</dt><dd>Routines (cloud) / Desktop scheduled tasks / GitHub Actions schedule のいずれか</dd>
-    <dt>関連 spec</dt><dd><a href="admin-cycle.html">admin-cycle.html</a> §1.1、<a href="research-findings.html">research-findings.html</a> §7 DC-9</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/admin-cycle.html">admin-cycle.html</a> §1.1、<a href="research-findings.html">research-findings.html</a> §7 DC-9</dd>
   </dl>
 </div>
 
@@ -150,7 +150,7 @@
     <dt>verify source</dt><dd><a class="src-link" href="https://man7.org/linux/man-pages/man1/flock.1.html">flock(1) man</a> + 既存 session-atomic-write.sh</dd>
     <dt>分類</dt><dd>bats unit (mock 可)、<code>test-fixtures/experiments/mailbox/EXP-006-mailbox-flock-atomic.bats</code> (Phase B 2026-05-14 規約統一)</dd>
     <dt>期待結果</dt><dd>100 並列 write 後、jq で全行 parse 成功、行数 = 100、order 不問</dd>
-    <dt>関連 spec</dt><dd><a href="spawn-protocol.html">spawn-protocol.html</a> §4 (mailbox.sh)、<a href="invariant-fate-table.html#inv-t">不変条件 T</a></dd>
+    <dt>関連 spec</dt><dd><a href="../spec/spawn-protocol.html">spawn-protocol.html</a> §4 (mailbox.sh)、<a href="../migration/invariant-fate-table.html#inv-t">不変条件 T</a></dd>
   </dl>
 </div>
 
@@ -164,7 +164,7 @@
     <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a></dd>
     <dt>分類</dt><dd>bats unit + smoke、<code>test-fixtures/experiments/tier/EXP-007-tier-parallel-hooks.bats</code> (bats unit、schema 静的 check + smoke は別途)</dd>
     <dt>期待結果</dt><dd>両 hook 起動、reason 両方含む</dd>
-    <dt>関連 spec</dt><dd><a href="gate-hook.html">gate-hook.html</a> §4-5</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/gate-hook.html">gate-hook.html</a> §4-5</dd>
   </dl>
 </div>
 
@@ -176,7 +176,7 @@
     <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a></dd>
     <dt>分類</dt><dd>smoke (Claude session 必須)</dd>
     <dt>期待結果</dt><dd>bypassPermissions でも tool 起動 NG</dd>
-    <dt>関連 spec</dt><dd><a href="gate-hook.html">gate-hook.html</a> §3.2 (Inv W 構造的保証)</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/gate-hook.html">gate-hook.html</a> §3.2 (Inv W 構造的保証)</dd>
   </dl>
 </div>
 
@@ -190,7 +190,7 @@
     <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/plugins">code.claude.com/docs/en/plugins</a></dd>
     <dt>分類</dt><dd>smoke (Claude + plugin 起動必須)</dd>
     <dt>期待結果</dt><dd>各 stdout line が session 内 notification</dd>
-    <dt>関連 spec</dt><dd><a href="failure-analysis.html">failure-analysis.html</a> F-3、<a href="twl-mcp-integration.html">twl-mcp-integration.html</a> (mcp-watchdog 廃止代替)</dd>
+    <dt>関連 spec</dt><dd><a href="failure-analysis.html">failure-analysis.html</a> F-3、<a href="../spec/twl-mcp-integration.html">twl-mcp-integration.html</a> (mcp-watchdog 廃止代替)</dd>
   </dl>
 </div>
 
@@ -202,13 +202,13 @@
     <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/plugins">code.claude.com/docs/en/plugins</a></dd>
     <dt>分類</dt><dd>smoke</dd>
     <dt>期待結果</dt><dd>plugin loaded、skill namespace で invoke、`/reload-plugins` で再 load 可</dd>
-    <dt>関連 spec</dt><dd><a href="spawn-protocol.html">spawn-protocol.html</a>、<a href="twl-mcp-integration.html">twl-mcp-integration.html</a></dd>
+    <dt>関連 spec</dt><dd><a href="../spec/spawn-protocol.html">spawn-protocol.html</a>、<a href="../spec/twl-mcp-integration.html">twl-mcp-integration.html</a></dd>
   </dl>
 </div>
 
 <h2>カテゴリ G: atomic skill lifecycle (EXP-011〜014、第 5 弾 dig で repurpose)</h2>
 
-<div class="info">第 5 弾 dig (Round 9) で <code>step</code> 概念液化 + <code>atomic skill</code> への統一が決定。本カテゴリの EXP は旧 <code>step.sh framework</code> 前提から、新 <code>atomic SKILL.md 本文 inline 4-phase lifecycle</code> 検証に repurpose される。詳細: <a href="atomic-verification.html">atomic-verification.html</a> §5。</div>
+<div class="info">第 5 弾 dig (Round 9) で <code>step</code> 概念液化 + <code>atomic skill</code> への統一が決定。本カテゴリの EXP は旧 <code>step.sh framework</code> 前提から、新 <code>atomic SKILL.md 本文 inline 4-phase lifecycle</code> 検証に repurpose される。詳細: <a href="../spec/atomic-verification.html">atomic-verification.html</a> §5。</div>
 
 <div class="exp-block" id="EXP-011">
   <h3>EXP-011: step::run 4 phase lifecycle</h3>
@@ -217,7 +217,7 @@
     <dt>verify 対象</dt><dd>step::run が pre-check → exec → post-verify → report の順に実行、各 phase で mailbox event 発行</dd>
     <dt>分類</dt><dd>bats unit (mock 可、RED until Phase 1 PoC)、<code>test-fixtures/experiments/atomic/EXP-011-step-run-4phase-lifecycle.bats</code></dd>
     <dt>期待結果</dt><dd>4 mailbox event 順序通り emit</dd>
-    <dt>関連 spec</dt><dd><a href="atomic-verification.html">atomic-verification.html</a> §3、<a href="ssot-design.html">ssot-design.html</a> §3</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/atomic-verification.html">atomic-verification.html</a> §3、<a href="../spec/ssot-design.html">ssot-design.html</a> §3</dd>
   </dl>
 </div>
 
@@ -228,7 +228,7 @@
     <dt>verify 対象</dt><dd>test-scaffold step で test 数 0 増加 (RED test 未追加) → post-verify FAIL → step abort、pilot mailbox に <code>step-postverify-failed</code> mail</dd>
     <dt>分類</dt><dd>bats unit (mock 可、RED until Phase 1 PoC)、<code>test-fixtures/experiments/atomic/EXP-012-post-verify-fail-escalate.bats</code></dd>
     <dt>期待結果</dt><dd>exit code != 0、mail 1 件、評価 reason 含む</dd>
-    <dt>関連 spec</dt><dd><a href="invariant-fate-table.html#inv-u">不変条件 U</a></dd>
+    <dt>関連 spec</dt><dd><a href="../migration/invariant-fate-table.html#inv-u">不変条件 U</a></dd>
   </dl>
 </div>
 
@@ -239,7 +239,7 @@
     <dt>verify 対象</dt><dd>2 worker 並列実行で各々が <code>.mailbox/&lt;worker&gt;/inbox.jsonl</code> に書き込み、共通 path 不在、cross-pollution なし</dd>
     <dt>分類</dt><dd>bats unit (mock 可、RED until Phase 1 PoC)、<code>test-fixtures/experiments/atomic/EXP-013-per-specialist-mailbox-scope.bats</code></dd>
     <dt>期待結果</dt><dd>2 mailbox 独立、内容 cross なし、Bug #1703 構造的不能化確認</dd>
-    <dt>関連 spec</dt><dd><a href="invariant-fate-table.html#inv-v">不変条件 V</a>、<a href="failure-analysis.html">failure-analysis.html</a> Bug #1703</dd>
+    <dt>関連 spec</dt><dd><a href="../migration/invariant-fate-table.html#inv-v">不変条件 V</a>、<a href="failure-analysis.html">failure-analysis.html</a> Bug #1703</dd>
   </dl>
 </div>
 
@@ -251,7 +251,7 @@
     <dt>verify source</dt><dd><a class="src-link" href="https://gnu.org/software/bash/manual/html_node/Shell-Parameters.html">gnu.org/software/bash/manual/html_node/Shell-Parameters.html</a> (nameref attribute、Phase G 2026-05-14 cross-AI re-audit findings 対応で追加)</dd>
     <dt>分類</dt><dd>bats unit (CI で実行)、<code>test-fixtures/experiments/atomic/EXP-014-bash-nameref.bats</code></dd>
     <dt>期待結果</dt><dd>bash 5.x 動作、nameref 機能</dd>
-    <dt>関連 spec</dt><dd><a href="ssot-design.html">ssot-design.html</a> §3.3 bash 互換性注記</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/ssot-design.html">ssot-design.html</a> §3.3 bash 互換性注記</dd>
   </dl>
 </div>
 
@@ -265,7 +265,7 @@
     <dt>verify source</dt><dd><a class="src-link" href="https://cli.github.com/manual/gh_project_item-edit">cli.github.com/manual/gh_project_item-edit</a></dd>
     <dt>分類</dt><dd>smoke (test issue 1 件で実行、終了時 status 復元)、<code>experiments/EXP-015-gh-project-status-update.smoke.sh</code></dd>
     <dt>期待結果</dt><dd>status 更新成功、API rate limit OK</dd>
-    <dt>関連 spec</dt><dd><a href="gate-hook.html">gate-hook.html</a> §5.2、<a href="admin-cycle.html">admin-cycle.html</a> §3.2</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/gate-hook.html">gate-hook.html</a> §5.2、<a href="../spec/admin-cycle.html">admin-cycle.html</a> §3.2</dd>
   </dl>
 </div>
 
@@ -277,7 +277,7 @@
     <dt>verify source</dt><dd><a class="src-link" href="https://man7.org/linux/man-pages/man1/tmux.1.html">tmux(1)</a></dd>
     <dt>分類</dt><dd>bats unit (独立 socket)、<code>test-fixtures/experiments/toolchain/EXP-016-tmux-new-window-detached.bats</code></dd>
     <dt>期待結果</dt><dd>window 作成 / 消滅、tmux list-windows で確認</dd>
-    <dt>関連 spec</dt><dd><a href="spawn-protocol.html">spawn-protocol.html</a> §2</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/spawn-protocol.html">spawn-protocol.html</a> §2</dd>
   </dl>
 </div>
 
@@ -289,7 +289,7 @@
     <dt>verify source</dt><dd><a class="src-link" href="https://man7.org/linux/man-pages/man1/tmux.1.html">man7.org/linux/man-pages/man1/tmux.1.html</a> (FORMATS section、Phase G 2026-05-14 cross-AI re-audit findings 対応で追加)</dd>
     <dt>分類</dt><dd>bats unit (独立 socket)、<code>test-fixtures/experiments/toolchain/EXP-017-tmux-format-pane-state.bats</code></dd>
     <dt>期待結果</dt><dd>format 変数で crash 検知可能 (capture-pane より高速・信頼)</dd>
-    <dt>関連 spec</dt><dd><a href="crash-failure-mode.html">crash-failure-mode.html</a> §3、<a href="admin-cycle.html">admin-cycle.html</a> §3.3</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/crash-failure-mode.html">crash-failure-mode.html</a> §3、<a href="../spec/admin-cycle.html">admin-cycle.html</a> §3.3</dd>
   </dl>
 </div>
 
@@ -301,7 +301,7 @@
     <dt>verify source</dt><dd><a class="src-link" href="https://gofastmcp.com/servers/tools">gofastmcp.com/servers/tools</a></dd>
     <dt>分類</dt><dd>bats unit (cli/twl uv env 経由)、<code>test-fixtures/experiments/toolchain/EXP-018-fastmcp-handler-split.bats</code></dd>
     <dt>期待結果</dt><dd>fastmcp なし環境でも handler 直接呼び出し成功 (deferred-tool pattern 動作)</dd>
-    <dt>関連 spec</dt><dd><a href="twl-mcp-integration.html">twl-mcp-integration.html</a> §1.1</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/twl-mcp-integration.html">twl-mcp-integration.html</a> §1.1</dd>
   </dl>
 </div>
 
@@ -317,7 +317,7 @@
     <dt>verify source</dt><dd><a class="src-link" href="https://cli.github.com/manual/gh_project">cli.github.com/manual/gh_project</a> (15 write-capable sub-commands verified)、<a class="src-link" href="https://docs.github.com/en/graphql/reference/mutations#updateprojectv2field">GraphQL updateProjectV2Field</a></dd>
     <dt>分類</dt><dd>smoke (test project に対して実行、終了時 rollback)、<code>experiments/EXP-019-status-field-option-add.smoke.sh</code></dd>
     <dt>期待結果</dt><dd>少なくとも 1 手段で write 成功、最適手段を特定</dd>
-    <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §4.2、<a href="dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a> §2.2</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/tool-architecture.html">tool-architecture.html</a> §4.2、<a href="dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a> §2.2</dd>
   </dl>
 </div>
 
@@ -329,7 +329,7 @@
     <dt>verify source</dt><dd><a class="src-link" href="https://docs.github.com/en/graphql/reference/mutations">GraphQL Projects v2 mutations</a></dd>
     <dt>分類</dt><dd>smoke、<code>experiments/EXP-020-kanban-col-order.smoke.sh</code></dd>
     <dt>期待結果</dt><dd>kanban col 順序 = [Todo, Refined, In Progress, Review, Merged, Done] に設定可能</dd>
-    <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §4.2</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/tool-architecture.html">tool-architecture.html</a> §4.2</dd>
   </dl>
 </div>
 
@@ -341,7 +341,7 @@
     <dt>verify source</dt><dd><a class="src-link" href="https://cli.github.com/manual/gh_label">gh label manual</a></dd>
     <dt>分類</dt><dd>smoke (test repo、終了時 cleanup)、<code>experiments/EXP-021-label-add-remove.smoke.sh</code></dd>
     <dt>期待結果</dt><dd>label create/delete 成功、color/description 設定</dd>
-    <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §4.2</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/tool-architecture.html">tool-architecture.html</a> §4.2</dd>
   </dl>
 </div>
 
@@ -353,7 +353,7 @@
     <dt>verify source</dt><dd><a class="src-link" href="https://docs.github.com/en/graphql/reference/mutations">GraphQL Projects v2 mutations</a></dd>
     <dt>分類</dt><dd>smoke、<code>experiments/EXP-022-view-switch.smoke.sh</code></dd>
     <dt>期待結果</dt><dd>少なくとも 1 手段で view layout 設定可能</dd>
-    <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §4.2</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/tool-architecture.html">tool-architecture.html</a> §4.2</dd>
   </dl>
 </div>
 
@@ -365,7 +365,7 @@
     <dt>verify source</dt><dd><a class="src-link" href="https://docs.github.com/en/graphql/reference/mutations">GraphQL Projects v2 mutations</a></dd>
     <dt>分類</dt><dd>smoke、<code>experiments/EXP-023-filter-groupby.smoke.sh</code></dd>
     <dt>期待結果</dt><dd>filter + group-by 設定が API で write 可能</dd>
-    <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §4.2</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/tool-architecture.html">tool-architecture.html</a> §4.2</dd>
   </dl>
 </div>
 
@@ -378,7 +378,7 @@
     <dt>verify 対象</dt><dd>tool-project で gh CLI + GraphQL + gh-mcp の組み合わせで Project verify 可能か、独自 MCP tool <code>twl_validate_project_setup</code> 化の価値があるか</dd>
     <dt>分類</dt><dd>調査 (実装後判断、必要なら EXP-025 と統合)</dd>
     <dt>期待結果</dt><dd>3 手段で十分なら MCP tool 化見送り、不十分なら新規実装 (<code>cli/twl/src/twl/validation/project_setup.py</code> ~80 行)</dd>
-    <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §4.6、<a href="twl-mcp-integration.html">twl-mcp-integration.html</a></dd>
+    <dt>関連 spec</dt><dd><a href="../spec/tool-architecture.html">tool-architecture.html</a> §4.6、<a href="../spec/twl-mcp-integration.html">twl-mcp-integration.html</a></dd>
   </dl>
 </div>
 
@@ -392,7 +392,7 @@
     <dt>verify source</dt><dd><a class="src-link" href="https://git-scm.com/docs/git-submodule">git-submodule docs</a></dd>
     <dt>分類</dt><dd>smoke (test repo 作成 → template apply → build)</dd>
     <dt>期待結果</dt><dd>template apply 成功 + build PASS (smoke level)</dd>
-    <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §4.4</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/tool-architecture.html">tool-architecture.html</a> §4.4</dd>
   </dl>
 </div>
 
@@ -403,7 +403,7 @@
     <dt>verify 対象</dt><dd>同じ template を 2 回 apply して、2 回目で「全 file skip」になり最終 state が 1 回目と完全一致 (idempotent)</dd>
     <dt>分類</dt><dd>smoke (test repo、template 2 回 apply、git diff で確認)</dd>
     <dt>期待結果</dt><dd>2 回目 apply で diff なし、destructive 操作なし</dd>
-    <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §4.4</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/tool-architecture.html">tool-architecture.html</a> §4.4</dd>
   </dl>
 </div>
 
@@ -417,7 +417,7 @@
     <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a> (PostToolUse は exit code 2 で block 不可、stderr → Claude verbatim)</dd>
     <dt>分類</dt><dd>bats unit (mock 可)、<code>test-fixtures/experiments/hooks/EXP-027-verify-coverage-grep.bats</code></dd>
     <dt>期待結果</dt><dd>inferred / deduced を含む spec.html で warn 出力、verified のみで warn なし</dd>
-    <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §3.2、<a href="dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a> §1.2</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/tool-architecture.html">tool-architecture.html</a> §3.2、<a href="dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a> §1.2</dd>
   </dl>
 </div>
 
@@ -429,7 +429,7 @@
     <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a> (exit 2 で PreToolUse block、CLAUDE_PLUGIN_ROOT env verified)</dd>
     <dt>分類</dt><dd>bats unit (caller env mock)、<code>test-fixtures/experiments/hooks/EXP-028-spec-write-boundary.bats</code></dd>
     <dt>期待結果</dt><dd>(a) tool-architect caller で allow、(b) phase-* caller で exit 2 + deny reason、(c) user 手動 edit (env なし) で allow</dd>
-    <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §3.4、既存 <a href="../../../plugins/twl/scripts/hooks/pre-tool-use-worktree-boundary.sh">pre-tool-use-worktree-boundary.sh</a> の pattern 継承</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/tool-architecture.html">tool-architecture.html</a> §3.4、既存 <a href="../../../plugins/twl/scripts/hooks/pre-tool-use-worktree-boundary.sh">pre-tool-use-worktree-boundary.sh</a> の pattern 継承</dd>
   </dl>
 </div>
 
@@ -440,7 +440,7 @@
     <dt>verify 対象</dt><dd>tool-architect の軽量 PR cycle が (a) review PASS で 1〜2 回で完了、(b) review FAIL で 3 回 fix → escalate to user、(c) 3 回後も FAIL で AskUserQuestion 起動</dd>
     <dt>分類</dt><dd>smoke (sandbox 環境で実 PR 作成、review agent spawn)</dd>
     <dt>期待結果</dt><dd>fix loop 3 回 max で必ず収束 (PASS or escalate)、無限 loop なし</dd>
-    <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §3.3</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/tool-architecture.html">tool-architecture.html</a> §3.3</dd>
   </dl>
 </div>
 
@@ -454,7 +454,7 @@
     <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/plugins">code.claude.com/docs/en/plugins</a> (claude --plugin-dir flag verified)、既存 <code>co-self-improve</code> の test-target/main pattern</dd>
     <dt>分類</dt><dd>smoke (実 sandbox 起動、~30 min wall-clock)</dd>
     <dt>期待結果</dt><dd>1 cycle 完走 (timeout なし)、log files 揃う (jsonl + tmux capture + .mailbox + .audit)、cleanup で worktree 削除</dd>
-    <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §5.4-§5.5、<a href="sandbox-experiment.html">sandbox-experiment.html</a></dd>
+    <dt>関連 spec</dt><dd><a href="../spec/tool-architecture.html">tool-architecture.html</a> §5.4-§5.5、<a href="sandbox-experiment.html">sandbox-experiment.html</a></dd>
   </dl>
 </div>
 
@@ -466,7 +466,7 @@
     <dt>verify source</dt><dd><code>mcp__doobidoo__memory_search</code> tool interface (mode=hybrid + quality_boost、本 session で実利用、9 hash 蓄積)</dd>
     <dt>分類</dt><dd>調査 (実 doobidoo に対して N=20+ query で precision/recall 測定)</dd>
     <dt>期待結果</dt><dd>true positive (重複検出) > 80%、false positive (誤検出) < 20%。threshold 0.75 が不適切なら調整</dd>
-    <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §5.7、<a href="dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a> §3.7</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/tool-architecture.html">tool-architecture.html</a> §5.7、<a href="dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a> §3.7</dd>
   </dl>
 </div>
 
@@ -500,10 +500,10 @@ $ bash experiments/run-all.sh
   <dl>
     <dt>status</dt><dd><span class="vs verified">verified</span> (Phase F 2026-05-14: registry.yaml schema は内部 spec 明記 + bats schema check 11/11 PASS、<code>twl audit --registry</code> 実装後に experiment-verified 化)</dd>
     <dt>verify 対象</dt><dd><code>twl audit --registry</code> (新規) が registry.yaml の 5 section parsing + integrity_rules 7 件 全て trigger</dd>
-    <dt>verify source</dt><dd><a href="registry-schema.html#s2">registry-schema.html §2</a> + <a href="registry-schema.html#s6">§6</a></dd>
+    <dt>verify source</dt><dd><a href="../spec/registry-schema.html#s2">registry-schema.html §2</a> + <a href="../spec/registry-schema.html#s6">§6</a></dd>
     <dt>分類</dt><dd>bats unit、<code>test-fixtures/experiments/registry/EXP-032-registry-audit.bats</code></dd>
     <dt>期待結果</dt><dd>(a) 同 concern 2 role assign → critical detect、(b) prefix-role mismatch → critical detect、(c) forbidden 語 (<code>pilot</code>) 検出 → warning 1 件</dd>
-    <dt>関連 spec</dt><dd><a href="ssot-design.html">ssot-design.html §4</a></dd>
+    <dt>関連 spec</dt><dd><a href="../spec/ssot-design.html">ssot-design.html §4</a></dd>
   </dl>
 </div>
 
@@ -515,7 +515,7 @@ $ bash experiments/run-all.sh
     <dt>verify source</dt><dd>skills docs (<code>disable-model-invocation: true</code> verbatim、<span class="vs verified">verified</span>)</dd>
     <dt>分類</dt><dd>smoke (Claude session 必須、<code>experiments/workflow-atomic-composition.sh</code>)</dd>
     <dt>期待結果</dt><dd>各 atomic の <code>Step 3 report</code> で <code>.mailbox/$session/inbox.jsonl</code> に <code>step-completed</code> event が 3 件 emit、chain 全体終了</dd>
-    <dt>関連 spec</dt><dd><a href="atomic-verification.html">atomic-verification.html §2-3</a> + <a href="ssot-design.html">ssot-design.html §5</a></dd>
+    <dt>関連 spec</dt><dd><a href="../spec/atomic-verification.html">atomic-verification.html §2-3</a> + <a href="../spec/ssot-design.html">ssot-design.html §5</a></dd>
   </dl>
 </div>
 
@@ -524,10 +524,10 @@ $ bash experiments/run-all.sh
   <dl>
     <dt>status</dt><dd><span class="vs verified">verified</span> (Phase F 2026-05-14: registry.yaml components schema + bats schema check 7/7 PASS、Phase 3 cutover で SKILL.md rename 完了後に frontmatter empirical で experiment-verified 化)</dd>
     <dt>verify 対象</dt><dd>registry.yaml の <code>components</code> section が listing する name / role / file path と、実 SKILL.md frontmatter の name / role が一致</dd>
-    <dt>verify source</dt><dd><a href="registry-schema.html#s2">registry-schema.html §2</a> + skills docs (frontmatter schema、<span class="vs verified">verified</span>)</dd>
+    <dt>verify source</dt><dd><a href="../spec/registry-schema.html#s2">registry-schema.html §2</a> + skills docs (frontmatter schema、<span class="vs verified">verified</span>)</dd>
     <dt>分類</dt><dd>bats unit、<code>test-fixtures/experiments/registry/EXP-034-registry-components-consistency.bats</code></dd>
     <dt>期待結果</dt><dd>registry.yaml と実 file が drift → critical detect、両方が一致 → exit 0</dd>
-    <dt>関連 spec</dt><dd><a href="ssot-design.html">ssot-design.html §4.2</a></dd>
+    <dt>関連 spec</dt><dd><a href="../spec/ssot-design.html">ssot-design.html §4.2</a></dd>
   </dl>
 </div>
 
@@ -539,7 +539,7 @@ $ bash experiments/run-all.sh
     <dt>verify source</dt><dd>skills docs verbatim「Description NOT in context when disable-model-invocation is true」</dd>
     <dt>分類</dt><dd>smoke (<code>experiments/disable-model-invocation-token-measure.sh</code>)</dd>
     <dt>期待結果</dt><dd>workflow-* / atomic-* SKILL.md 10 件追加前後で context token 数が同程度 (差分 &lt; 100 tokens)、通常 skill 1 件追加では token 数が ~500 増える対照</dd>
-    <dt>関連 spec</dt><dd><a href="atomic-verification.html">atomic-verification.html §3</a></dd>
+    <dt>関連 spec</dt><dd><a href="../spec/atomic-verification.html">atomic-verification.html §3</a></dd>
   </dl>
 </div>
 
@@ -551,7 +551,7 @@ $ bash experiments/run-all.sh
     <dt>verify source</dt><dd>sub-agents docs (<span class="vs verified">verified</span>「Agent tool が唯一の subagent spawn 経路」「subagent は subagent spawn 不可」)</dd>
     <dt>分類</dt><dd>smoke (<code>experiments/atomic-agent-spawn.sh</code>)</dd>
     <dt>期待結果</dt><dd><code>atomic-phase-review</code> が <code>Agent(specialist-code-reviewer)</code> を call、specialist が PASS/FAIL verdict を return、atomic は Step 2 で verdict == "PASS" assert</dd>
-    <dt>関連 spec</dt><dd><a href="atomic-verification.html">atomic-verification.html §4</a> + <a href="boundary-matrix.html">boundary-matrix.html</a></dd>
+    <dt>関連 spec</dt><dd><a href="../spec/atomic-verification.html">atomic-verification.html §4</a> + <a href="../spec/boundary-matrix.html">boundary-matrix.html</a></dd>
   </dl>
 </div>
 
@@ -563,7 +563,7 @@ $ bash experiments/run-all.sh
     <dt>verify source</dt><dd><code>claude mcp list</code> で「✓ Connected」確認済</dd>
     <dt>分類</dt><dd>調査 (<code>experiments/doobidoo-tailscale-stability.sh</code>)</dd>
     <dt>期待結果</dt><dd>1 min interval ping × 8 h × 多 host で connection success rate &gt; 99%、reconnect time &lt; 3 s</dd>
-    <dt>関連 spec</dt><dd><a href="registry-schema.html#s5">registry-schema.html §5 (Authority SSoT 階層図、doobidoo)</a></dd>
+    <dt>関連 spec</dt><dd><a href="../spec/registry-schema.html#s5">registry-schema.html §5 (Authority SSoT 階層図、doobidoo)</a></dd>
   </dl>
 </div>
 
@@ -572,10 +572,10 @@ $ bash experiments/run-all.sh
   <dl>
     <dt>status</dt><dd><span class="vs experiment-verified">experiment-verified</span> (Phase F 2026-05-14: vocabulary regex empirical fixture で真陽性 4 + 偽陽性抑制 4 = 9/9 PASS、log あり)</dd>
     <dt>verify 対象</dt><dd><code>twl audit --vocabulary</code> が <code>phaser</code> forbidden list (<code>pilot</code>/<code>phase</code>/<code>controller</code>) を word boundary 厳密 detect + 公式名 (<code>Agent</code>/<code>Skill</code>/<code>Tool</code>) は false positive 抑制</dd>
-    <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/skills">code.claude.com/docs/en/skills</a> (公式名 Agent/Skill/Tool verbatim 規約の根拠) + <a href="registry-schema.html#s6">registry-schema.html §6 (audit_vocabulary pseudo-code、twl 内部実装 SSoT)</a>、Phase G 2026-05-14 cross-AI re-audit findings 対応で external URL 追加</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/skills">code.claude.com/docs/en/skills</a> (公式名 Agent/Skill/Tool verbatim 規約の根拠) + <a href="../spec/registry-schema.html#s6">registry-schema.html §6 (audit_vocabulary pseudo-code、twl 内部実装 SSoT)</a>、Phase G 2026-05-14 cross-AI re-audit findings 対応で external URL 追加</dd>
     <dt>分類</dt><dd>bats unit、<code>test-fixtures/experiments/registry/EXP-038-vocabulary-audit.bats</code></dd>
     <dt>期待結果</dt><dd>(a) spec 中の <code>pilot</code> 旧用法 → warning N 件 detect、(b) backtick 引用の <code>`co-autopilot`</code> → false positive 0、(c) <code>`Agent`</code> (公式名) → false positive 0、(d) <code>Phase 1 PoC</code> (migration-stage entity) → false positive 0</dd>
-    <dt>関連 spec</dt><dd><a href="registry-schema.html">registry-schema.html §4 + §6</a> + <a href="glossary.html">glossary.html §11</a></dd>
+    <dt>関連 spec</dt><dd><a href="../spec/registry-schema.html">registry-schema.html §4 + §6</a> + <a href="../spec/glossary.html">glossary.html §11</a></dd>
   </dl>
 </div>
 
@@ -589,7 +589,7 @@ $ bash experiments/run-all.sh
     <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a> (公式仕様: Hook chain order not guaranteed)</dd>
     <dt>分類</dt><dd>smoke (<code>experiments/EXP-039-hook-order.smoke.sh</code>、Phase G で実装)</dd>
     <dt>期待結果 (Phase 6 review WARN-2 fix で binary 判定)</dt><dd>(a) 10 回 fire の observed_orders array を log、(b) <strong>order_stable = (全 10 回が完全同一順序か否か)</strong> の binary 判定、true なら順序保証あり (公式仕様と divergence)、false なら順序保証なし (公式仕様準拠)、(c) 1 回でも異順発生で order_stable=false、グレーゾーンなし、(d) twill 既存 7 PreToolUse hook の order dependency audit 結果 emit、(e) order 依存検出時は単一 wrapper script chain に集約推奨</dd>
-    <dt>関連 spec</dt><dd><a href="hooks-mcp-policy.html#s3">hooks-mcp-policy.html §3</a> (Inv H-1〜3 hook independence)</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/hooks-mcp-policy.html#s3">hooks-mcp-policy.html §3</a> (Inv H-1〜3 hook independence)</dd>
   </dl>
 </div>
 
@@ -601,7 +601,7 @@ $ bash experiments/run-all.sh
     <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a> (公式: hook type prompt handler)</dd>
     <dt>分類</dt><dd>smoke (<code>experiments/EXP-040-prompt-handler.smoke.sh</code>、Phase G で実装)</dd>
     <dt>期待結果</dt><dd>(a) Sonnet 4.6 vs Opus 4.7 で per-hook latency 計測 (期待: 5-10s)、(b) per-hook cost 計測 (期待: ~$0.01)、(c) 100 回 fire での latency variance / cost variance 集計、(d) non-determinism (同 input で異 verdict) 検出率、(e) bash + mcp_tool exit code で代替可能な gate との性能比較</dd>
-    <dt>関連 spec</dt><dd><a href="hooks-mcp-policy.html#s2">hooks-mcp-policy.html §2</a> (MCP との組み合わせ pattern) + <a href="hooks-mcp-policy.html#s6">§6 defer items</a></dd>
+    <dt>関連 spec</dt><dd><a href="../spec/hooks-mcp-policy.html#s2">hooks-mcp-policy.html §2</a> (MCP との組み合わせ pattern) + <a href="../spec/hooks-mcp-policy.html#s6">§6 defer items</a></dd>
   </dl>
 </div>
 
@@ -613,7 +613,7 @@ $ bash experiments/run-all.sh
     <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/plugins-reference">code.claude.com/docs/en/plugins-reference</a> (公式 plugin schema)</dd>
     <dt>分類</dt><dd>smoke (<code>experiments/EXP-041-plugin-scope-hook.smoke.sh</code>、Phase G で実装)</dd>
     <dt>期待結果</dt><dd>(a) <code>plugins/twl/hooks.json</code> 新規作成 + plugin reload で自動読み込み verify、(b) hooks.json の schema validation (matcher / type / handler / outputType) が plugin loader で reject されない confirm、(c) .claude/settings.json と hooks.json の precedence 確認 (重複 matcher 時の挙動)、(d) plugin uninstall で hook 自動削除 confirm</dd>
-    <dt>関連 spec</dt><dd><a href="hooks-mcp-policy.html#s6">hooks-mcp-policy.html §6 defer items</a></dd>
+    <dt>関連 spec</dt><dd><a href="../spec/hooks-mcp-policy.html#s6">hooks-mcp-policy.html §6 defer items</a></dd>
   </dl>
 </div>
 
@@ -625,7 +625,7 @@ $ bash experiments/run-all.sh
     <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a> (公式 Elicitation entry 存在確認)</dd>
     <dt>分類</dt><dd>smoke (<code>experiments/EXP-042-elicitation-hook.smoke.sh</code>、Phase G で実装)</dd>
     <dt>期待結果 (Phase 6 review WARN-1 fix: 実機 fire を experiment-verified upgrade 条件として明示)</dt><dd>(a) <code>https://code.claude.com/docs/en/hooks</code> の WebFetch 内容に "Elicitation" entry 存在確認 (<strong>deduced 寄与のみ、experiment-verified upgrade 不能</strong>)、(b) <code>.claude/settings.json</code> の Elicitation hook 登録 + permission prompt fire で <strong>実機 trigger 確認</strong> (experiment-verified upgrade 条件 1)、(c) JSON output で <code>permissionDecision: allow|deny</code> 自動応答 verify (experiment-verified upgrade 条件 2)、(d) Monitor regex (INPUT-WAIT channel) と比較した token 節約率計測。<strong>experiment-verified への upgrade 条件 = (b) AND (c) 実機 fire 成功</strong>、(a) docs 確認のみでは deduced 止まり</dd>
-    <dt>関連 spec</dt><dd><a href="hooks-mcp-policy.html#s6">hooks-mcp-policy.html §6 defer items</a> + <a href="monitor-policy.html#s2">monitor-policy.html §2 actor scope</a></dd>
+    <dt>関連 spec</dt><dd><a href="../spec/hooks-mcp-policy.html#s6">hooks-mcp-policy.html §6 defer items</a> + <a href="../spec/monitor-policy.html#s2">monitor-policy.html §2 actor scope</a></dd>
   </dl>
 </div>
 
@@ -633,13 +633,13 @@ $ bash experiments/run-all.sh
   <h3>EXP-043: mcp_tool hook template 変数展開 empirical verify (Stage C migration trigger)</h3>
   <dl>
     <dt>status</dt><dd><span class="vs inferred">inferred</span> (公式 docs に template 変数展開仕様明示なし、Phase 1 PoC C1 user 確定 2026-05-15 新規追加、Phase 2 smoke で <span class="vs experiment-verified">experiment-verified</span> 化予定)</dd>
-    <dt>verify 対象</dt><dd>hooks.json の <code>type: "mcp_tool"</code> hook の <code>input</code> field 内 template 変数 (<code>${tool_input.command}</code> / <code>${error_type}</code> / <code>${error}</code> / <code>${tool_name}</code>) が、Claude Code 公式実装 (Opus 4.7) で正しく展開されて MCP tool に渡されるか empirical verify。<a href="hooks-mcp-policy.html#s5">hooks-mcp-policy.html §5.2</a> の Stage C (<code>PostToolUseFailure + mcp__doobidoo__memory_store</code> 直接連携) への migration trigger</dd>
+    <dt>verify 対象</dt><dd>hooks.json の <code>type: "mcp_tool"</code> hook の <code>input</code> field 内 template 変数 (<code>${tool_input.command}</code> / <code>${error_type}</code> / <code>${error}</code> / <code>${tool_name}</code>) が、Claude Code 公式実装 (Opus 4.7) で正しく展開されて MCP tool に渡されるか empirical verify。<a href="../spec/hooks-mcp-policy.html#s5">hooks-mcp-policy.html §5.2</a> の Stage C (<code>PostToolUseFailure + mcp__doobidoo__memory_store</code> 直接連携) への migration trigger</dd>
     <dt>verify source</dt><dd>未 (Phase 2 で smoke 実装 + 実機 fire 後に <code>https://code.claude.com/docs/en/hooks</code> + smoke log URL 設定)</dd>
     <dt>分類</dt><dd>smoke (<code>experiments/EXP-043-mcp-tool-hook-template-expansion.smoke.sh</code>、Phase 2 で実装)</dd>
     <dt>期待結果</dt><dd>(a) <code>hooks.json</code> に <code>type: "mcp_tool"</code> hook (dummy memory_store target) を追加、(b) Bash 失敗 (<code>false</code> 等) を fire、(c) doobidoo memory に <code>${tool_input.command}</code> 展開後の値 (<code>"false"</code>) が記録されるか check、(d) <code>${error_type}</code> / <code>${error}</code> / <code>${tool_name}</code> も同様 verify。<strong>experiment-verified upgrade 条件 = (c) AND (d) 全 4 変数の展開成功</strong>。展開 fail なら Stage A command hook 継続、success なら Stage C migration (Stage A script を archive)</dd>
     <dt>verify_checks</dt><dd>JSON schema: <code>{template_expanded: bool, recorded_command: string, recorded_error: string, recorded_error_type: string, recorded_tool_name: string}</code></dd>
     <dt>Phase 1 PoC 関連</dt><dd>Phase 1 PoC C1 (2026-05-15) で Stage A (command hook) 実装、本 EXP の verify 後に Stage C (mcp_tool hook 直接) に migrate</dd>
-    <dt>関連 spec</dt><dd><a href="hooks-mcp-policy.html#s5">hooks-mcp-policy.html §5.2 Stage 戦略</a></dd>
+    <dt>関連 spec</dt><dd><a href="../spec/hooks-mcp-policy.html#s5">hooks-mcp-policy.html §5.2 Stage 戦略</a></dd>
   </dl>
 </div>
 
@@ -647,10 +647,10 @@ $ bash experiments/run-all.sh
 
 <ul>
   <li><a href="sandbox-experiment.html">sandbox-experiment.html</a> (本 file の上位 spec、experiment hyperlink architecture)</li>
-  <li><a href="rebuild-plan.html">rebuild-plan.html</a> (<code>Phase 1 PoC</code> 前提として EXP 実行)</li>
+  <li><a href="../migration/rebuild-plan.html">rebuild-plan.html</a> (<code>Phase 1 PoC</code> 前提として EXP 実行)</li>
   <li><a href="research-findings.html">research-findings.html</a> (verify source 集約)</li>
-  <li><a href="registry-schema.html">registry-schema.html</a> (第 5 弾 dig 新規、本 file の EXP-032〜038 が検証する仕様)</li>
-  <li><a href="atomic-verification.html">atomic-verification.html</a> (atomic skill lifecycle、本 file の EXP-011/012 + EXP-033 + EXP-035 + EXP-036 が検証)</li>
+  <li><a href="../spec/registry-schema.html">registry-schema.html</a> (第 5 弾 dig 新規、本 file の EXP-032〜038 が検証する仕様)</li>
+  <li><a href="../spec/atomic-verification.html">atomic-verification.html</a> (atomic skill lifecycle、本 file の EXP-011/012 + EXP-033 + EXP-035 + EXP-036 が検証)</li>
   <li><a href="dig-report-ssot-2026-05-13.md">dig-report-ssot-2026-05-13.md</a> (第 5 弾 dig 独立 artifact、EXP-032〜038 の経緯)</li>
   <li>個別 EXP の関連 spec section は各 EXP block の「関連 spec」field 参照</li>
 </ul>

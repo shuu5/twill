@@ -20,7 +20,7 @@
   <h1>administrator polling cycle — 6-step + 不変条件 I-1〜I-7 (公式 verified)</h1>
   <div class="meta">draft-v3 (2026-05-13、第 5 弾 dig 反映) &middot; CronCreate 制約反映済 (#40228 known bug 対応) &middot; 案 2 先行実装案 &middot; tmux window prefix phaser-&lt;type&gt;-&lt;issue&gt; (旧 phase-* から rename)</div>
 
-<div class="info"><strong>第 5 弾 dig (2026-05-13) 反映</strong>: administrator が spawn する controller の tmux window prefix を <code>phase-&lt;type&gt;-&lt;issue&gt;</code> から <code>phaser-&lt;type&gt;-&lt;issue&gt;</code> に rename (sed 機械化)。<code>STATUS_TRANSITION_MAP</code> のキー更新と spawn 判断ロジック (§3.4) も連動。Mail event field の <code>skill</code> 値変更 (<code>phase-impl</code> → <code>phaser-impl</code>)。Crash failure mode の <code>durable: true</code> 記述は <a href="failure-analysis.html">failure-analysis.html</a> + <a href="crash-failure-mode.html">crash-failure-mode.html</a> §6 で「BROKEN (Issue #40228)」と整合確認 (durable=false で fallback 必須)。</div>
+<div class="info"><strong>第 5 弾 dig (2026-05-13) 反映</strong>: administrator が spawn する controller の tmux window prefix を <code>phase-&lt;type&gt;-&lt;issue&gt;</code> から <code>phaser-&lt;type&gt;-&lt;issue&gt;</code> に rename (sed 機械化)。<code>STATUS_TRANSITION_MAP</code> のキー更新と spawn 判断ロジック (§3.4) も連動。Mail event field の <code>skill</code> 値変更 (<code>phase-impl</code> → <code>phaser-impl</code>)。Crash failure mode の <code>durable: true</code> 記述は <a href="../research/failure-analysis.html">failure-analysis.html</a> + <a href="crash-failure-mode.html">crash-failure-mode.html</a> §6 で「BROKEN (Issue #40228)」と整合確認 (durable=false で fallback 必須)。</div>
 </header>
 
 <div class="info">
@@ -28,7 +28,7 @@
   <br>
   <strong>verified source</strong>: Claude Code 公式 <a href="https://code.claude.com/docs/en/scheduled-tasks">scheduled-tasks docs</a> + <a href="https://github.com/anthropics/claude-code/issues/40228">Issue #40228</a> (CronCreate durable bug OPEN) + research session bce9c4e4。<br>
   <br>
-  <strong>先行実装案 (案 2)</strong>: <a href="research-findings.html">research-findings.html</a> Agent C で推奨。本 file の content + <code>admin-cycle.sh</code> + <code>mailbox.sh</code> + <code>spawn-tmux.sh</code> + <code>administrator/SKILL.md</code> を最小実装することで、co-autopilot 停止中も admin 単独動作で validate 可能。
+  <strong>先行実装案 (案 2)</strong>: <a href="../research/research-findings.html">research-findings.html</a> Agent C で推奨。本 file の content + <code>admin-cycle.sh</code> + <code>mailbox.sh</code> + <code>spawn-tmux.sh</code> + <code>administrator/SKILL.md</code> を最小実装することで、co-autopilot 停止中も admin 単独動作で validate 可能。
 </div>
 
 <h2>§1. 公式 CronCreate 制約 (verified、設計に重大影響)</h2>
@@ -335,7 +335,7 @@ fi</code></pre>
 
 <h2>§9. dual-stack 期間中の運用 (su-observer 旧 vs administrator 新)</h2>
 
-<p>詳細は <a href="dual-stack-routing.html">dual-stack-routing.html</a>。本 file で重要な点:</p>
+<p>詳細は <a href="../migration/dual-stack-routing.html">dual-stack-routing.html</a>。本 file で重要な点:</p>
 
 <ul>
   <li><strong>state 分離</strong>: 旧 <code>.supervisor/</code> と新 <code>.admin/</code> を別 directory で管理 (session.json / cld-observe-any.log)</li>
@@ -348,13 +348,13 @@ fi</code></pre>
 <ul>
   <li><a href="overview.html">overview.html</a> §3 (3 階層 architecture 全体図、administrator L0 図解)</li>
   <li><a href="monitor-policy.html">monitor-policy.html</a> (Monitor primitive 規定 — actor / signal / composite / lifecycle、第 5 弾 dig Phase I 確定)</li>
-  <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> 不変条件 G (crash 検知) + T (mailbox atomic) + V (per-specialist scope)</li>
+  <li><a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> 不変条件 G (crash 検知) + T (mailbox atomic) + V (per-specialist scope)</li>
   <li><a href="crash-failure-mode.html">crash-failure-mode.html</a> §3 (heartbeat 検知 + 3 階層 SLA)</li>
   <li><a href="gate-hook.html">gate-hook.html</a> (phase-gate 経由の deny 受信処理)</li>
   <li><a href="spawn-protocol.html">spawn-protocol.html</a> (outline、tmux + mailbox spec 詳細、次 session)</li>
-  <li><a href="dual-stack-routing.html">dual-stack-routing.html</a> (outline、su-observer 旧 → administrator 新 移行)</li>
-  <li><a href="rebuild-plan.html">rebuild-plan.html</a> <code>Phase 1 PoC</code> (案 2 を最小実装する手順)</li>
-  <li><a href="research-findings.html">research-findings.html</a> (CronCreate + Project Board の verified 制約)</li>
+  <li><a href="../migration/dual-stack-routing.html">dual-stack-routing.html</a> (outline、su-observer 旧 → administrator 新 移行)</li>
+  <li><a href="../migration/rebuild-plan.html">rebuild-plan.html</a> <code>Phase 1 PoC</code> (案 2 を最小実装する手順)</li>
+  <li><a href="../research/research-findings.html">research-findings.html</a> (CronCreate + Project Board の verified 制約)</li>
   <li>既存 ADR-014 (Supervisor redesign su-observer) — administrator の前身、rebrand 計画</li>
 </ul>
 

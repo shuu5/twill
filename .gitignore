@@ -16,3 +16,4 @@
 # autopilot audit session data
 .audit/
 .dev-session/
+scripts/__pycache__/

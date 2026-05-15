@@ -384,7 +384,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--spec-dir", metavar="PATH",
-        help="検査対象ディレクトリ (default: <git_root>/architecture/spec/twill-plugin-rebuild)",
+        help="検査対象ディレクトリ (default: <git_root>/architecture/spec)",
     )
     parser.add_argument(
         "--output", choices=["text", "json"], default="text",
@@ -424,7 +424,7 @@ def main() -> int:
             print("ERROR: git root が検出できません。--spec-dir を指定してください。",
                   file=sys.stderr)
             return 2
-        spec_dir = git_root / "architecture" / "spec" / "twill-plugin-rebuild"
+        spec_dir = git_root / "architecture" / "spec"
 
     if not spec_dir.is_dir():
         print(f"ERROR: spec-dir が存在しません: {spec_dir}", file=sys.stderr)

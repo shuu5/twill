@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>dual-stack-routing — su-observer 旧 vs administrator 新 の共存</title>
-<link rel="stylesheet" href="common.css">
+<link rel="stylesheet" href="../spec/common.css">
 <style>
   header.doc-header { border-bottom: 3px solid var(--caution-fg); }
 </style>
@@ -16,7 +16,7 @@
 </header>
 
 <div class="info">
-  <strong>目的</strong>: <a href="admin-cycle.html">administrator</a> (新、案 2 先行実装) と <code>su-observer</code> (旧) が併存する <code>Phase 2</code> 期間中、各 Issue がどちらの flow で処理されるかの判定基準と routing 機構を仕様化する。移行完了 (<code>Phase 3 cutover</code>) 判定基準も明示。<br>
+  <strong>目的</strong>: <a href="../spec/admin-cycle.html">administrator</a> (新、案 2 先行実装) と <code>su-observer</code> (旧) が併存する <code>Phase 2</code> 期間中、各 Issue がどちらの flow で処理されるかの判定基準と routing 機構を仕様化する。移行完了 (<code>Phase 3 cutover</code>) 判定基準も明示。<br>
   <br>
   <strong>verified context</strong>: Agent C 分析 (本 session) — 「administrator 単独稼働 + pilot/worker 未実装」段階での safe degradation 設計が前提。
 </div>
@@ -128,7 +128,7 @@ STEPS:
 
 <h2>§8. 案 2 先行実装での dual-stack 早期開始</h2>
 
-<p><a href="admin-cycle.html">admin-cycle.html</a> 案 2 を本 session 後の次 session で実装する場合、dual-stack は以下の段階で進む:</p>
+<p><a href="../spec/admin-cycle.html">admin-cycle.html</a> 案 2 を本 session 後の次 session で実装する場合、dual-stack は以下の段階で進む:</p>
 
 <table>
   <thead>
@@ -148,10 +148,10 @@ STEPS:
 
 <ul>
   <li><a href="rebuild-plan.html">rebuild-plan.html</a> <code>Phase 2</code>-3 (dual-stack の Phase 概要)</li>
-  <li><a href="admin-cycle.html">admin-cycle.html</a> §9 (案 2 先行実装の dual-stack 注意点)</li>
+  <li><a href="../spec/admin-cycle.html">admin-cycle.html</a> §9 (案 2 先行実装の dual-stack 注意点)</li>
   <li><a href="deletion-inventory.html">deletion-inventory.html</a> (<code>Phase 3</code> 削除対象詳細)</li>
-  <li><a href="ssot-design.html">ssot-design.html</a> §4 (chain-runner.sh 廃止 migration、dual-stack 期間)</li>
-  <li><a href="tool-architecture.html">tool-architecture.html</a> §4.3 (cross-stack tool invoke 禁止)</li>
+  <li><a href="../spec/ssot-design.html">ssot-design.html</a> §4 (chain-runner.sh 廃止 migration、dual-stack 期間)</li>
+  <li><a href="../spec/tool-architecture.html">tool-architecture.html</a> §4.3 (cross-stack tool invoke 禁止)</li>
   <li>既存 ADR-024 (refined label → Status field 移行) の dual-stack 経験</li>
 </ul>
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>twill plugin rebuild — research findings (verified)</title>
-<link rel="stylesheet" href="common.css">
+<link rel="stylesheet" href="../spec/common.css">
 <style>
   /* file-specific accent: research は point #8b7f2c で「verified knowledge」を象徴 */
   header.doc-header { border-bottom: 3px solid var(--point-fg); }
@@ -229,7 +229,7 @@
 
 <h2>§5. tier 1 + tier 2 階層防御 (gate-hook 詳細)</h2>
 
-<p>本 section の詳細実装は <a href="gate-hook.html">gate-hook.html</a> 参照。要点:</p>
+<p>本 section の詳細実装は <a href="../spec/gate-hook.html">gate-hook.html</a> 参照。要点:</p>
 
 <ul>
   <li><strong>tier 1</strong> = <code>command</code> hook + <code>if: "Skill(phase-impl-*)"</code> で粗フィルタ、fast path (50ms 以内)</li>
@@ -333,12 +333,12 @@
 <h2>§8. 関連 spec 更新箇所</h2>
 
 <ul>
-  <li><a href="gate-hook.html">gate-hook.html</a>: §4 (tier 1 + tier 2 階層防御)、verified schema で全面書き直し済</li>
-  <li><a href="admin-cycle.html">admin-cycle.html</a>: CronCreate 公式制約反映 (#40228 known bug + session-scoped) + 案 2 先行実装の構成</li>
-  <li><a href="twl-mcp-integration.html">twl-mcp-integration.html</a>: §2 tool inventory を本 §2 で 15-18 件確定、§5 tier 階層を本 §5 参照</li>
+  <li><a href="../spec/gate-hook.html">gate-hook.html</a>: §4 (tier 1 + tier 2 階層防御)、verified schema で全面書き直し済</li>
+  <li><a href="../spec/admin-cycle.html">admin-cycle.html</a>: CronCreate 公式制約反映 (#40228 known bug + session-scoped) + 案 2 先行実装の構成</li>
+  <li><a href="../spec/twl-mcp-integration.html">twl-mcp-integration.html</a>: §2 tool inventory を本 §2 で 15-18 件確定、§5 tier 階層を本 §5 参照</li>
   <li><a href="failure-analysis.html">failure-analysis.html</a>: Bug #1687 root cause を本 KP-3 + KP-4 で verified に格上げ予定</li>
-  <li><a href="rebuild-plan.html">rebuild-plan.html</a>: <code>Phase 1 PoC</code> verify points に #9-#12 追加予定</li>
-  <li><a href="ssot-design.html">ssot-design.html</a>: KP-8 (tool 化粒度) で tmux wrapper の 1 行 vs script 判断材料追加</li>
+  <li><a href="../migration/rebuild-plan.html">rebuild-plan.html</a>: <code>Phase 1 PoC</code> verify points に #9-#12 追加予定</li>
+  <li><a href="../spec/ssot-design.html">ssot-design.html</a>: KP-8 (tool 化粒度) で tmux wrapper の 1 行 vs script 判断材料追加</li>
 </ul>
 
 <h2>§9. snapshot location</h2>

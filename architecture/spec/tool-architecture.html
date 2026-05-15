@@ -29,7 +29,7 @@
   <strong>位置づけ</strong>: <a href="overview.html">overview.html</a> 図 1 では右独立ボックスとして描画済。L0 administrator / L1 phaser (phase-*) / L2 workflow+specialist (worker-*) の 3 階層とは別、status 遷移と無関係な独立 invoke 群。<br>
   <br>
   <strong>第 4 弾 dig の核心成果</strong>: 旧 4 tool → 3 tool に再構成 (tool-utility 廃止)、各 tool の自律 verify / sandbox 検証 / PR cycle / log 分析 / Idea Issue 起票 etc. の詳細仕様を <code>dig</code> skill 3 軸 × 5 ラウンド = 20 question で確定。<br>
-  source: <a href="dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a> (本 session 第 4 弾の独立 dig artifact、12 section / ~470 行)。
+  source: <a href="../research/dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a> (本 session 第 4 弾の独立 dig artifact、12 section / ~470 行)。
 </div>
 
 <h2>§1. 3 tool 概要 (4 tool → 3 tool、tool-utility 廃止)</h2>
@@ -123,7 +123,7 @@
 <h3>2.4 step.sh framework 利用可否</h3>
 
 <ul>
-  <li>tool-* は <strong>step.sh framework を利用しない</strong> (status 遷移と無関係、step-verification の post-verify 機械検証 (<a href="invariant-fate-table.html#inv-u">不変条件 U</a>) は phase-* / worker-* 専用)</li>
+  <li>tool-* は <strong>step.sh framework を利用しない</strong> (status 遷移と無関係、step-verification の post-verify 機械検証 (<a href="../migration/invariant-fate-table.html#inv-u">不変条件 U</a>) は phase-* / worker-* 専用)</li>
   <li>tool 内部の step 管理は各 tool の SKILL.md で完結 (chain step との混同を避ける)</li>
 </ul>
 
@@ -141,7 +141,7 @@
 <ul>
   <li>tool-architect / tool-sandbox-runner は <code>mcp__doobidoo__memory_search</code> を使用 (verified、既存 SKILL.md)</li>
   <li>tool-* は twl MCP の <code>twl_worktree_create</code> 等を呼ぶ (Phase 5 cleanup 後)</li>
-  <li>GitHub 公式 MCP (<a href="research-findings.html">research-findings.html</a> §3) は tool-project が大半を使用 (issues / pull_requests / projects toolset)</li>
+  <li>GitHub 公式 MCP (<a href="../research/research-findings.html">research-findings.html</a> §3) は tool-project が大半を使用 (issues / pull_requests / projects toolset)</li>
   <li>tool-project は <strong>新 MCP tool</strong> <code>twl_validate_project_setup</code> を保持 (§4.6)</li>
 </ul>
 
@@ -157,13 +157,13 @@
   <li>spec の <strong>唯一 author</strong> (本 spec 自体も tool-architect 経由で生成可能、recursive OK)</li>
 </ul>
 
-<h3>3.2 verify 強制機構 (<strong>2 層併用</strong>) <a class="exp-link" href="experiment-index.html#EXP-027">EXP-027</a></h3>
+<h3>3.2 verify 強制機構 (<strong>2 層併用</strong>) <a class="exp-link" href="../research/experiment-index.html#EXP-027">EXP-027</a></h3>
 
 <div class="layer-box">
 <h5>層 1: SKILL.md MUST (LLM 規律)</h5>
 <ul>
   <li><strong>Step 0</strong>: spec 全 file を grep して 4-state status (inferred / deduced / verified / experiment-verified) を listing、未 verified を todo 化</li>
-  <li><strong>Step N</strong>: 新 feature 追加時に EXP 候補生成必須 (<a href="experiment-index.html">experiment-index.html</a> へ追記)</li>
+  <li><strong>Step N</strong>: 新 feature 追加時に EXP 候補生成必須 (<a href="../research/experiment-index.html">experiment-index.html</a> へ追記)</li>
 </ul>
 </div>
 
@@ -181,7 +181,7 @@
 
 <p><strong>2 層必須の根拠</strong> (dig core lesson §5): LLM だけ (層 1) では Step 0 漏れで verify gap、hook だけ (層 2) では context 欠如で false positive。両層併用で漏れと過剰検出の両方を抑制。</p>
 
-<h3>3.3 軽量 PR cycle <a class="exp-link" href="experiment-index.html#EXP-029">EXP-029</a></h3>
+<h3>3.3 軽量 PR cycle <a class="exp-link" href="../research/experiment-index.html#EXP-029">EXP-029</a></h3>
 
 <table>
   <thead>
@@ -203,7 +203,7 @@
 
 <p><strong>specialist-pr-cycle (8 specialist) との対比</strong>: 既存 chain workflow は specialist-pr-cycle で 8 specialist (security/code/llm/...) を回すが、spec PR にはオーバースペック。spec 専用の <strong>specialist-spec-review 1 agent</strong> に絞ることで軽量化、3 回 fix loop で収束させる。</p>
 
-<h3>3.4 spec edit 所有権 <a class="exp-link" href="experiment-index.html#EXP-028">EXP-028</a></h3>
+<h3>3.4 spec edit 所有権 <a class="exp-link" href="../research/experiment-index.html#EXP-028">EXP-028</a></h3>
 
 <table>
   <thead>
@@ -229,7 +229,7 @@
 <h3>3.5 spec 全体の verify status 集約</h3>
 
 <ul>
-  <li><a href="experiment-index.html">experiment-index.html</a> (本 session 第 3 弾で確定) が全 EXP-001〜031 の status listing hub</li>
+  <li><a href="../research/experiment-index.html">experiment-index.html</a> (本 session 第 3 弾で確定) が全 EXP-001〜031 の status listing hub</li>
   <li>個別 spec file は <code>&lt;span class="vs ..."&gt;</code> で claim 単位の status</li>
   <li>将来 CI で自動 status 更新 (実行結果 → badge 更新)</li>
   <li>本 dig (第 4 弾) で EXP-019〜031 が新規追加 (合計 31 EXP)</li>
@@ -260,15 +260,15 @@
     <tr><th>領域</th><th>EXP-id</th><th>gh CLI</th><th>GraphQL</th><th>gh-mcp</th><th>twl-mcp</th></tr>
   </thead>
   <tbody>
-    <tr><td>status field option 追加</td><td><a class="exp-link" href="experiment-index.html#EXP-019">EXP-019</a></td><td>?</td><td>?</td><td>?</td><td>N/A</td></tr>
-    <tr><td>kanban col order 変更</td><td><a class="exp-link" href="experiment-index.html#EXP-020">EXP-020</a></td><td>?</td><td>?</td><td>?</td><td>N/A</td></tr>
-    <tr><td>label add/remove</td><td><a class="exp-link" href="experiment-index.html#EXP-021">EXP-021</a></td><td>?</td><td>?</td><td>?</td><td>N/A</td></tr>
-    <tr><td>view switch (kanban/table)</td><td><a class="exp-link" href="experiment-index.html#EXP-022">EXP-022</a></td><td>?</td><td>?</td><td>?</td><td>N/A</td></tr>
-    <tr><td>filter / group-by 設定</td><td><a class="exp-link" href="experiment-index.html#EXP-023">EXP-023</a></td><td>?</td><td>?</td><td>?</td><td>N/A</td></tr>
+    <tr><td>status field option 追加</td><td><a class="exp-link" href="../research/experiment-index.html#EXP-019">EXP-019</a></td><td>?</td><td>?</td><td>?</td><td>N/A</td></tr>
+    <tr><td>kanban col order 変更</td><td><a class="exp-link" href="../research/experiment-index.html#EXP-020">EXP-020</a></td><td>?</td><td>?</td><td>?</td><td>N/A</td></tr>
+    <tr><td>label add/remove</td><td><a class="exp-link" href="../research/experiment-index.html#EXP-021">EXP-021</a></td><td>?</td><td>?</td><td>?</td><td>N/A</td></tr>
+    <tr><td>view switch (kanban/table)</td><td><a class="exp-link" href="../research/experiment-index.html#EXP-022">EXP-022</a></td><td>?</td><td>?</td><td>?</td><td>N/A</td></tr>
+    <tr><td>filter / group-by 設定</td><td><a class="exp-link" href="../research/experiment-index.html#EXP-023">EXP-023</a></td><td>?</td><td>?</td><td>?</td><td>N/A</td></tr>
   </tbody>
 </table>
 
-<p>調査結果に基づき、最も信頼性高い手段を採用。<strong>twl MCP custom tool 化判断</strong>は <a class="exp-link" href="experiment-index.html#EXP-024">EXP-024</a> で別途。</p>
+<p>調査結果に基づき、最も信頼性高い手段を採用。<strong>twl MCP custom tool 化判断</strong>は <a class="exp-link" href="../research/experiment-index.html#EXP-024">EXP-024</a> で別途。</p>
 
 <h3>4.3 template 詳細</h3>
 
@@ -292,7 +292,7 @@
   <li>将来拡張: python-fastapi / r-quarto / k8s (tech-debt Issue として段階追加)</li>
 </ul>
 
-<h3>4.4 template apply の安全性 <a class="exp-link" href="experiment-index.html#EXP-025">EXP-025</a> <a class="exp-link" href="experiment-index.html#EXP-026">EXP-026</a></h3>
+<h3>4.4 template apply の安全性 <a class="exp-link" href="../research/experiment-index.html#EXP-025">EXP-025</a> <a class="exp-link" href="../research/experiment-index.html#EXP-026">EXP-026</a></h3>
 
 <p><strong>dry-run default + file のみ add (既存上書き禁止) + rollback snapshot</strong>:</p>
 
@@ -390,7 +390,7 @@
   <li>新規 sandbox 追加は <code>plugins/twl/sandboxes/&lt;name&gt;/</code> directory 作成 + manifest 3 件で完結</li>
 </ul>
 
-<h3>5.4 twill-self sandbox の具体構造 (verified pattern 継承) <a class="exp-link" href="experiment-index.html#EXP-030">EXP-030</a></h3>
+<h3>5.4 twill-self sandbox の具体構造 (verified pattern 継承) <a class="exp-link" href="../research/experiment-index.html#EXP-030">EXP-030</a></h3>
 
 <p>既存 <code>co-self-improve</code> の <code>test-target/main</code> orphan branch 方式を継承:</p>
 
@@ -461,7 +461,7 @@ $TWL_SANDBOX_DIR/.audit/&lt;run-id&gt;/</code></pre>
   ]
 }</code></pre>
 
-<h3>5.7 doobidoo 重複 check + Idea Issue 起票 <a class="exp-link" href="experiment-index.html#EXP-031">EXP-031</a></h3>
+<h3>5.7 doobidoo 重複 check + Idea Issue 起票 <a class="exp-link" href="../research/experiment-index.html#EXP-031">EXP-031</a></h3>
 
 <p><strong>flow</strong> (semantic search + similarity &gt; 0.75 で link):</p>
 
@@ -500,7 +500,7 @@ $TWL_SANDBOX_DIR/.audit/&lt;run-id&gt;/</code></pre>
 6. mailbox -&gt; admin "sandbox-timeout" mail
 7. AskUserQuestion: continue / abort</code></pre>
 
-<p><strong>implementation</strong>: admin polling で sandbox window 存在 + duration check、budget は <a href="invariant-fate-table.html#inv-q">Inv Q format</a> で解釈</p>
+<p><strong>implementation</strong>: admin polling で sandbox window 存在 + duration check、budget は <a href="../migration/invariant-fate-table.html#inv-q">Inv Q format</a> で解釈</p>
 
 </div>
 
@@ -521,7 +521,7 @@ $TWL_SANDBOX_DIR/.audit/&lt;run-id&gt;/</code></pre>
   </tbody>
 </table>
 
-<p><strong>削減効果</strong>: tool-utility SKILL.md 79 行 + 関連 catalog files 廃止 (<a href="deletion-inventory.html">deletion-inventory.html</a> §6b)。</p>
+<p><strong>削減効果</strong>: tool-utility SKILL.md 79 行 + 関連 catalog files 廃止 (<a href="../migration/deletion-inventory.html">deletion-inventory.html</a> §6b)。</p>
 
 <h2>§7. invocation 経路詳細</h2>
 
@@ -631,7 +631,7 @@ spawn_tmux \
 <ul>
   <li><strong>hook independence invariant (Inv H-1〜3)</strong>: 各 hook は他 hook 中間 state に依存しない、共有 state は file 経由のみ。詳細: <a href="hooks-mcp-policy.html#s3">hooks-mcp-policy.html §3</a></li>
   <li><strong>未活用機能 (Phase 2 以降 defer)</strong>: <code>if</code> 条件フィルタ / <code>once</code> / <code>asyncRewake</code> / <code>statusMessage</code> / <code>FileChanged</code> / <code>Notification</code> / <code>Elicitation</code> / Plugin scope hook 分散。詳細: <a href="hooks-mcp-policy.html#s6">hooks-mcp-policy.html §6 defer items</a></li>
-  <li><strong>新 EXP 4 件 (Phase G smoke 候補)</strong>: <a class="exp-link" href="experiment-index.html#EXP-039">EXP-039 hook 順序</a> / <a class="exp-link" href="experiment-index.html#EXP-040">EXP-040 prompt handler</a> / <a class="exp-link" href="experiment-index.html#EXP-041">EXP-041 plugin scope hook</a> / <a class="exp-link" href="experiment-index.html#EXP-042">EXP-042 Elicitation hook</a></li>
+  <li><strong>新 EXP 4 件 (Phase G smoke 候補)</strong>: <a class="exp-link" href="../research/experiment-index.html#EXP-039">EXP-039 hook 順序</a> / <a class="exp-link" href="../research/experiment-index.html#EXP-040">EXP-040 prompt handler</a> / <a class="exp-link" href="../research/experiment-index.html#EXP-041">EXP-041 plugin scope hook</a> / <a class="exp-link" href="../research/experiment-index.html#EXP-042">EXP-042 Elicitation hook</a></li>
   <li><strong>PostToolUseFailure + memory_store 自動学習 hook</strong>: Phase 1 PoC で新規追加。詳細: <a href="hooks-mcp-policy.html#s5">hooks-mcp-policy.html §5</a></li>
 </ul>
 </div>
@@ -641,7 +641,7 @@ spawn_tmux \
 <ul>
   <li><strong>ADR-040 (feature-dev spawn gate)</strong>: user 明示依頼許可ルール。tool-* の起動承認 SSoT として継承。tool-architect / tool-project / tool-sandbox-runner いずれも user 明示 (slash command) が起動条件</li>
   <li><strong>ADR-041 (部分 Superseded)</strong>: spawn-controller.sh 統合は廃止、新 spec では tmux new-window 直接呼び出し (<code>spawn-tmux.sh</code> ~30 行) に簡素化。「user 明示依頼許可」原則は保全</li>
-  <li><strong>ADR-043 (本 spec 正典)</strong>: tool-* 3 件構成を Decision section に明記、本 dig 結果 (3 tool + 自律 verify + 軽量 PR cycle + sandbox catalog) を反映 (<a href="../../../plugins/twl/architecture/decisions/ADR-043-twill-radical-rebuild.md">ADR-043</a>)</li>
+  <li><strong>ADR-043 (本 spec 正典)</strong>: tool-* 3 件構成を Decision section に明記、本 dig 結果 (3 tool + 自律 verify + 軽量 PR cycle + sandbox catalog) を反映 (ADR-043 (未起票、Phase 4-5 で再検討))</li>
 </ul>
 
 <h2>§11. 関連 spec ファイル + 関連 EXP</h2>
@@ -654,15 +654,15 @@ spawn_tmux \
   <li><a href="boundary-matrix.html">boundary-matrix.html</a> (5 entity boundary matrix: administrator / phaser / workflow+atomic+specialist / tool-* / status-transition)</li>
   <li><a href="hooks-mcp-policy.html">hooks-mcp-policy.html</a> (Hooks 全体規定 + MCP 組み合わせ + 未活用機能 defer、Phase I 2026-05-15 確定)</li>
   <li><a href="monitor-policy.html">monitor-policy.html</a> (Monitor primitive 規定、Phase I 2026-05-15 確定)</li>
-  <li><a href="adr-fate-table.html">adr-fate-table.html</a> ADR-005/007/011/040/041 (tool-* rebrand の根拠)</li>
+  <li><a href="../migration/adr-fate-table.html">adr-fate-table.html</a> ADR-005/007/011/040/041 (tool-* rebrand の根拠)</li>
   <li><a href="admin-cycle.html">admin-cycle.html</a> §6 (案 2 先行実装で tool-sandbox-runner mail を受信)</li>
   <li><a href="twl-mcp-integration.html">twl-mcp-integration.html</a> §6.3 (tool-* が使う MCP tool、<code>twl_validate_project_setup</code> 含む)</li>
-  <li><a href="research-findings.html">research-findings.html</a> §3 (GitHub 公式 MCP 委譲、tool-project が主に使用)</li>
-  <li><a href="sandbox-experiment.html">sandbox-experiment.html</a> (sandbox catalog 構造、tool-sandbox-runner と統合)</li>
-  <li><a href="experiment-index.html">experiment-index.html</a> EXP-019〜031 (本 dig 由来)</li>
-  <li><a href="deletion-inventory.html">deletion-inventory.html</a> §6b (tool-utility 79 行廃止 + 関連削除)</li>
-  <li><a href="rebuild-plan.html">rebuild-plan.html</a> <code>Phase 1 PoC</code> (EXP-019〜031 組込み)</li>
-  <li><a href="dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a> (本 dig の独立 artifact、20 question 詳細)</li>
+  <li><a href="../research/research-findings.html">research-findings.html</a> §3 (GitHub 公式 MCP 委譲、tool-project が主に使用)</li>
+  <li><a href="../research/sandbox-experiment.html">sandbox-experiment.html</a> (sandbox catalog 構造、tool-sandbox-runner と統合)</li>
+  <li><a href="../research/experiment-index.html">experiment-index.html</a> EXP-019〜031 (本 dig 由来)</li>
+  <li><a href="../migration/deletion-inventory.html">deletion-inventory.html</a> §6b (tool-utility 79 行廃止 + 関連削除)</li>
+  <li><a href="../migration/rebuild-plan.html">rebuild-plan.html</a> <code>Phase 1 PoC</code> (EXP-019〜031 組込み)</li>
+  <li><a href="../research/dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a> (本 dig の独立 artifact、20 question 詳細)</li>
 </ul>
 
 <h3>11.2 関連 EXP-id 一覧 (本 dig 由来 13 件)</h3>
@@ -672,19 +672,19 @@ spawn_tmux \
     <tr><th>EXP-id</th><th>検証対象</th><th>担当 tool</th></tr>
   </thead>
   <tbody>
-    <tr><td><a class="exp-link" href="experiment-index.html#EXP-019">EXP-019</a></td><td>GitHub Project status field option 追加 (4 手段)</td><td>tool-project</td></tr>
-    <tr><td><a class="exp-link" href="experiment-index.html#EXP-020">EXP-020</a></td><td>kanban col order 変更 (4 手段)</td><td>tool-project</td></tr>
-    <tr><td><a class="exp-link" href="experiment-index.html#EXP-021">EXP-021</a></td><td>label add/remove (4 手段)</td><td>tool-project</td></tr>
-    <tr><td><a class="exp-link" href="experiment-index.html#EXP-022">EXP-022</a></td><td>view switch (kanban/table)</td><td>tool-project</td></tr>
-    <tr><td><a class="exp-link" href="experiment-index.html#EXP-023">EXP-023</a></td><td>filter / group-by 設定</td><td>tool-project</td></tr>
-    <tr><td><a class="exp-link" href="experiment-index.html#EXP-024">EXP-024</a></td><td>(将来) twl MCP custom tool 価値調査</td><td>tool-project</td></tr>
-    <tr><td><a class="exp-link" href="experiment-index.html#EXP-025">EXP-025</a></td><td>template apply + build smoke test</td><td>tool-project</td></tr>
-    <tr><td><a class="exp-link" href="experiment-index.html#EXP-026">EXP-026</a></td><td>template idempotent (2 回 apply で同一 state)</td><td>tool-project</td></tr>
-    <tr><td><a class="exp-link" href="experiment-index.html#EXP-027">EXP-027</a></td><td><code>verify-coverage.sh</code> の 4-state grep が正しく未 verified を catch</td><td>tool-architect</td></tr>
-    <tr><td><a class="exp-link" href="experiment-index.html#EXP-028">EXP-028</a></td><td><code>pre-tool-use-spec-write-boundary.sh</code> が tool-architect / user 以外を deny</td><td>tool-architect</td></tr>
-    <tr><td><a class="exp-link" href="experiment-index.html#EXP-029">EXP-029</a></td><td><code>specialist-spec-review</code> agent が 3 回 fix loop で収束 or escalate</td><td>tool-architect</td></tr>
-    <tr><td><a class="exp-link" href="experiment-index.html#EXP-030">EXP-030</a></td><td>sandbox-runner で twill-self sandbox の 1 cycle 動作 + log 収集</td><td>tool-sandbox-runner</td></tr>
-    <tr><td><a class="exp-link" href="experiment-index.html#EXP-031">EXP-031</a></td><td>doobidoo 重複 check (similarity &gt; 0.75) の false positive/negative 率</td><td>tool-sandbox-runner</td></tr>
+    <tr><td><a class="exp-link" href="../research/experiment-index.html#EXP-019">EXP-019</a></td><td>GitHub Project status field option 追加 (4 手段)</td><td>tool-project</td></tr>
+    <tr><td><a class="exp-link" href="../research/experiment-index.html#EXP-020">EXP-020</a></td><td>kanban col order 変更 (4 手段)</td><td>tool-project</td></tr>
+    <tr><td><a class="exp-link" href="../research/experiment-index.html#EXP-021">EXP-021</a></td><td>label add/remove (4 手段)</td><td>tool-project</td></tr>
+    <tr><td><a class="exp-link" href="../research/experiment-index.html#EXP-022">EXP-022</a></td><td>view switch (kanban/table)</td><td>tool-project</td></tr>
+    <tr><td><a class="exp-link" href="../research/experiment-index.html#EXP-023">EXP-023</a></td><td>filter / group-by 設定</td><td>tool-project</td></tr>
+    <tr><td><a class="exp-link" href="../research/experiment-index.html#EXP-024">EXP-024</a></td><td>(将来) twl MCP custom tool 価値調査</td><td>tool-project</td></tr>
+    <tr><td><a class="exp-link" href="../research/experiment-index.html#EXP-025">EXP-025</a></td><td>template apply + build smoke test</td><td>tool-project</td></tr>
+    <tr><td><a class="exp-link" href="../research/experiment-index.html#EXP-026">EXP-026</a></td><td>template idempotent (2 回 apply で同一 state)</td><td>tool-project</td></tr>
+    <tr><td><a class="exp-link" href="../research/experiment-index.html#EXP-027">EXP-027</a></td><td><code>verify-coverage.sh</code> の 4-state grep が正しく未 verified を catch</td><td>tool-architect</td></tr>
+    <tr><td><a class="exp-link" href="../research/experiment-index.html#EXP-028">EXP-028</a></td><td><code>pre-tool-use-spec-write-boundary.sh</code> が tool-architect / user 以外を deny</td><td>tool-architect</td></tr>
+    <tr><td><a class="exp-link" href="../research/experiment-index.html#EXP-029">EXP-029</a></td><td><code>specialist-spec-review</code> agent が 3 回 fix loop で収束 or escalate</td><td>tool-architect</td></tr>
+    <tr><td><a class="exp-link" href="../research/experiment-index.html#EXP-030">EXP-030</a></td><td>sandbox-runner で twill-self sandbox の 1 cycle 動作 + log 収集</td><td>tool-sandbox-runner</td></tr>
+    <tr><td><a class="exp-link" href="../research/experiment-index.html#EXP-031">EXP-031</a></td><td>doobidoo 重複 check (similarity &gt; 0.75) の false positive/negative 率</td><td>tool-sandbox-runner</td></tr>
   </tbody>
 </table>
 

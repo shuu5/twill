@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>twill plugin rebuild — pitfalls-catalog 継承戦略</title>
-<link rel="stylesheet" href="common.css">
+<link rel="stylesheet" href="../spec/common.css">
 <style>
   header.doc-header { border-bottom: 3px solid var(--caution-fg); }
   .audit-table { font-size: 14px; }
@@ -103,17 +103,17 @@
     <tr>
       <td><strong>P-A</strong>: file mailbox 並列 write race</td>
       <td>Inv T 検証、本 spec 確定</td>
-      <td><a class="exp-link" href="experiment-index.html#EXP-006">EXP-006</a></td>
+      <td><a class="exp-link" href="../research/experiment-index.html#EXP-006">EXP-006</a></td>
     </tr>
     <tr>
       <td><strong>P-B</strong>: PreToolUse hook config の deploy 漏れ</td>
       <td>Inv X 強化、Bug #1687 lesson</td>
-      <td><a class="exp-link" href="experiment-index.html#EXP-001">EXP-001-003</a></td>
+      <td><a class="exp-link" href="../research/experiment-index.html#EXP-001">EXP-001-003</a></td>
     </tr>
     <tr>
       <td><strong>P-C</strong>: 3 階層 spawn の cwd 渡し漏れ</td>
       <td>Inv B 強化、spawn-tmux.sh --cwd 必須</td>
-      <td><a class="exp-link" href="experiment-index.html#EXP-016">EXP-016</a></td>
+      <td><a class="exp-link" href="../research/experiment-index.html#EXP-016">EXP-016</a></td>
     </tr>
     <tr>
       <td><strong>P-D</strong>: tmux window 命名 50 文字制限超過 (truncation)</td>
@@ -123,7 +123,7 @@
     <tr>
       <td><strong>P-E</strong>: CronCreate durable=true 永続化期待 (#40228)</td>
       <td>本 session WebFetch verified、admin-cycle.sh で誤用注意</td>
-      <td><a class="exp-link" href="experiment-index.html#EXP-004">EXP-004</a></td>
+      <td><a class="exp-link" href="../research/experiment-index.html#EXP-004">EXP-004</a></td>
     </tr>
   </tbody>
 </table>
@@ -135,7 +135,7 @@
   <tbody>
     <tr>
       <td>構造的不能化 lesson (8 件)</td>
-      <td><a href="failure-analysis.html">failure-analysis.html</a> に集約 (本 spec の MUST / SHOULD として正式化)</td>
+      <td><a href="../research/failure-analysis.html">failure-analysis.html</a> に集約 (本 spec の MUST / SHOULD として正式化)</td>
     </tr>
     <tr>
       <td>保全 lesson (11 件)</td>
@@ -166,10 +166,10 @@
 <h2>§6. 関連 spec</h2>
 
 <ul>
-  <li><a href="failure-analysis.html">failure-analysis.html</a> 9 P0 bug 深掘り + 横断要因</li>
+  <li><a href="../research/failure-analysis.html">failure-analysis.html</a> 9 P0 bug 深掘り + 横断要因</li>
   <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> Inv N (lesson structuralization) + T-X (新規)</li>
-  <li><a href="admin-cycle.html">admin-cycle.html</a> §5 escalate (stuck pattern / budget pause)</li>
-  <li><a href="sandbox-experiment.html">sandbox-experiment.html</a> 新 pitfall の verify EXP</li>
+  <li><a href="../spec/admin-cycle.html">admin-cycle.html</a> §5 escalate (stuck pattern / budget pause)</li>
+  <li><a href="../research/sandbox-experiment.html">sandbox-experiment.html</a> 新 pitfall の verify EXP</li>
   <li>既存 <code>plugins/twl/skills/su-observer/refs/pitfalls-catalog.md</code> (23 sections verified)</li>
   <li>ADR-036 (lesson structuralization MUST)</li>
 </ul>

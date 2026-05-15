@@ -21,7 +21,7 @@
 <div class="info"><strong>第 5 弾 dig (2026-05-13) 反映</strong>: hook の <code>if</code> field 内 SKILL pattern を <code>Skill(phase-*)</code> から <code>Skill(phaser-*)</code> に rename (sed 機械化)。<code>phase-gate.sh</code> handler は概念的に「gate hook handler」と呼ぶ (vocabulary <code>hook</code> entity の一部、forbidden synonym: <code>phase-gate</code>)。tier 2 MCP handler の <code>_extract_issue_num(skill_name)</code> regex も <code>phaser-(explore|refine|impl|pr)-(\d+)</code> に更新する必要 (実装段階)。<a href="registry-schema.html">registry-schema.html</a> hooks section が SSoT。</div>
 
 <div class="info">
-  <strong>目的</strong>: <a href="invariant-fate-table.html#inv-w">不変条件 W (PreToolUse hook で status gate 機械化)</a> の具体実装を仕様化する。phase-* invocation 時に GitHub Project Board status を verify し、不一致なら deny + administrator notify。<br>
+  <strong>目的</strong>: <a href="../migration/invariant-fate-table.html#inv-w">不変条件 W (PreToolUse hook で status gate 機械化)</a> の具体実装を仕様化する。phase-* invocation 時に GitHub Project Board status を verify し、不一致なら deny + administrator notify。<br>
   <br>
   <strong>verified source</strong>: Claude Code 公式 docs (<a href="https://code.claude.com/docs/en/hooks">hooks reference</a>) + research session bce9c4e4 (120 sources、Critique PASS、doobidoo hash 6fdf1d0b)。<br>
   <br>
@@ -405,7 +405,7 @@ fi</code></pre>
 
 <h3>11.2 <code>Phase 1 PoC</code> verify points (新規 #9-#12)</h3>
 
-<p><a href="rebuild-plan.html">rebuild-plan.html</a> の <code>Phase 1 PoC</code> verify points に以下を追加:</p>
+<p><a href="../migration/rebuild-plan.html">rebuild-plan.html</a> の <code>Phase 1 PoC</code> verify points に以下を追加:</p>
 
 <ul>
   <li>VP-9: tier 1 + tier 2 hook が parallel 実行されることを確認 (<code>additionalContext</code> に両方の reason が含まれる)</li>
@@ -417,13 +417,13 @@ fi</code></pre>
 <h2>§12. 関連 spec ファイル</h2>
 
 <ul>
-  <li><a href="invariant-fate-table.html#inv-w">不変条件 W (PreToolUse hook で status gate 機械化)</a></li>
-  <li><a href="failure-analysis.html">failure-analysis.html</a> Bug #1660/1662/1663/1684 (横断要因 F-2)</li>
+  <li><a href="../migration/invariant-fate-table.html#inv-w">不変条件 W (PreToolUse hook で status gate 機械化)</a></li>
+  <li><a href="../research/failure-analysis.html">failure-analysis.html</a> Bug #1660/1662/1663/1684 (横断要因 F-2)</li>
   <li><a href="twl-mcp-integration.html">twl-mcp-integration.html</a> §5 (tier 階層) + §6.2 pilot 用 tool に <code>twl_phase_gate_check</code></li>
   <li><a href="overview.html">overview.html</a> 図 1 + 原則 7 (status gate は PreToolUse hook で機械化)</li>
   <li><a href="admin-cycle.html">admin-cycle.html</a> (deny 受信 → administrator mailbox 処理)</li>
-  <li><a href="regression-test-strategy.html">regression-test-strategy.html</a> (<code>phase-gate-hook.bats</code> 新規)</li>
-  <li><a href="research-findings.html">research-findings.html</a> §4 (本 file の根拠 research session)</li>
+  <li><a href="../migration/regression-test-strategy.html">regression-test-strategy.html</a> (<code>phase-gate-hook.bats</code> 新規)</li>
+  <li><a href="../research/research-findings.html">research-findings.html</a> §4 (本 file の根拠 research session)</li>
 </ul>
 
 <h2>§13. verify source</h2>

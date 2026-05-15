@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>rebuild-plan — outline</title>
-<link rel="stylesheet" href="common.css">
+<link rel="stylesheet" href="../spec/common.css">
 <style>
   header.doc-header { border-bottom: 3px solid var(--caution-fg); }
 </style>
@@ -17,7 +17,7 @@
 
 <div class="caution">本 file は <code>twill-plugin-rebuild</code> spec の outline。次 session で Strangler Fig 4 phase rebuild plan の詳細を実装する。draft-v1 §11 を発展、<code>Phase 1 PoC</code> (#1660 sanitize) の具体手順を deep-dive。</div>
 
-<div class="info"><strong>第 5 弾 dig (2026-05-13) 反映</strong>: <code>Phase 1 PoC</code> の ★ STEP 0 で実行する EXP を <strong>EXP-001〜031 (31 件) → EXP-001〜038 (38 件)</strong> に拡張。第 5 弾 dig 由来の 7 件 (EXP-032 registry audit / EXP-033 atomic composition / EXP-034 registry↔SKILL 整合 / EXP-035 disable-model-invocation 効果実測 / EXP-036 atomic-Agent spawn / EXP-037 doobidoo Tailscale 安定性 / EXP-038 vocabulary audit) を追加。verify points も VP-13〜VP-16 → VP-17〜VP-20 (registry.yaml audit / atomic composition / disable-model-invocation 効果 / vocabulary 命名衝突検出) を追加。詳細: <a href="experiment-index.html">experiment-index.html カテゴリ N</a> + <a href="dig-report-ssot-2026-05-13.md">dig-report-ssot-2026-05-13.md §9.4 新規 EXP</a>。
+<div class="info"><strong>第 5 弾 dig (2026-05-13) 反映</strong>: <code>Phase 1 PoC</code> の ★ STEP 0 で実行する EXP を <strong>EXP-001〜031 (31 件) → EXP-001〜038 (38 件)</strong> に拡張。第 5 弾 dig 由来の 7 件 (EXP-032 registry audit / EXP-033 atomic composition / EXP-034 registry↔SKILL 整合 / EXP-035 disable-model-invocation 効果実測 / EXP-036 atomic-Agent spawn / EXP-037 doobidoo Tailscale 安定性 / EXP-038 vocabulary audit) を追加。verify points も VP-13〜VP-16 → VP-17〜VP-20 (registry.yaml audit / atomic composition / disable-model-invocation 効果 / vocabulary 命名衝突検出) を追加。詳細: <a href="../research/experiment-index.html">experiment-index.html カテゴリ N</a> + <a href="../research/dig-report-ssot-2026-05-13.md">dig-report-ssot-2026-05-13.md §9.4 新規 EXP</a>。
 <br>
 さらに <code>Phase 1 PoC</code> で新規作成: <code>plugins/twl/registry.yaml</code> (新規、6 section schema、glossary section seed = core 22 entity = 10 role + 11 non-role + 1 deprecated、Phase F 2026-05-14 で verify-status 追加)。<code>Phase 2 dual-stack</code> で components 完全 listing、<code>Phase 3 cutover</code> で <code>cli/twl/types.yaml</code> + <code>plugins/twl/deps.yaml</code> + 第 3 弾 dig 案 3 <code>step.sh framework</code> + <code>chain-steps.sh</code> (廃止予告 mark) を全廃、<code>Phase 4 cleanup</code> で命名 policy ADR (ADR-045 = 2026-05-14 Accepted 済) の experiment-verified 化完遂。</div>
 
@@ -36,19 +36,19 @@
     <tr><th>EXP</th><th>concern</th><th>verify path</th><th>関連 ADR / Inv</th></tr>
   </thead>
   <tbody>
-    <tr><td><a href="experiment-index.html#EXP-001">EXP-001</a></td><td>PreToolUse hook matcher 単数 schema 受理</td><td>bats unit: <code>test-fixtures/experiments/hooks/EXP-001-hook-matcher-singular.bats</code></td><td>ADR-043 Decision §7 (gate hook)</td></tr>
-    <tr><td><a href="experiment-index.html#EXP-002">EXP-002</a></td><td>PreToolUse hook exit code 0/1/2 の意味</td><td>bats unit: <code>test-fixtures/experiments/hooks/EXP-002-hook-exit-code.bats</code></td><td>ADR-043 Decision §7</td></tr>
-    <tr><td><a href="experiment-index.html#EXP-003">EXP-003</a></td><td>permissionDecision enum 受理</td><td>bats unit: <code>test-fixtures/experiments/hooks/EXP-003-permission-decision.bats</code></td><td>ADR-043 Decision §7</td></tr>
-    <tr><td><a href="experiment-index.html#EXP-006">EXP-006</a></td><td>mailbox flock atomic write (race condition)</td><td>bats unit: <code>test-fixtures/experiments/mailbox/EXP-006-mailbox-flock-atomic.bats</code></td><td><a href="invariant-fate-table.html#inv-t">Inv T</a> mailbox atomic</td></tr>
-    <tr><td><a href="experiment-index.html#EXP-007">EXP-007</a></td><td>tier 1 + tier 2 hook parallel 実行</td><td>smoke (Claude session 必須)</td><td>ADR-043 Decision §7</td></tr>
-    <tr><td><a href="experiment-index.html#EXP-008">EXP-008</a></td><td>bypassPermissions でも tier 2 deny 効く</td><td>smoke</td><td>ADR-043 Decision §7</td></tr>
-    <tr><td><a href="experiment-index.html#EXP-009">EXP-009</a></td><td>Plugin Monitor stdout が session に notification (mcp-watchdog 廃止根拠)</td><td>smoke</td><td><a href="invariant-fate-table.html#inv-x">Inv X</a> deploy-verify セット (VP-11 対応)</td></tr>
-    <tr><td><a href="experiment-index.html#EXP-010">EXP-010</a></td><td>twl plugin 化 + namespace 解決 (spawn 設計の根幹)</td><td>smoke (<code>claude --plugin-dir</code>)</td><td>ADR-043 Decision §1 (10 role plugin 構成)</td></tr>
-    <tr><td><a href="experiment-index.html#EXP-027">EXP-027</a></td><td>tool-architect verify-coverage grep boundary</td><td>bats unit: <code>test-fixtures/experiments/tool-architect/EXP-027-verify-coverage-grep.bats</code></td><td>ADR-043 Decision §1 (tool role)</td></tr>
-    <tr><td><a href="experiment-index.html#EXP-028">EXP-028</a></td><td>tool-architect spec write boundary (PreToolUse hook)</td><td>bats unit: <code>test-fixtures/experiments/tool-architect/EXP-028-spec-write-boundary.bats</code></td><td>ADR-043 Decision §1 + §7</td></tr>
-    <tr><td><a href="experiment-index.html#EXP-032">EXP-032</a></td><td>registry.yaml audit (5 section parse + 7 integrity_rules trigger)</td><td>bats unit: <code>test-fixtures/experiments/registry/EXP-032-registry-audit.bats</code> (Step 3 で実装済、Phase C で path migration)</td><td>ADR-043 Decision §5 (registry.yaml 統合 SSoT) + ADR-045</td></tr>
-    <tr><td><a href="experiment-index.html#EXP-034">EXP-034</a></td><td>registry.yaml ↔ 実 SKILL.md frontmatter 整合性</td><td>bats unit: <code>test-fixtures/experiments/registry/EXP-034-registry-components-consistency.bats</code> (Step 3 で実装済)</td><td>ADR-043 Decision §5 + ADR-045</td></tr>
-    <tr><td><a href="experiment-index.html#EXP-038">EXP-038</a></td><td>vocabulary audit (forbidden word boundary + false positive 抑制 3 種)</td><td>bats unit: <code>test-fixtures/experiments/registry/EXP-038-vocabulary-audit.bats</code> (Step 3 で実装済)</td><td>ADR-045 §1 (1 entity = 1 name)</td></tr>
+    <tr><td><a href="../research/experiment-index.html#EXP-001">EXP-001</a></td><td>PreToolUse hook matcher 単数 schema 受理</td><td>bats unit: <code>test-fixtures/experiments/hooks/EXP-001-hook-matcher-singular.bats</code></td><td>ADR-043 Decision §7 (gate hook)</td></tr>
+    <tr><td><a href="../research/experiment-index.html#EXP-002">EXP-002</a></td><td>PreToolUse hook exit code 0/1/2 の意味</td><td>bats unit: <code>test-fixtures/experiments/hooks/EXP-002-hook-exit-code.bats</code></td><td>ADR-043 Decision §7</td></tr>
+    <tr><td><a href="../research/experiment-index.html#EXP-003">EXP-003</a></td><td>permissionDecision enum 受理</td><td>bats unit: <code>test-fixtures/experiments/hooks/EXP-003-permission-decision.bats</code></td><td>ADR-043 Decision §7</td></tr>
+    <tr><td><a href="../research/experiment-index.html#EXP-006">EXP-006</a></td><td>mailbox flock atomic write (race condition)</td><td>bats unit: <code>test-fixtures/experiments/mailbox/EXP-006-mailbox-flock-atomic.bats</code></td><td><a href="invariant-fate-table.html#inv-t">Inv T</a> mailbox atomic</td></tr>
+    <tr><td><a href="../research/experiment-index.html#EXP-007">EXP-007</a></td><td>tier 1 + tier 2 hook parallel 実行</td><td>smoke (Claude session 必須)</td><td>ADR-043 Decision §7</td></tr>
+    <tr><td><a href="../research/experiment-index.html#EXP-008">EXP-008</a></td><td>bypassPermissions でも tier 2 deny 効く</td><td>smoke</td><td>ADR-043 Decision §7</td></tr>
+    <tr><td><a href="../research/experiment-index.html#EXP-009">EXP-009</a></td><td>Plugin Monitor stdout が session に notification (mcp-watchdog 廃止根拠)</td><td>smoke</td><td><a href="invariant-fate-table.html#inv-x">Inv X</a> deploy-verify セット (VP-11 対応)</td></tr>
+    <tr><td><a href="../research/experiment-index.html#EXP-010">EXP-010</a></td><td>twl plugin 化 + namespace 解決 (spawn 設計の根幹)</td><td>smoke (<code>claude --plugin-dir</code>)</td><td>ADR-043 Decision §1 (10 role plugin 構成)</td></tr>
+    <tr><td><a href="../research/experiment-index.html#EXP-027">EXP-027</a></td><td>tool-architect verify-coverage grep boundary</td><td>bats unit: <code>test-fixtures/experiments/tool-architect/EXP-027-verify-coverage-grep.bats</code></td><td>ADR-043 Decision §1 (tool role)</td></tr>
+    <tr><td><a href="../research/experiment-index.html#EXP-028">EXP-028</a></td><td>tool-architect spec write boundary (PreToolUse hook)</td><td>bats unit: <code>test-fixtures/experiments/tool-architect/EXP-028-spec-write-boundary.bats</code></td><td>ADR-043 Decision §1 + §7</td></tr>
+    <tr><td><a href="../research/experiment-index.html#EXP-032">EXP-032</a></td><td>registry.yaml audit (5 section parse + 7 integrity_rules trigger)</td><td>bats unit: <code>test-fixtures/experiments/registry/EXP-032-registry-audit.bats</code> (Step 3 で実装済、Phase C で path migration)</td><td>ADR-043 Decision §5 (registry.yaml 統合 SSoT) + ADR-045</td></tr>
+    <tr><td><a href="../research/experiment-index.html#EXP-034">EXP-034</a></td><td>registry.yaml ↔ 実 SKILL.md frontmatter 整合性</td><td>bats unit: <code>test-fixtures/experiments/registry/EXP-034-registry-components-consistency.bats</code> (Step 3 で実装済)</td><td>ADR-043 Decision §5 + ADR-045</td></tr>
+    <tr><td><a href="../research/experiment-index.html#EXP-038">EXP-038</a></td><td>vocabulary audit (forbidden word boundary + false positive 抑制 3 種)</td><td>bats unit: <code>test-fixtures/experiments/registry/EXP-038-vocabulary-audit.bats</code> (Step 3 で実装済)</td><td>ADR-045 §1 (1 entity = 1 name)</td></tr>
   </tbody>
 </table>
 
@@ -84,16 +84,16 @@
   <li><strong><code>Phase 1</code>: PoC (Day 1-3)</strong> — 最小実装で 3 階層 + step verification + file mailbox + gate hook が動くことを実証
     <ul>
       <li><strong>★ STEP -1 (Phase I 2026-05-15 dig Q3 確定 — hook id audit 結果反映): 既存 PreToolUse hook 全件無効化</strong> — <code>plugins/twl/hooks/hooks.json</code> を <code>hooks.json.bak</code> に rename し、<code>hooks.json</code> を <strong>minimal 3 hook (audit 結果具体化)</strong> に置換: (a) <code>pre-tool-use-host-safety.sh</code> (host-safety、tmux 破壊禁止、CLAUDE.md global 不変条件)、(b) <code>pre-bash-commit-validate.sh</code> (commit-validate、Conventional Commits 形式)、(c) <code>pre-bash-merge-guard.sh</code> + <code>pre-bash-merge-gate-block.sh</code> + <code>mcp-shadow-merge-guard-writer.sh</code> (merge-guard 3 sub hook、不変条件 S、merge-gate.json status verify)。<strong>背景</strong>: 既存 hook は新 architecture でほぼ全廃予定 (chain-runner 廃止に伴い無意味化)、error 通知が運用 noise になる。<strong>復旧</strong>: rollback 時に <code>hooks.json.bak</code> を rename で復元。<strong>影響</strong>: spec-review-gate / phase3-gate / refined-status-gate / pre-pr-gate 等 17 件無効化、新 phase-gate.sh (tier 1) は plugin scope に新規配置で代替</li>
-      <li><strong>★ STEP 0 (本 session 第 3 弾追加 + 第 4 弾 dig 拡張): sandbox EXP 実行</strong> — <code>bash experiments/run-all.sh</code> で全 EXP-001〜031 を実行 (本 dig で 13 件追加: EXP-019〜031)、core claim を experiment-verified に格上げ (<a href="sandbox-experiment.html">sandbox-experiment.html</a> §9 recommended sequence)。<strong>新規優先</strong>: EXP-027/028 (tool-architect verify hook) は bats で完結可能、EXP-019〜023 (GitHub Project write boundary 5 領域 × 4 手段) は tool-project 実装前提</li>
-      <li><strong>★ STEP 1 (本 session 第 3 弾追加): twl plugin 化</strong> — <code>plugins/twl/.claude-plugin/plugin.json</code> 作成、<code>claude --plugin-dir plugins/twl</code> で起動確認、<code>/twl:*</code> namespace で skill invoke 動作 <a class="exp-link" href="experiment-index.html#EXP-010">EXP-010</a></li>
+      <li><strong>★ STEP 0 (本 session 第 3 弾追加 + 第 4 弾 dig 拡張): sandbox EXP 実行</strong> — <code>bash experiments/run-all.sh</code> で全 EXP-001〜031 を実行 (本 dig で 13 件追加: EXP-019〜031)、core claim を experiment-verified に格上げ (<a href="../research/sandbox-experiment.html">sandbox-experiment.html</a> §9 recommended sequence)。<strong>新規優先</strong>: EXP-027/028 (tool-architect verify hook) は bats で完結可能、EXP-019〜023 (GitHub Project write boundary 5 領域 × 4 手段) は tool-project 実装前提</li>
+      <li><strong>★ STEP 1 (本 session 第 3 弾追加): twl plugin 化</strong> — <code>plugins/twl/.claude-plugin/plugin.json</code> 作成、<code>claude --plugin-dir plugins/twl</code> で起動確認、<code>/twl:*</code> namespace で skill invoke 動作 <a class="exp-link" href="../research/experiment-index.html#EXP-010">EXP-010</a></li>
       <li>ADR-043 起票 (md 本体 + 本 spec directory を supplement として link)</li>
       <li>新 helper 5 本作成 (mailbox.sh / step.sh / phase-gate.sh / spawn-tmux.sh / admin-cycle.sh、合計 ~260 lines、deletion-inventory §5 verified)</li>
       <li><strong>第 4 弾 dig 由来 helper 7 件追加</strong>: verify-coverage.sh ~50 行 / pre-tool-use-spec-write-boundary.sh ~30 行 / specialist-spec-review.md ~100 行 / problem-patterns.yaml ~50 行 / sandbox manifest (~130 行 × N sandbox) / project_setup.py ~80 行 / twill-templates 別 repo (deletion-inventory §5b verified)</li>
       <li>SKILL.md 3 個 draft (phaser-impl / specialist-test-ready / administrator)、plugin namespace で配置</li>
-      <li>PreToolUse hook 設定 (<code>plugins/twl/hooks/hooks.json</code>、<a href="gate-hook.html">verified schema</a>)</li>
-      <li><strong>PostToolUseFailure + memory_store 自動学習 hook 新規追加 (Phase I 2026-05-15)</strong>: Bash 失敗時に <code>mcp__doobidoo__memory_store</code> で <code>type: feedback</code> 自動保存。失敗 pattern を doobidoo に蓄積し、将来 memory_search hit で LLM warning。stderr 最初 200 文字のみ取り込み (noise 過多防止)、循環 hook 発火防止に doobidoo 自体の失敗は silent。詳細: <a href="hooks-mcp-policy.html#s5">hooks-mcp-policy.html §5</a></li>
-      <li><strong>tool-architect spec-write-boundary hook 新規実装 (Phase I 2026-05-15)</strong>: <code>plugins/twl/scripts/hooks/pre-tool-use-spec-write-boundary.sh</code> 新規作成、<code>TWL_TOOL_CONTEXT</code> env 変数で caller 識別 (CLAUDE_SKILL_NAME は付随 cross-check)。EXP-028 smoke fire で <span class="vs experiment-verified">experiment-verified</span> 化。詳細: <a href="tool-architecture.html#s9">tool-architecture.html §9</a> + <a href="hooks-mcp-policy.html">hooks-mcp-policy.html</a></li>
-      <li><strong>Plugin Monitor 採用</strong> (本 session 第 3 弾): <code>plugins/twl/monitors/monitors.json</code> 新規、mcp-watchdog.sh 廃止 <a class="exp-link" href="experiment-index.html#EXP-009">EXP-009</a>。Phase I (2026-05-15) で <a href="monitor-policy.html">monitor-policy.html</a> §5 と同期 (admin-inbox-tail entry、admin Step 0 health-check)</li>
+      <li>PreToolUse hook 設定 (<code>plugins/twl/hooks/hooks.json</code>、<a href="../spec/gate-hook.html">verified schema</a>)</li>
+      <li><strong>PostToolUseFailure + memory_store 自動学習 hook 新規追加 (Phase I 2026-05-15)</strong>: Bash 失敗時に <code>mcp__doobidoo__memory_store</code> で <code>type: feedback</code> 自動保存。失敗 pattern を doobidoo に蓄積し、将来 memory_search hit で LLM warning。stderr 最初 200 文字のみ取り込み (noise 過多防止)、循環 hook 発火防止に doobidoo 自体の失敗は silent。詳細: <a href="../spec/hooks-mcp-policy.html#s5">hooks-mcp-policy.html §5</a></li>
+      <li><strong>tool-architect spec-write-boundary hook 新規実装 (Phase I 2026-05-15)</strong>: <code>plugins/twl/scripts/hooks/pre-tool-use-spec-write-boundary.sh</code> 新規作成、<code>TWL_TOOL_CONTEXT</code> env 変数で caller 識別 (CLAUDE_SKILL_NAME は付随 cross-check)。EXP-028 smoke fire で <span class="vs experiment-verified">experiment-verified</span> 化。詳細: <a href="../spec/tool-architecture.html#s9">tool-architecture.html §9</a> + <a href="../spec/hooks-mcp-policy.html">hooks-mcp-policy.html</a></li>
+      <li><strong>Plugin Monitor 採用</strong> (本 session 第 3 弾): <code>plugins/twl/monitors/monitors.json</code> 新規、mcp-watchdog.sh 廃止 <a class="exp-link" href="../research/experiment-index.html#EXP-009">EXP-009</a>。Phase I (2026-05-15) で <a href="../spec/monitor-policy.html">monitor-policy.html</a> §5 と同期 (admin-inbox-tail entry、admin Step 0 health-check)</li>
       <li><strong>GitHub 公式 MCP 追加</strong>: repo root <code>.mcp.json</code> に <code>github</code> server (<code>type: "http"</code> + <code>X-MCP-Toolsets</code> + <code>--read-only</code>)</li>
       <li>PoC 完遂: Issue #1660 sanitize を新 architecture で再実装 (6 step フロー、admin polling 検知 → phaser-impl spawn → worker spawn → test-scaffold + green-impl + check → mail 集約 → status Implementing → phaser-pr → branch protection auto-merge)</li>
     </ul>
@@ -112,10 +112,10 @@
       <li><strong>VP-10</strong> (research §7-2 追加): <code>bypassPermissions</code> mode でも tier 2 の <code>deny</code> が効くことを確認 (<code>TWL_PHASE_GATE_BYPASS</code> 未設定で実証)</li>
       <li><strong>VP-11</strong> (research §7-2 追加): <strong>mcp-watchdog 廃止後</strong>の <code>MCP server 'twl' not connected</code> 発生頻度測定 (active session で 8 時間以上稼働、SIGTERM 発生 / 未発生をログ)</li>
       <li><strong>VP-12</strong> (research §7-2 追加): <code>twl_send_keys_safe</code> で escape 罠を防げることを確認 (セミコロン / ハイフン / スペース / Escape を含む string を送信して破壊しない)</li>
-      <li><strong>VP-13</strong> (第 4 弾 dig 追加、tool-architect): verify-coverage.sh が未 verified を warn 出力、changelog 漏れ検出 <a class="exp-link" href="experiment-index.html#EXP-027">EXP-027</a></li>
-      <li><strong>VP-14</strong> (第 4 弾 dig 追加、tool-architect): pre-tool-use-spec-write-boundary.sh が tool-architect / user 以外を deny <a class="exp-link" href="experiment-index.html#EXP-028">EXP-028</a></li>
-      <li><strong>VP-15</strong> (第 4 弾 dig 追加、tool-project): GitHub Project 5 領域 (status field / kanban col / label / view / filter) × 4 手段 (gh CLI / GraphQL / gh-mcp / twl-mcp) の write boundary <a class="exp-link" href="experiment-index.html#EXP-019">EXP-019</a>〜<a class="exp-link" href="experiment-index.html#EXP-023">EXP-023</a></li>
-      <li><strong>VP-16</strong> (第 4 弾 dig 追加、tool-sandbox-runner): twill-self sandbox の 1 cycle 動作 + log 収集 + doobidoo 重複 check 精度 <a class="exp-link" href="experiment-index.html#EXP-030">EXP-030</a> <a class="exp-link" href="experiment-index.html#EXP-031">EXP-031</a></li>
+      <li><strong>VP-13</strong> (第 4 弾 dig 追加、tool-architect): verify-coverage.sh が未 verified を warn 出力、changelog 漏れ検出 <a class="exp-link" href="../research/experiment-index.html#EXP-027">EXP-027</a></li>
+      <li><strong>VP-14</strong> (第 4 弾 dig 追加、tool-architect): pre-tool-use-spec-write-boundary.sh が tool-architect / user 以外を deny <a class="exp-link" href="../research/experiment-index.html#EXP-028">EXP-028</a></li>
+      <li><strong>VP-15</strong> (第 4 弾 dig 追加、tool-project): GitHub Project 5 領域 (status field / kanban col / label / view / filter) × 4 手段 (gh CLI / GraphQL / gh-mcp / twl-mcp) の write boundary <a class="exp-link" href="../research/experiment-index.html#EXP-019">EXP-019</a>〜<a class="exp-link" href="../research/experiment-index.html#EXP-023">EXP-023</a></li>
+      <li><strong>VP-16</strong> (第 4 弾 dig 追加、tool-sandbox-runner): twill-self sandbox の 1 cycle 動作 + log 収集 + doobidoo 重複 check 精度 <a class="exp-link" href="../research/experiment-index.html#EXP-030">EXP-030</a> <a class="exp-link" href="../research/experiment-index.html#EXP-031">EXP-031</a></li>
     </ul>
   </li>
   <li><strong><code>Phase 2</code>: dual-stack (Day 4-7)</strong> — 残り phase + 旧 freeze
@@ -134,8 +134,8 @@
       <li>in-flight Issue 全完遂 or 新経路に migration</li>
       <li>旧 bash 削除 (~5000 lines、<a href="deletion-inventory.html">deletion-inventory.html</a> 参照)</li>
       <li><code>workflow-*</code> SKILL.md 13 個 削除</li>
-      <li>twl MCP server 極小化 (<a href="twl-mcp-integration.html">twl-mcp-integration.html</a> 参照)</li>
-      <li>chain SSoT 三重化撤廃 (<a href="ssot-design.html">ssot-design.html</a> 参照、chain.py / chain-steps.sh / chain 削除)</li>
+      <li>twl MCP server 極小化 (<a href="../spec/twl-mcp-integration.html">twl-mcp-integration.html</a> 参照)</li>
+      <li>chain SSoT 三重化撤廃 (<a href="../spec/ssot-design.html">ssot-design.html</a> 参照、chain.py / chain-steps.sh / chain 削除)</li>
       <li>checkpoint dir 削除</li>
     </ul>
   </li>
@@ -163,18 +163,18 @@
 <h2>参照</h2>
 
 <ul>
-  <li><a href="overview.html">overview.html</a> §9 (rebuild plan overview)</li>
-  <li><a href="crash-failure-mode.html">crash-failure-mode.html</a> §8 (<code>Phase 1 PoC</code> での crash verify points)</li>
-  <li><a href="atomic-verification.html">atomic-verification.html</a> (<code>Phase 1 PoC</code> の核心 framework)</li>
-  <li><a href="ssot-design.html">ssot-design.html</a> §6 (<code>Phase 1 PoC</code> で検証する不変条件)</li>
-  <li><a href="twl-mcp-integration.html">twl-mcp-integration.html</a> §6 (<code>Phase 1 PoC</code> で使う MCP tool)</li>
+  <li><a href="../spec/overview.html">overview.html</a> §9 (rebuild plan overview)</li>
+  <li><a href="../spec/crash-failure-mode.html">crash-failure-mode.html</a> §8 (<code>Phase 1 PoC</code> での crash verify points)</li>
+  <li><a href="../spec/atomic-verification.html">atomic-verification.html</a> (<code>Phase 1 PoC</code> の核心 framework)</li>
+  <li><a href="../spec/ssot-design.html">ssot-design.html</a> §6 (<code>Phase 1 PoC</code> で検証する不変条件)</li>
+  <li><a href="../spec/twl-mcp-integration.html">twl-mcp-integration.html</a> §6 (<code>Phase 1 PoC</code> で使う MCP tool)</li>
   <li><a href="deletion-inventory.html">deletion-inventory.html</a> (<code>Phase 3</code> 削除対象詳細)</li>
   <li><a href="regression-test-strategy.html">regression-test-strategy.html</a> (<code>Phase 4</code> 検証戦略)</li>
-  <li><strong>research-findings.html</strong> (公式 verified、120 sources、Critique PASS、本 spec の根拠): <a href="research-findings.html">research-findings.html</a> §4 (mcp-watchdog 4 段階 migration) + §7 (本 session 5 件 WebFetch verified)</li>
-  <li><a href="admin-cycle.html">admin-cycle.html</a> §6 (案 2 先行実装の構成)</li>
-  <li><a href="gate-hook.html">gate-hook.html</a> §11 (<code>Phase 1 PoC</code> verify VP-9〜VP-12 の根拠)</li>
-  <li><strong><a href="dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a></strong> (第 4 弾 dig 詳細、tool-* 3 件構成の根拠、VP-13〜VP-16 の根拠、§0.5 verify status)</li>
-  <li><a href="tool-architecture.html">tool-architecture.html</a> (第 4 弾 dig 反映、tool-architect / tool-project / tool-sandbox-runner 詳細仕様)</li>
+  <li><strong>research-findings.html</strong> (公式 verified、120 sources、Critique PASS、本 spec の根拠): <a href="../research/research-findings.html">research-findings.html</a> §4 (mcp-watchdog 4 段階 migration) + §7 (本 session 5 件 WebFetch verified)</li>
+  <li><a href="../spec/admin-cycle.html">admin-cycle.html</a> §6 (案 2 先行実装の構成)</li>
+  <li><a href="../spec/gate-hook.html">gate-hook.html</a> §11 (<code>Phase 1 PoC</code> verify VP-9〜VP-12 の根拠)</li>
+  <li><strong><a href="../research/dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a></strong> (第 4 弾 dig 詳細、tool-* 3 件構成の根拠、VP-13〜VP-16 の根拠、§0.5 verify status)</li>
+  <li><a href="../spec/tool-architecture.html">tool-architecture.html</a> (第 4 弾 dig 反映、tool-architect / tool-project / tool-sandbox-runner 詳細仕様)</li>
   <li>既存 draft <code>draft-v1.html</code> §11 (原案、archive、図 5 timeline)</li>
 </ul>
 

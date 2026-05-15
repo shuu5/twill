@@ -20,7 +20,7 @@
 </header>
 
 <div class="info">
-  <strong>本 file は他 spec file の参照基盤として機能する。</strong> 第 5 弾 dig (Round 1-10、<a href="dig-report-ssot-2026-05-13.md">dig-report-ssot-2026-05-13.md</a>) で確定した「registry.yaml 統合 SSoT」「10 role 体系」「vocabulary 6 field schema」「Authority / Reference / Derived 階層」を一元化。spec edit 時は本 file の各節を参照することで「1 entity = 1 name」ルールが担保される。
+  <strong>本 file は他 spec file の参照基盤として機能する。</strong> 第 5 弾 dig (Round 1-10、<a href="../research/dig-report-ssot-2026-05-13.md">dig-report-ssot-2026-05-13.md</a>) で確定した「registry.yaml 統合 SSoT」「10 role 体系」「vocabulary 6 field schema」「Authority / Reference / Derived 階層」を一元化。spec edit 時は本 file の各節を参照することで「1 entity = 1 name」ルールが担保される。
 </div>
 
 <h2 id="s1">§1. 本ファイルの役割と参照基盤 contract</h2>
@@ -38,8 +38,8 @@
     <tr><td><a href="boundary-matrix.html">boundary-matrix.html</a></td><td><a href="#s3">§3</a></td><td>role × concern boundary 定義</td></tr>
     <tr><td><a href="overview.html">overview.html</a></td><td><a href="#s3">§3</a> + <a href="#s5">§5</a></td><td>全体図の L1 = phaser-* + 新原則「10 role + vocabulary」</td></tr>
     <tr><td><a href="twl-mcp-integration.html">twl-mcp-integration.html</a></td><td><a href="#s2">§2 (6 section schema)</a></td><td>types.yaml 廃止 + registry.yaml 統合の根拠</td></tr>
-    <tr><td><a href="deletion-inventory.html">deletion-inventory.html</a></td><td><a href="#s2">§2</a> + <a href="#s3">§3</a></td><td>types.yaml / deps.yaml 廃止と worker→specialist rename の正当化</td></tr>
-    <tr><td><a href="rebuild-plan.html">rebuild-plan.html</a></td><td><a href="#s6">§6 (vocabulary audit 統合設計)</a></td><td>EXP-032〜038 詳細設計ベース</td></tr>
+    <tr><td><a href="../migration/deletion-inventory.html">deletion-inventory.html</a></td><td><a href="#s2">§2</a> + <a href="#s3">§3</a></td><td>types.yaml / deps.yaml 廃止と worker→specialist rename の正当化</td></tr>
+    <tr><td><a href="../migration/rebuild-plan.html">rebuild-plan.html</a></td><td><a href="#s6">§6 (vocabulary audit 統合設計)</a></td><td>EXP-032〜038 詳細設計ベース</td></tr>
   </tbody>
 </table>
 
@@ -831,7 +831,7 @@ glossary:
 
 <h2 id="s6">§6. vocabulary audit 統合設計</h2>
 
-<div class="info">本節は <a href="rebuild-plan.html">rebuild-plan.html</a> EXP-038 (vocabulary audit) の設計基盤。<code>audit_collect()</code> の section 11 として実装する。</div>
+<div class="info">本節は <a href="../migration/rebuild-plan.html">rebuild-plan.html</a> EXP-038 (vocabulary audit) の設計基盤。<code>audit_collect()</code> の section 11 として実装する。</div>
 
 <h3>6.1 audit_vocabulary() pseudo-code</h3>
 
@@ -1092,23 +1092,23 @@ glossary:
 <h3>10.5 関連 spec</h3>
 
 <ul>
-  <li><a href="experiment-index.html">experiment-index.html</a>: 全 38 EXP の status badge (本節 §10.1 criteria に従って付与)</li>
-  <li><a href="sandbox-experiment.html">sandbox-experiment.html</a>: EXP framework 上位 architecture (本節 §10.3 audit infra と整合)</li>
+  <li><a href="../research/experiment-index.html">experiment-index.html</a>: 全 38 EXP の status badge (本節 §10.1 criteria に従って付与)</li>
+  <li><a href="../research/sandbox-experiment.html">sandbox-experiment.html</a>: EXP framework 上位 architecture (本節 §10.3 audit infra と整合)</li>
   <li><a href="glossary.html">glossary.html</a>: "verify status" entity (canonical 名)</li>
 </ul>
 
 <h2>§11. 関連 spec / EXP</h2>
 
 <ul>
-  <li><a href="dig-report-ssot-2026-05-13.md">dig-report-ssot-2026-05-13.md</a> (第 5 弾 dig 独立 artifact、10 round + 33+ question + 921 行、本 file の origin)</li>
+  <li><a href="../research/dig-report-ssot-2026-05-13.md">dig-report-ssot-2026-05-13.md</a> (第 5 弾 dig 独立 artifact、10 round + 33+ question + 921 行、本 file の origin)</li>
   <li><a href="glossary.html">glossary.html</a> (本 file §4 を 6 field schema として実装する用語集)</li>
   <li><a href="ssot-design.html">ssot-design.html</a> (案 4 registry.yaml 統合 SSoT 設計、本 file §2 と §5 を core 仕様化)</li>
   <li><a href="tool-architecture.html">tool-architecture.html</a> (tool-* 3 件 + 10 role 適用、本 file §3 を参照)</li>
   <li><a href="boundary-matrix.html">boundary-matrix.html</a> (role × concern boundary、本 file §3 を参照)</li>
   <li><a href="atomic-verification.html">atomic-verification.html</a> (atomic skill 4-phase lifecycle、forbidden = step を解消)</li>
-  <li><a href="deletion-inventory.html">deletion-inventory.html</a> (types.yaml + deps.yaml + step.sh framework 全廃の根拠)</li>
-  <li><a href="experiment-index.html">experiment-index.html</a> (EXP-032〜038、本 file §6 と §2 を実機検証)</li>
-  <li><a href="rebuild-plan.html">rebuild-plan.html</a> (Strangler Fig 4 phase migration、本 file §9.1 vocabulary 拡張 schedule と整合)</li>
+  <li><a href="../migration/deletion-inventory.html">deletion-inventory.html</a> (types.yaml + deps.yaml + step.sh framework 全廃の根拠)</li>
+  <li><a href="../research/experiment-index.html">experiment-index.html</a> (EXP-032〜038、本 file §6 と §2 を実機検証)</li>
+  <li><a href="../migration/rebuild-plan.html">rebuild-plan.html</a> (Strangler Fig 4 phase migration、本 file §9.1 vocabulary 拡張 schedule と整合)</li>
   <li>plugins/twl/architecture/decisions/ADR-043-twill-radical-rebuild.md (Decision §8 命名 policy + §5 registry.yaml 統合 SSoT)</li>
   <li>plugins/twl/architecture/decisions/ADR-045-naming-policy.md (Accepted 2026-05-14、本 file の formal ADR 化)</li>
 </ul>

@@ -389,7 +389,7 @@
     </ul>
   </li>
   <li><strong>編集 file 11 件</strong>: atomic-verification / admin-cycle / boundary-matrix / spawn-protocol / tool-architecture / rebuild-plan / experiment-index / gate-hook / dual-stack-routing / invariant-fate-table / crash-failure-mode を Phase I dig 結果で更新</li>
-  <li><strong>新規 EXP 4 件追加</strong> (Phase G smoke 候補): <a class="exp-link" href="experiment-index.html#EXP-039">EXP-039</a> (hook 順序 empirical) / <a class="exp-link" href="experiment-index.html#EXP-040">EXP-040</a> (prompt handler latency+cost) / <a class="exp-link" href="experiment-index.html#EXP-041">EXP-041</a> (Plugin scope hook schema) / <a class="exp-link" href="experiment-index.html#EXP-042">EXP-042</a> (Elicitation hook 公式存在)。manifest count: 38 → 42、全件 status: deduced</li>
+  <li><strong>新規 EXP 4 件追加</strong> (Phase G smoke 候補): <a class="exp-link" href="../research/experiment-index.html#EXP-039">EXP-039</a> (hook 順序 empirical) / <a class="exp-link" href="../research/experiment-index.html#EXP-040">EXP-040</a> (prompt handler latency+cost) / <a class="exp-link" href="../research/experiment-index.html#EXP-041">EXP-041</a> (Plugin scope hook schema) / <a class="exp-link" href="../research/experiment-index.html#EXP-042">EXP-042</a> (Elicitation hook 公式存在)。manifest count: 38 → 42、全件 status: deduced</li>
   <li><strong>spec drift cleanup</strong>: 4 file (gate-hook / admin-cycle / spawn-protocol / dual-stack-routing) で旧 role 名 (tool-utility / tool-self-improve / specialist-test-ready) + 旧 prefix (phase-* / worker-*) を canonical 用語に rename。invariant-fate-table.html Inv U を新 text に rewrite (旧 "Step verification framework" → 新 "Atomic skill verification")</li>
   <li><strong>Phase 6 review 11 件 fix</strong> (cross-AI bias 低減 audit): hooks-mcp-policy.html PostToolUseFailure hook input field 誤り fix / monitor-policy.html mailbox.sh API 修正 / admin-cycle.html has_active_phaser 自己矛盾 fix / hooks-mcp-policy / monitor-policy section anchor 追加 / EXP-039〜042 status inferred→deduced (lattice violation 防止) 等</li>
 </ol>
@@ -772,7 +772,7 @@
 <h3>追加対応 (本 session 第 3 弾、user 追加要望)</h3>
 
 <ul>
-  <li><strong>既存 PreToolUse hook 全件無効化計画</strong>: <code>plugins/twl/hooks/hooks.json</code> の 17 hook を <code>Phase 1 PoC</code> 開始時 (★ STEP -1) に無効化、7 件のみ保全 (worktree-boundary / host-safety / deps-yaml-guard / commit-validate / merge-guard / pre-compact / post-compact)。背景: 既存 hook は新 architecture で大半無意味化、error 通知が運用 noise。詳細: <a href="deletion-inventory.html">deletion-inventory.html</a> §6b</li>
+  <li><strong>既存 PreToolUse hook 全件無効化計画</strong>: <code>plugins/twl/hooks/hooks.json</code> の 17 hook を <code>Phase 1 PoC</code> 開始時 (★ STEP -1) に無効化、7 件のみ保全 (worktree-boundary / host-safety / deps-yaml-guard / commit-validate / merge-guard / pre-compact / post-compact)。背景: 既存 hook は新 architecture で大半無意味化、error 通知が運用 noise。詳細: <a href="../migration/deletion-inventory.html">deletion-inventory.html</a> §6b</li>
 </ul>
 
 <h3>重大訂正 (本 session 第 3 弾で発覚)</h3>

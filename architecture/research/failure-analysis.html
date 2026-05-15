@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>twill plugin rebuild — failure analysis</title>
-<link rel="stylesheet" href="common.css">
+<link rel="stylesheet" href="../spec/common.css">
 <style>
   /* file-specific accent: failure analysis は Danger #b22323 で「失敗」を象徴 */
   header.doc-header { border-bottom: 3px solid var(--danger-fg); }
@@ -202,10 +202,10 @@
     <tr><th>横断要因</th><th>該当 bug</th><th>解消経路 (新 spec)</th></tr>
   </thead>
   <tbody>
-    <tr><td><strong>F-1</strong> 並列 Wave 後付け</td><td>#1673, #1674, #1703</td><td>per-specialist file mailbox + Agent isolation (<a href="invariant-fate-table.html#inv-t">Inv T</a>, <a href="invariant-fate-table.html#inv-v">Inv V</a>)</td></tr>
-    <tr><td><strong>F-2</strong> env var 限界</td><td>#1660, #1662, #1663, #1684</td><td>PreToolUse hook + GitHub Project Board status SSoT (<a href="gate-hook.html">gate-hook</a>、<a href="invariant-fate-table.html#inv-w">Inv W</a>)</td></tr>
-    <tr><td><strong>F-3</strong> deploy/verify 分離</td><td>#1687</td><td>Claude Code 標準 hook + MCP native management (<a href="invariant-fate-table.html#inv-x">Inv X</a>)</td></tr>
-    <tr><td><strong>横断要因外</strong></td><td>#973 (silent rot)</td><td>step verification framework (post-verify 機械化、<a href="atomic-verification.html">step-verification</a>)</td></tr>
+    <tr><td><strong>F-1</strong> 並列 Wave 後付け</td><td>#1673, #1674, #1703</td><td>per-specialist file mailbox + Agent isolation (<a href="../migration/invariant-fate-table.html#inv-t">Inv T</a>, <a href="../migration/invariant-fate-table.html#inv-v">Inv V</a>)</td></tr>
+    <tr><td><strong>F-2</strong> env var 限界</td><td>#1660, #1662, #1663, #1684</td><td>PreToolUse hook + GitHub Project Board status SSoT (<a href="../spec/gate-hook.html">gate-hook</a>、<a href="../migration/invariant-fate-table.html#inv-w">Inv W</a>)</td></tr>
+    <tr><td><strong>F-3</strong> deploy/verify 分離</td><td>#1687</td><td>Claude Code 標準 hook + MCP native management (<a href="../migration/invariant-fate-table.html#inv-x">Inv X</a>)</td></tr>
+    <tr><td><strong>横断要因外</strong></td><td>#973 (silent rot)</td><td>step verification framework (post-verify 機械化、<a href="../spec/atomic-verification.html">step-verification</a>)</td></tr>
   </tbody>
 </table>
 
@@ -245,11 +245,11 @@
 <h2>関連 spec ファイル</h2>
 
 <ul>
-  <li>各 lesson の構造的不能化の詳細実装: <a href="atomic-verification.html">atomic-verification.html</a> / <a href="spawn-protocol.html">spawn-protocol.html</a> (outline) / <a href="gate-hook.html">gate-hook.html</a> (verified content、本 session 更新)</li>
-  <li>失敗から導かれる crash failure mode 全体: <a href="crash-failure-mode.html">crash-failure-mode.html</a></li>
-  <li>ADR 全件継承戦略: <a href="adr-fate-table.html">adr-fate-table.html</a> (ADR-025 Known Gap 4 解消含む)</li>
-  <li>不変条件継承戦略: <a href="invariant-fate-table.html">invariant-fate-table.html</a> (不変条件 K/L/R/S 強化)</li>
-  <li>twl MCP 継承戦略: <a href="twl-mcp-integration.html">twl-mcp-integration.html</a> (Phase 5 本 session 更新)</li>
+  <li>各 lesson の構造的不能化の詳細実装: <a href="../spec/atomic-verification.html">atomic-verification.html</a> / <a href="../spec/spawn-protocol.html">spawn-protocol.html</a> (outline) / <a href="../spec/gate-hook.html">gate-hook.html</a> (verified content、本 session 更新)</li>
+  <li>失敗から導かれる crash failure mode 全体: <a href="../spec/crash-failure-mode.html">crash-failure-mode.html</a></li>
+  <li>ADR 全件継承戦略: <a href="../migration/adr-fate-table.html">adr-fate-table.html</a> (ADR-025 Known Gap 4 解消含む)</li>
+  <li>不変条件継承戦略: <a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> (不変条件 K/L/R/S 強化)</li>
+  <li>twl MCP 継承戦略: <a href="../spec/twl-mcp-integration.html">twl-mcp-integration.html</a> (Phase 5 本 session 更新)</li>
   <li><strong>verified 根拠 (research session)</strong>: <a href="research-findings.html">research-findings.html</a> §1 KP-3 (stdio MCP auto-reconnect) + §1 KP-4 (watchdog orphan 自殺)</li>
 </ul>
 

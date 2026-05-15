@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>twill plugin rebuild — regression test strategy (250 bats + EXP 統合)</title>
-<link rel="stylesheet" href="common.css">
+<link rel="stylesheet" href="../spec/common.css">
 <style>
   header.doc-header { border-bottom: 3px solid var(--success-fg); }
   .test-table { font-size: 14px; }
@@ -34,7 +34,7 @@
     <tr><td><code>plugins/twl/tests/bats/integration/</code></td><td>e2e integration test</td><td>3 階層 spawn e2e に拡張</td></tr>
     <tr><td><code>plugins/twl/tests/unit/</code></td><td>pytest 系 unit (audit.py 等)</td><td>継承、新 step.sh test 追加</td></tr>
     <tr><td><code>plugins/twl/tests/bats/regression/</code></td><td>個別 bug regression (例: issue-1703-cross-pollution.bats 174 行)</td><td>継承、新 Bug 用 test 追加</td></tr>
-    <tr><td><code>test-fixtures/experiments/hooks/</code></td><td>(新規) EXP-id 別 bats unit</td><td>本 spec で新設 <a href="sandbox-experiment.html">sandbox-experiment.html</a></td></tr>
+    <tr><td><code>test-fixtures/experiments/hooks/</code></td><td>(新規) EXP-id 別 bats unit</td><td>本 spec で新設 <a href="../research/sandbox-experiment.html">sandbox-experiment.html</a></td></tr>
   </tbody>
 </table>
 
@@ -67,31 +67,31 @@
     <tr>
       <td><code>file-mailbox-atomic-write.bats</code></td>
       <td><a href="invariant-fate-table.html#inv-t">Inv T</a></td>
-      <td><a class="exp-link" href="experiment-index.html#EXP-006">EXP-006</a></td>
+      <td><a class="exp-link" href="../research/experiment-index.html#EXP-006">EXP-006</a></td>
       <td>並列 write race condition: N=100 process が同 inbox.jsonl に concurrent write、全行 parse 成功、行数 = 100</td>
     </tr>
     <tr>
       <td><code>step-verification-post-verify.bats</code></td>
       <td><a href="invariant-fate-table.html#inv-u">Inv U</a></td>
-      <td><a class="exp-link" href="experiment-index.html#EXP-011">EXP-011</a> + <a class="exp-link" href="experiment-index.html#EXP-012">EXP-012</a></td>
+      <td><a class="exp-link" href="../research/experiment-index.html#EXP-011">EXP-011</a> + <a class="exp-link" href="../research/experiment-index.html#EXP-012">EXP-012</a></td>
       <td>step::run 4 phase lifecycle、test なしで green-impl 呼び出すと post-verify FAIL で step abort</td>
     </tr>
     <tr>
       <td><code>per-worker-state-isolation.bats</code></td>
       <td><a href="invariant-fate-table.html#inv-v">Inv V</a></td>
-      <td><a class="exp-link" href="experiment-index.html#EXP-013">EXP-013</a></td>
+      <td><a class="exp-link" href="../research/experiment-index.html#EXP-013">EXP-013</a></td>
       <td>2 worker simulation、各々 per-specialist mailbox 書き込み、cross-pollution なし</td>
     </tr>
     <tr>
       <td><code>phase-gate-hook.bats</code></td>
       <td><a href="invariant-fate-table.html#inv-w">Inv W</a></td>
-      <td><a class="exp-link" href="experiment-index.html#EXP-001">EXP-001</a>〜<a class="exp-link" href="experiment-index.html#EXP-003">003</a> + <a class="exp-link" href="experiment-index.html#EXP-008">EXP-008</a></td>
+      <td><a class="exp-link" href="../research/experiment-index.html#EXP-001">EXP-001</a>〜<a class="exp-link" href="../research/experiment-index.html#EXP-003">003</a> + <a class="exp-link" href="../research/experiment-index.html#EXP-008">EXP-008</a></td>
       <td>Refined でない Issue に phase-impl 呼び出して deny、bypassPermissions でも deny 効く</td>
     </tr>
     <tr>
       <td><code>daemon-deploy-verify-set.bats</code></td>
       <td><a href="invariant-fate-table.html#inv-x">Inv X</a></td>
-      <td><a class="exp-link" href="experiment-index.html#EXP-009">EXP-009</a></td>
+      <td><a class="exp-link" href="../research/experiment-index.html#EXP-009">EXP-009</a></td>
       <td>新規 daemon PR が起動 hook ファイル追加 + ps/pgrep 確認 test を含むことを assert</td>
     </tr>
   </tbody>
@@ -120,18 +120,18 @@
 <table class="test-table">
   <thead><tr><th>VP</th><th>verify 内容</th><th>EXP-id</th></tr></thead>
   <tbody>
-    <tr><td>VP-1</td><td>3 階層 spawn 動作</td><td><a class="exp-link" href="experiment-index.html#EXP-010">EXP-010</a> + <a class="exp-link" href="experiment-index.html#EXP-016">EXP-016</a></td></tr>
-    <tr><td>VP-2</td><td>file mailbox 動作</td><td><a class="exp-link" href="experiment-index.html#EXP-006">EXP-006</a></td></tr>
-    <tr><td>VP-3</td><td>step verification 動作</td><td><a class="exp-link" href="experiment-index.html#EXP-011">EXP-011</a></td></tr>
-    <tr><td>VP-4</td><td>gate hook 動作</td><td><a class="exp-link" href="experiment-index.html#EXP-001">EXP-001-003</a> + <a class="exp-link" href="experiment-index.html#EXP-008">EXP-008</a></td></tr>
-    <tr><td>VP-5</td><td>admin polling 動作</td><td><a class="exp-link" href="experiment-index.html#EXP-004">EXP-004</a></td></tr>
+    <tr><td>VP-1</td><td>3 階層 spawn 動作</td><td><a class="exp-link" href="../research/experiment-index.html#EXP-010">EXP-010</a> + <a class="exp-link" href="../research/experiment-index.html#EXP-016">EXP-016</a></td></tr>
+    <tr><td>VP-2</td><td>file mailbox 動作</td><td><a class="exp-link" href="../research/experiment-index.html#EXP-006">EXP-006</a></td></tr>
+    <tr><td>VP-3</td><td>step verification 動作</td><td><a class="exp-link" href="../research/experiment-index.html#EXP-011">EXP-011</a></td></tr>
+    <tr><td>VP-4</td><td>gate hook 動作</td><td><a class="exp-link" href="../research/experiment-index.html#EXP-001">EXP-001-003</a> + <a class="exp-link" href="../research/experiment-index.html#EXP-008">EXP-008</a></td></tr>
+    <tr><td>VP-5</td><td>admin polling 動作</td><td><a class="exp-link" href="../research/experiment-index.html#EXP-004">EXP-004</a></td></tr>
     <tr><td>VP-6</td><td>context 効率化 (admin token &lt; su-observer)</td><td>(token 計測専用 EXP は次 session)</td></tr>
-    <tr><td>VP-7</td><td>fail-fast at step level</td><td><a class="exp-link" href="experiment-index.html#EXP-012">EXP-012</a></td></tr>
+    <tr><td>VP-7</td><td>fail-fast at step level</td><td><a class="exp-link" href="../research/experiment-index.html#EXP-012">EXP-012</a></td></tr>
     <tr><td>VP-8</td><td>PR 完遂 (#1660 auto-merge)</td><td>e2e (<code>Phase 1 PoC</code> 内で実行)</td></tr>
-    <tr><td>VP-9</td><td>tier 1+2 parallel</td><td><a class="exp-link" href="experiment-index.html#EXP-007">EXP-007</a></td></tr>
-    <tr><td>VP-10</td><td>bypassPermissions でも deny</td><td><a class="exp-link" href="experiment-index.html#EXP-008">EXP-008</a></td></tr>
-    <tr><td>VP-11</td><td>mcp-watchdog 廃止後の disconnect 発生頻度</td><td><a class="exp-link" href="experiment-index.html#EXP-005">EXP-005</a> + <a class="exp-link" href="experiment-index.html#EXP-009">EXP-009</a></td></tr>
-    <tr><td>VP-12</td><td>send_keys_safe escape</td><td><a class="exp-link" href="experiment-index.html#EXP-017">EXP-017</a></td></tr>
+    <tr><td>VP-9</td><td>tier 1+2 parallel</td><td><a class="exp-link" href="../research/experiment-index.html#EXP-007">EXP-007</a></td></tr>
+    <tr><td>VP-10</td><td>bypassPermissions でも deny</td><td><a class="exp-link" href="../research/experiment-index.html#EXP-008">EXP-008</a></td></tr>
+    <tr><td>VP-11</td><td>mcp-watchdog 廃止後の disconnect 発生頻度</td><td><a class="exp-link" href="../research/experiment-index.html#EXP-005">EXP-005</a> + <a class="exp-link" href="../research/experiment-index.html#EXP-009">EXP-009</a></td></tr>
+    <tr><td>VP-12</td><td>send_keys_safe escape</td><td><a class="exp-link" href="../research/experiment-index.html#EXP-017">EXP-017</a></td></tr>
   </tbody>
 </table>
 
@@ -216,11 +216,11 @@ teardown() {
 
 <ul>
   <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> 新 invariant T-X 5 件の検証方法 field</li>
-  <li><a href="failure-analysis.html">failure-analysis.html</a> 9 P0 bug の test 起点</li>
+  <li><a href="../research/failure-analysis.html">failure-analysis.html</a> 9 P0 bug の test 起点</li>
   <li><a href="rebuild-plan.html">rebuild-plan.html</a> <code>Phase 4</code> bats 検証</li>
-  <li><a href="sandbox-experiment.html">sandbox-experiment.html</a> EXP-id system の運用</li>
-  <li><a href="experiment-index.html">experiment-index.html</a> 全 EXP listing + status</li>
-  <li><a href="ssot-design.html">ssot-design.html</a> §5 steps_integrity audit test</li>
+  <li><a href="../research/sandbox-experiment.html">sandbox-experiment.html</a> EXP-id system の運用</li>
+  <li><a href="../research/experiment-index.html">experiment-index.html</a> 全 EXP listing + status</li>
+  <li><a href="../spec/ssot-design.html">ssot-design.html</a> §5 steps_integrity audit test</li>
   <li>既存 <code>plugins/twl/tests/bats/</code> 250 件 (verified)</li>
 </ul>
 

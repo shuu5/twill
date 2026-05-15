@@ -33,7 +33,7 @@
   <li>plugin として load: <code>claude --plugin-dir plugins/twl</code> or marketplace 経由 <code>/plugin install twl</code></li>
   <li>skill invoke は <strong>slash command + namespace</strong>: <code>/twl:administrator</code>, <code>/twl:phaser-impl &lt;args&gt;</code>, <code>/twl:workflow-test-ready &lt;args&gt;</code> (旧 specialist-test-ready から第 5 弾 dig で rename)</li>
 </ol>
-これにより namespace 衝突防止 (強制 <code>/twl:*</code>)、<code>/reload-plugins</code> 自動 reload、<code>--plugin-dir</code> local test、Plugin Monitor (公式機能) 利用が可能 <a class="exp-link" href="experiment-index.html#EXP-010">EXP-010</a>
+これにより namespace 衝突防止 (強制 <code>/twl:*</code>)、<code>/reload-plugins</code> 自動 reload、<code>--plugin-dir</code> local test、Plugin Monitor (公式機能) 利用が可能 <a class="exp-link" href="../research/experiment-index.html#EXP-010">EXP-010</a>
 </div>
 
 <h3>1.1 plugin 構造 (verified)</h3>
@@ -85,7 +85,7 @@
   </tbody>
 </table>
 
-<p>tmux window 命名規約は既存 <a href="../../../plugins/session/CLAUDE.md"><code>plugins/session/CLAUDE.md</code></a> の <code>&lt;prefix&gt;-&lt;repo&gt;-&lt;branch&gt;[-i&lt;issue&gt;]-&lt;h8&gt;</code> (50 文字上限、verified) を継承。</p>
+<p>tmux window 命名規約は既存 <a href="../../plugins/session/CLAUDE.md"><code>plugins/session/CLAUDE.md</code></a> の <code>&lt;prefix&gt;-&lt;repo&gt;-&lt;branch&gt;[-i&lt;issue&gt;]-&lt;h8&gt;</code> (50 文字上限、verified) を継承。</p>
 
 <h2 id="s3">§3. spawn-tmux.sh helper 仕様 (~50 行)</h2>
 
@@ -202,7 +202,7 @@ _emit_admin() {
 _fail() { echo "spawn-tmux.sh: $*" &gt;&amp;2; exit 1; }
 main "$@"</code></pre>
 
-<p><strong>verify points</strong>: <a class="exp-link" href="experiment-index.html#EXP-010">EXP-010</a> (plugin 起動 + namespace 解決)、<a class="exp-link" href="experiment-index.html#EXP-016">EXP-016</a> (tmux new-window -d)、<a class="exp-link" href="experiment-index.html#EXP-017">EXP-017</a> (format 変数 pane state)。</p>
+<p><strong>verify points</strong>: <a class="exp-link" href="../research/experiment-index.html#EXP-010">EXP-010</a> (plugin 起動 + namespace 解決)、<a class="exp-link" href="../research/experiment-index.html#EXP-016">EXP-016</a> (tmux new-window -d)、<a class="exp-link" href="../research/experiment-index.html#EXP-017">EXP-017</a> (format 変数 pane state)。</p>
 
 <h2>§4. file mailbox 仕様 (Inv T)</h2>
 
@@ -230,7 +230,7 @@ flock -x -w 10 9 || exit 1
 # ... atomic write ...
 } 9&gt;&gt;"$LOCK_FILE"</code></pre>
 
-<p>本 spec 採用: 同 pattern を mailbox に適用 <a class="exp-link" href="experiment-index.html#EXP-006">EXP-006</a>。</p>
+<p>本 spec 採用: 同 pattern を mailbox に適用 <a class="exp-link" href="../research/experiment-index.html#EXP-006">EXP-006</a>。</p>
 
 <h2>§5. mailbox.sh helper 仕様 (~40 行)</h2>
 
@@ -381,8 +381,8 @@ verified source: Claude Code 公式 docs (code.claude.com/docs/en/sub-agents.md 
 <h2>§11. 不変条件 (本 file が enforce)</h2>
 
 <ul>
-  <li><strong>Inv T (file mailbox atomic write)</strong>: 全 mailbox write は flock 取得した atomic write <a class="exp-link" href="experiment-index.html#EXP-006">EXP-006</a></li>
-  <li><strong>Inv V (per-specialist checkpoint)</strong>: <code>.mailbox/&lt;session-name&gt;/</code> は per-session、共通 path 禁止 <a class="exp-link" href="experiment-index.html#EXP-013">EXP-013</a></li>
+  <li><strong>Inv T (file mailbox atomic write)</strong>: 全 mailbox write は flock 取得した atomic write <a class="exp-link" href="../research/experiment-index.html#EXP-006">EXP-006</a></li>
+  <li><strong>Inv V (per-specialist checkpoint)</strong>: <code>.mailbox/&lt;session-name&gt;/</code> は per-session、共通 path 禁止 <a class="exp-link" href="../research/experiment-index.html#EXP-013">EXP-013</a></li>
   <li><strong>Inv I-4 (admin は pilot mail のみ受信)</strong>: pyramid 集約、worker から admin 直接 mail 禁止</li>
   <li><strong>Inv I-7 (tmux send-keys 使用禁止)</strong>: ただし spawn-tmux.sh の <strong>spawn 直後 1 回のみ</strong>例外として inject 許可 (skill 起動 trigger)。それ以外の通信は mailbox 経由</li>
 </ul>
@@ -390,20 +390,20 @@ verified source: Claude Code 公式 docs (code.claude.com/docs/en/sub-agents.md 
 <h2>§12. <code>Phase 1 PoC</code> verify points (本 file 関連)</h2>
 
 <ul>
-  <li>VP-1: 3 階層 spawn が動く (<code>tmux list-windows</code>) <a class="exp-link" href="experiment-index.html#EXP-010">EXP-010</a> + <a class="exp-link" href="experiment-index.html#EXP-016">EXP-016</a></li>
-  <li>VP-2: file mailbox 動作 <a class="exp-link" href="experiment-index.html#EXP-006">EXP-006</a></li>
-  <li>VP-12: send-keys safe escape <a class="exp-link" href="experiment-index.html#EXP-017">EXP-017</a></li>
+  <li>VP-1: 3 階層 spawn が動く (<code>tmux list-windows</code>) <a class="exp-link" href="../research/experiment-index.html#EXP-010">EXP-010</a> + <a class="exp-link" href="../research/experiment-index.html#EXP-016">EXP-016</a></li>
+  <li>VP-2: file mailbox 動作 <a class="exp-link" href="../research/experiment-index.html#EXP-006">EXP-006</a></li>
+  <li>VP-12: send-keys safe escape <a class="exp-link" href="../research/experiment-index.html#EXP-017">EXP-017</a></li>
 </ul>
 
 <h2>§13. 関連 spec ファイル</h2>
 
 <ul>
   <li><a href="overview.html">overview.html</a> §3 (3 階層 architecture 全体図)</li>
-  <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> Inv T (mailbox atomic) + V (per-specialist scope)</li>
+  <li><a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> Inv T (mailbox atomic) + V (per-specialist scope)</li>
   <li><a href="crash-failure-mode.html">crash-failure-mode.html</a> §3 (heartbeat 検知 + mail loss)</li>
   <li><a href="admin-cycle.html">admin-cycle.html</a> §3 (pilot mail 集約)</li>
-  <li><a href="sandbox-experiment.html">sandbox-experiment.html</a> §3 (EXP-006 mailbox flock + EXP-010 plugin spawn)</li>
-  <li><a href="research-findings.html">research-findings.html</a> §7 (tmux / Plugin 公式 verified)</li>
+  <li><a href="../research/sandbox-experiment.html">sandbox-experiment.html</a> §3 (EXP-006 mailbox flock + EXP-010 plugin spawn)</li>
+  <li><a href="../research/research-findings.html">research-findings.html</a> §7 (tmux / Plugin 公式 verified)</li>
   <li>既存 verified pattern source:
     <ul>
       <li><code>plugins/twl/scripts/session-atomic-write.sh</code> L41-50 (flock pattern)</li>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>twill plugin rebuild — sandbox experiment architecture</title>
-<link rel="stylesheet" href="common.css">
+<link rel="stylesheet" href="../spec/common.css">
 <style>
   header.doc-header { border-bottom: 3px solid var(--brand); }
   .exp-card { background: var(--surface-primary); border: 1px solid var(--border-default); border-radius: var(--radius-lg); box-shadow: var(--elevation-1); padding: 16px 20px; margin: 16px 0; }
@@ -160,7 +160,7 @@ plugins/twl/sandboxes/                # 第 4 弾 dig 由来 sandbox catalog (pl
   <li><strong><code>plugins/twl/sandboxes/</code></strong> (第 4 弾 dig 追加): tool-sandbox-runner が実行する <strong>sandbox 環境 catalog</strong>。各 sandbox は <code>setup.sh</code> で orphan branch + worktree を作成、<code>claude --plugin-dir</code> で完全分離 Claude session を起動して E2E test を行う</li>
 </ul>
 
-<p><strong>problem-patterns.yaml</strong> (新規 file): tool-sandbox-runner の LLM 分析で使用。6 pattern × {severity, description} を YAML で定義し、LLM output schema (<code>pattern_id</code> field) と整合させる。詳細は <a href="tool-architecture.html">tool-architecture.html</a> §5.6 参照。</p>
+<p><strong>problem-patterns.yaml</strong> (新規 file): tool-sandbox-runner の LLM 分析で使用。6 pattern × {severity, description} を YAML で定義し、LLM output schema (<code>pattern_id</code> field) と整合させる。詳細は <a href="../spec/tool-architecture.html">tool-architecture.html</a> §5.6 参照。</p>
 
 <h3>3.2 各 EXP file の構造規約</h3>
 
@@ -407,13 +407,13 @@ PreToolUse hook schema は &lt;code&gt;matcher&lt;/code&gt; 単数を使う
     <tr><th>spec file</th><th>埋め込み EXP-id</th></tr>
   </thead>
   <tbody>
-    <tr><td><a href="gate-hook.html">gate-hook.html</a></td><td>EXP-001 / 002 / 003 / 007 / 008</td></tr>
-    <tr><td><a href="admin-cycle.html">admin-cycle.html</a></td><td>EXP-004 (CronCreate)、EXP-009 (Plugin Monitor)</td></tr>
-    <tr><td><a href="twl-mcp-integration.html">twl-mcp-integration.html</a></td><td>EXP-005 (stdio MCP)、EXP-010 (plugin)、EXP-018 (fastmcp)</td></tr>
-    <tr><td><a href="spawn-protocol.html">spawn-protocol.html</a></td><td>EXP-006 (flock)、EXP-010 (plugin namespace)、EXP-016/017 (tmux)</td></tr>
-    <tr><td><a href="atomic-verification.html">atomic-verification.html</a></td><td>EXP-011 / 012 / 014</td></tr>
-    <tr><td><a href="ssot-design.html">ssot-design.html</a></td><td>EXP-014 (bash version)、EXP-015 (gh project)</td></tr>
-    <tr><td><a href="invariant-fate-table.html">invariant-fate-table.html</a></td><td>不変条件 T (EXP-006/013)、U (EXP-011/012)、V (EXP-013)、W (EXP-001-003, 007-008)、X (EXP-005, 009)</td></tr>
+    <tr><td><a href="../spec/gate-hook.html">gate-hook.html</a></td><td>EXP-001 / 002 / 003 / 007 / 008</td></tr>
+    <tr><td><a href="../spec/admin-cycle.html">admin-cycle.html</a></td><td>EXP-004 (CronCreate)、EXP-009 (Plugin Monitor)</td></tr>
+    <tr><td><a href="../spec/twl-mcp-integration.html">twl-mcp-integration.html</a></td><td>EXP-005 (stdio MCP)、EXP-010 (plugin)、EXP-018 (fastmcp)</td></tr>
+    <tr><td><a href="../spec/spawn-protocol.html">spawn-protocol.html</a></td><td>EXP-006 (flock)、EXP-010 (plugin namespace)、EXP-016/017 (tmux)</td></tr>
+    <tr><td><a href="../spec/atomic-verification.html">atomic-verification.html</a></td><td>EXP-011 / 012 / 014</td></tr>
+    <tr><td><a href="../spec/ssot-design.html">ssot-design.html</a></td><td>EXP-014 (bash version)、EXP-015 (gh project)</td></tr>
+    <tr><td><a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a></td><td>不変条件 T (EXP-006/013)、U (EXP-011/012)、V (EXP-013)、W (EXP-001-003, 007-008)、X (EXP-005, 009)</td></tr>
     <tr><td><a href="failure-analysis.html">failure-analysis.html</a></td><td>Bug #1687 → EXP-005、Bug #1703 → EXP-013、Bug #973 → EXP-011 / 012</td></tr>
   </tbody>
 </table>
@@ -449,8 +449,8 @@ PreToolUse hook schema は &lt;code&gt;matcher&lt;/code&gt; 単数を使う
 
 <ul>
   <li><a href="experiment-index.html">experiment-index.html</a> — 全 EXP 一覧 + 現 status + 結果集約</li>
-  <li><a href="rebuild-plan.html">rebuild-plan.html</a> <code>Phase 1 PoC</code> — sandbox 実験完了を前提</li>
-  <li><a href="gate-hook.html">gate-hook.html</a> + <a href="twl-mcp-integration.html">twl-mcp-integration.html</a> + <a href="admin-cycle.html">admin-cycle.html</a> — EXP-id を hyperlink で参照</li>
+  <li><a href="../migration/rebuild-plan.html">rebuild-plan.html</a> <code>Phase 1 PoC</code> — sandbox 実験完了を前提</li>
+  <li><a href="../spec/gate-hook.html">gate-hook.html</a> + <a href="../spec/twl-mcp-integration.html">twl-mcp-integration.html</a> + <a href="../spec/admin-cycle.html">admin-cycle.html</a> — EXP-id を hyperlink で参照</li>
   <li><a href="research-findings.html">research-findings.html</a> — 公式 verify source 集約 (各 EXP の verify source URL リスト)</li>
   <li>既存 sandbox 機能: <code>test-fixtures/CLAUDE.md</code> / <code>plugins/twl/skills/co-self-improve/SKILL.md</code> / <code>cli/twl/src/twl/autopilot/audit.py</code></li>
 </ul>

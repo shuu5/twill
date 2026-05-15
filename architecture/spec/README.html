@@ -29,7 +29,7 @@
 <ul>
   <li><a href="registry-schema.html"><code>registry-schema.html</code></a> (新規) — registry.yaml 9 section schema + 10 role × concern matrix + vocabulary 6 field schema + Authority/Reference/Derived 階層図 (他 spec file の参照基盤)</li>
   <li><a href="atomic-verification.html"><code>atomic-verification.html</code></a> (旧 <code>step-verification.html</code> から rename) — atomic skill 4-phase lifecycle inline 実装 specification</li>
-  <li><a href="dig-report-ssot-2026-05-13.md"><code>dig-report-ssot-2026-05-13.md</code></a> — 第 5 弾 dig 独立 artifact (10 round + 33+ question + 921 行)</li>
+  <li><a href="../research/dig-report-ssot-2026-05-13.md"><code>dig-report-ssot-2026-05-13.md</code></a> — 第 5 弾 dig 独立 artifact (10 round + 33+ question + 921 行)</li>
 </ul>
 
 <strong>第 5 弾 dig での既存 file 全面書き直し</strong>: <a href="ssot-design.html"><code>ssot-design.html</code></a> (案 4 registry.yaml 統合 SSoT) / <a href="glossary.html"><code>glossary.html</code></a> (10 role + vocabulary 6 field + 用語廃止リスト) / <a href="overview.html"><code>overview.html</code></a> (図 1 L1 = phaser-* + 新原則 10 条) / <a href="boundary-matrix.html"><code>boundary-matrix.html</code></a> (10 role boundary)</div>
@@ -66,7 +66,7 @@
       <td>architecture overview (図 1: 10 role pyramid)、Key Points、新原則 10 条 (第 5 弾 dig で 10 role + vocabulary 追加)</td>
     </tr>
     <tr>
-      <td><a href="failure-analysis.html"><code>failure-analysis.html</code></a></td>
+      <td><a href="../research/failure-analysis.html"><code>failure-analysis.html</code></a></td>
       <td><span class="badge done">done</span></td>
       <td>既存 plugin の失敗 9 件 P0 bug 深掘り + 横断要因 F-1/F-2/F-3 + MUST 15 件</td>
     </tr>
@@ -81,17 +81,17 @@
   </thead>
   <tbody>
     <tr>
-      <td><a href="adr-fate-table.html"><code>adr-fate-table.html</code></a></td>
+      <td><a href="../migration/adr-fate-table.html"><code>adr-fate-table.html</code></a></td>
       <td><span class="badge done">done</span></td>
       <td>ADR 43 件 1 件ずつ fate audit (保全 / Superseded / 削除 / 統合)</td>
     </tr>
     <tr>
-      <td><a href="invariant-fate-table.html"><code>invariant-fate-table.html</code></a></td>
+      <td><a href="../migration/invariant-fate-table.html"><code>invariant-fate-table.html</code></a></td>
       <td><span class="badge done">done</span></td>
       <td>不変条件 A-S 19 件 + 新規 T-X 5 件 = 24 件 (A-X) 継承戦略 + drift 訂正課題</td>
     </tr>
     <tr>
-      <td><a href="pitfalls-inheritance.html"><code>pitfalls-inheritance.html</code></a></td>
+      <td><a href="../migration/pitfalls-inheritance.html"><code>pitfalls-inheritance.html</code></a></td>
       <td><span class="badge todo">outline</span></td>
       <td>既存 pitfalls-catalog 継承戦略 + 構造的不能化 mapping (詳細は次 session)</td>
     </tr>
@@ -171,22 +171,22 @@
   </thead>
   <tbody>
     <tr>
-      <td><a href="deletion-inventory.html"><code>deletion-inventory.html</code></a></td>
+      <td><a href="../migration/deletion-inventory.html"><code>deletion-inventory.html</code></a></td>
       <td><span class="badge todo">outline</span></td>
       <td>削除対象 60+ 件 + 新規 helper 5 本 (次 session)</td>
     </tr>
     <tr>
-      <td><a href="rebuild-plan.html"><code>rebuild-plan.html</code></a></td>
+      <td><a href="../migration/rebuild-plan.html"><code>rebuild-plan.html</code></a></td>
       <td><span class="badge todo">outline</span></td>
       <td>4 phase + <code>Phase 1 PoC</code> (#1660 sanitize 詳細) + 8 verify points (次 session)</td>
     </tr>
     <tr>
-      <td><a href="regression-test-strategy.html"><code>regression-test-strategy.html</code></a></td>
+      <td><a href="../migration/regression-test-strategy.html"><code>regression-test-strategy.html</code></a></td>
       <td><span class="badge todo">outline</span></td>
       <td>既存 bats 90+ 継承 + 新 architecture 追加 test 計画 (次 session)</td>
     </tr>
     <tr>
-      <td><a href="dual-stack-routing.html"><code>dual-stack-routing.html</code></a></td>
+      <td><a href="../migration/dual-stack-routing.html"><code>dual-stack-routing.html</code></a></td>
       <td><span class="badge done">done</span></td>
       <td>su-observer 旧 vs administrator 新 共存ルール + state 分離 + 移行完了判定 (本 session content 化)</td>
     </tr>
@@ -211,17 +211,17 @@
       <td>本 spec の変更履歴 (draft-v1 → draft-v2 → 本 session の HTML 統一)</td>
     </tr>
     <tr>
-      <td><a href="research-findings.html"><code>research-findings.html</code></a></td>
+      <td><a href="../research/research-findings.html"><code>research-findings.html</code></a></td>
       <td><span class="badge done">done</span></td>
       <td>research session bce9c4e4 (120 sources、Critique PASS) + 本 session WebFetch 計 10 件 verified の集約 (前 session + 第 3 弾)</td>
     </tr>
     <tr>
-      <td><a href="sandbox-experiment.html"><code>sandbox-experiment.html</code></a></td>
+      <td><a href="../research/sandbox-experiment.html"><code>sandbox-experiment.html</code></a></td>
       <td><span class="badge done">done</span></td>
       <td><strong>sandbox experiment architecture</strong> — 4-state verification status + EXP-id 体系 + 既存 sandbox 機能継承 (本 session 第 3 弾新規)</td>
     </tr>
     <tr>
-      <td><a href="experiment-index.html"><code>experiment-index.html</code></a></td>
+      <td><a href="../research/experiment-index.html"><code>experiment-index.html</code></a></td>
       <td><span class="badge done">done</span></td>
       <td>全 EXP-001〜042 一覧 (第 4 弾 dig +13 件 EXP-019〜031、Phase G +EXP-032〜038、Phase I +EXP-039〜042) + 現 status + 結果集約 hub</td>
     </tr>
@@ -271,7 +271,7 @@
 
 <ol>
   <li><a href="overview.html">overview.html</a> — 全体図 + Key Points + 新原則</li>
-  <li><a href="failure-analysis.html">failure-analysis.html</a> — なぜ rebuild が必要か (失敗の証拠)</li>
+  <li><a href="../research/failure-analysis.html">failure-analysis.html</a> — なぜ rebuild が必要か (失敗の証拠)</li>
   <li><a href="crash-failure-mode.html">crash-failure-mode.html</a> — 設計の root reliability</li>
   <li><a href="twl-mcp-integration.html">twl-mcp-integration.html</a> — 既存 MCP 資産との接続戦略</li>
 </ol>
@@ -279,11 +279,11 @@
 <h3>既存 plugin を知る人 (継承戦略確認)</h3>
 
 <ol>
-  <li><a href="adr-fate-table.html">adr-fate-table.html</a> — 既存 ADR 43 件の fate</li>
-  <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> — 既存 invariant の継承 + 新規 5 件</li>
+  <li><a href="../migration/adr-fate-table.html">adr-fate-table.html</a> — 既存 ADR 43 件の fate</li>
+  <li><a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> — 既存 invariant の継承 + 新規 5 件</li>
   <li><a href="twl-mcp-integration.html">twl-mcp-integration.html</a> — MCP / audit / types.yaml の継承</li>
   <li><a href="ssot-design.html">ssot-design.html</a> — chain SSoT 統一 (案 3 step.sh)</li>
-  <li><a href="deletion-inventory.html">deletion-inventory.html</a> (次 session) — 何を消すか</li>
+  <li><a href="../migration/deletion-inventory.html">deletion-inventory.html</a> (次 session) — 何を消すか</li>
 </ol>
 
 <h3>実装する人 (実装参照)</h3>
@@ -295,7 +295,7 @@
   <li><a href="spawn-protocol.html">spawn-protocol.html</a> (次 session) — spawn / mailbox</li>
   <li><a href="gate-hook.html">gate-hook.html</a> (次 session) — gate 仕組み</li>
   <li><a href="admin-cycle.html">admin-cycle.html</a> (次 session) — admin polling</li>
-  <li><a href="rebuild-plan.html">rebuild-plan.html</a> (次 session) — <code>Phase 1</code>-4 plan + <code>Phase 1 PoC</code> 手順</li>
+  <li><a href="../migration/rebuild-plan.html">rebuild-plan.html</a> (次 session) — <code>Phase 1</code>-4 plan + <code>Phase 1 PoC</code> 手順</li>
 </ol>
 
 <h2>進捗 status (2026-05-15 時点、Phase F-J 完遂後)</h2>
@@ -351,8 +351,8 @@
 <h2>関連 (本 spec の外)</h2>
 
 <ul>
-  <li><code>architecture/decisions/ADR-001</code> 〜 <code>ADR-042</code> — 既存 ADR (md 維持、<a href="adr-fate-table.html">adr-fate-table.html</a> で audit)</li>
-  <li><code>plugins/twl/refs/ref-invariants.md</code> — 既存 invariant SSoT (<a href="invariant-fate-table.html">invariant-fate-table.html</a> で audit、ref-invariants.md 自体の drift 課題あり)</li>
+  <li><code>architecture/decisions/ADR-001</code> 〜 <code>ADR-042</code> — 既存 ADR (md 維持、<a href="../migration/adr-fate-table.html">adr-fate-table.html</a> で audit)</li>
+  <li><code>plugins/twl/refs/ref-invariants.md</code> — 既存 invariant SSoT (<a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> で audit、ref-invariants.md 自体の drift 課題あり)</li>
   <li><code>cli/twl/src/twl/mcp_server/</code> — 既存 twl MCP server (本 spec <a href="twl-mcp-integration.html">twl-mcp-integration.html</a> で継承戦略決定)</li>
   <li>doobidoo Memory MCP: 本 session の lesson 5+ 件保存済 (<code>hash 6ef844e9 / 74b7cdf7 / 7727b59f / 24e80e43 / e61dd3e3</code>)</li>
   <li>ADR-043 (起票予定) — 本 spec 全体への正典 ADR、Superseded by 連鎖の起点</li>
@@ -363,8 +363,8 @@
 
 <ul>
   <li>本 spec directory = twill plugin radical rebuild の <strong>設計仕様 SSoT</strong></li>
-  <li>旧 <code>architecture/decisions/</code> の ADR 43 件は <a href="adr-fate-table.html">adr-fate-table.html</a> で fate を決定し、Superseded 化を計画的に進める</li>
-  <li>旧 <code>plugins/twl/refs/ref-invariants.md</code> の invariant 19 件は <a href="invariant-fate-table.html">invariant-fate-table.html</a> で継承戦略を決定 + drift 訂正</li>
+  <li>旧 <code>architecture/decisions/</code> の ADR 43 件は <a href="../migration/adr-fate-table.html">adr-fate-table.html</a> で fate を決定し、Superseded 化を計画的に進める</li>
+  <li>旧 <code>plugins/twl/refs/ref-invariants.md</code> の invariant 19 件は <a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> で継承戦略を決定 + drift 訂正</li>
   <li>旧 <code>cli/twl/src/twl/mcp_server/</code> の MCP server は <a href="twl-mcp-integration.html">twl-mcp-integration.html</a> で継承戦略決定 (削除/置換/継承 inventory)</li>
   <li>旧 <code>cli/twl/src/twl/autopilot/chain.py</code> + <code>chain-steps.sh</code> + <code>deps.yaml.chains</code> 三重 SSoT は <a href="ssot-design.html">ssot-design.html</a> で 1 つに統一</li>
   <li>実装着手後の正典 ADR は <code>architecture/decisions/ADR-043-twill-radical-rebuild.md</code> (md 本体 + 本 spec を supplement として link)</li>
