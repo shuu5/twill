@@ -37,7 +37,7 @@
 <p>Monitor primitive 使用権限を持つ actor: <strong>administrator (L0) + phaser (L1)</strong> のみ。specialist / workflow / atomic / tool-* は使用不可。</p>
 
 <dl class="inv-row">
-  <dt>administrator</dt><dd>主用途。<code>.mailbox/administrator/inbox.jsonl</code> + budget status line + tmux state 集約。<code>monitors.json</code> daemon を所有。</dd>
+  <dt>administrator</dt><dd>主用途。<code>.mailbox/administrator/inbox.jsonl</code> + budget status line + tmux state 集約。<code>monitors.json</code> daemon を所有。compaction trigger (<code>admin-compact</code>、<a href="../decisions/ADR-0012-administrator-rebrand.md">ADR-0012</a>) も administrator 配下。</dd>
   <dt>phaser</dt><dd>atomic spawn 後の <code>.mailbox/&lt;phaser-name&gt;/inbox.jsonl</code> tail で atomic 進捗監視。<strong>制約</strong>: Monitor token 二重消費を避けるため、admin と同一 channel を tail しない (channel 分離: admin = phaser 集約 mail / phaser = atomic mail)。phaser invocation 終了時に Monitor task も stop (lifecycle 一致)。</dd>
   <dt>specialist / workflow / atomic / tool-*</dt><dd><strong>使用禁止</strong>。run-to-completion 型のため Monitor 不要、blocking exit code + mail emit で十分。</dd>
 </dl>

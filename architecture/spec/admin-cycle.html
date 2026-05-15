@@ -358,6 +358,14 @@ fi</code></pre>
   <li>既存 ADR-014 (Supervisor redesign su-observer) — administrator の前身、rebrand 計画</li>
 </ul>
 
+<h2>§10b. その他の administrator 責務 (補足)</h2>
+
+<p>polling cycle (§2 6 step) 以外の administrator 責務:</p>
+
+<ul>
+  <li><strong>knowledge externalization (compaction trigger)</strong>: LLM context が膨らんだ時、<code>admin-compact</code> command (旧 <code>su-compact</code>、<a href="../decisions/ADR-0012-administrator-rebrand.md">ADR-0012</a> 確定) を invoke して Long-term Memory 保存 + Working Memory 退避 + <code>/compact</code> 提案。polling cycle とは別 trigger (user 手動 or LLM 自律判断) で発火する。実 rename は migration phase 実施。</li>
+</ul>
+
 <h2>§11. verify source</h2>
 
 <ul>

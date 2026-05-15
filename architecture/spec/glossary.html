@@ -218,6 +218,8 @@
     <tr><td class="deprecated">deps.yaml (file)</td><td><code>registry.yaml</code> components + chains</td><td>(廃止)</td><td>歴史的引用は backtick + 「廃止」明示</td></tr>
     <tr><td class="deprecated">step.sh single SSoT (案 3、第 3 弾 dig)</td><td><code>registry.yaml</code> 統合 SSoT (案 4、第 5 弾 dig)</td><td>(廃止)</td><td>歴史的引用は backtick + 「廃止」明示</td></tr>
     <tr><td class="deprecated">co-autopilot (compound controller name)</td><td><code>phaser-impl</code> (L1 role)</td><td>(旧 controller type 名)</td><td>registry.yaml glossary に <code>deprecated: true</code> entity として canonical 登録 (vocabulary audit の compound exclusion で <code>co-autopilot</code> 内 <code>pilot</code> を false positive 抑制)、Phase 3 cutover で実 file rename 完了後に削除</td></tr>
+    <tr><td class="deprecated">su-compact (command)</td><td><code>admin-compact</code> (command、administrator 配下)</td><td>(command rename)</td><td>2026-05-15 <a href="../decisions/ADR-0012-administrator-rebrand.md">ADR-0012</a> で確定。実 rename は migration phase</td></tr>
+    <tr><td class="deprecated">su-precompact.sh / su-postcompact.sh / su-session-compact.sh (script)</td><td><code>admin-precompact.sh</code> / <code>admin-postcompact.sh</code> / <code>admin-session-compact.sh</code></td><td>(script rename)</td><td>2026-05-15 <a href="../decisions/ADR-0012-administrator-rebrand.md">ADR-0012</a> で確定。実 rename は migration phase</td></tr>
   </tbody>
 </table>
 
