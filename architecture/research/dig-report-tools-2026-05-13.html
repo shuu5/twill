@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>twill plugin spec — dig-report-tools-2026-05-13</title>
+<link rel="stylesheet" href="../spec/common.css">
+<style>
+  header.doc-header { border-bottom: 3px solid var(--gray-400); }
+</style>
+</head>
+<body>
+
+<header class="doc-header">
+  <h1>dig report: tool-* 仕様 finalization (第 4 弾 dig)</h1>
+  <div class="meta">2026-05-13 &middot; dig report artifact &middot; MD → HTML 変換 (2026-05-15)</div>
+</header>
+
+<div class="info">
+  <strong>目的</strong>: dig 独立 artifact、tool-architect / tool-project / tool-sandbox-runner 3 件構成 (12 section, ~510 行) に関する調査ログ <br>
+  <strong>status</strong>: <span class="badge archive">archive</span> (調査完了、参照用に保持) <br>
+  <strong>関連</strong>: <a href="../spec/README.html">README</a> / <a href="../spec/architecture-graph.html">graph</a> / <a href="research-findings.html">research-findings</a>
+</div>
+
+<h1 id="dig-report-tool-finalization-2026-05-13">dig report — tool-* 仕様 finalization (2026-05-13)</h1>
+<p><strong>目的</strong>: tool-<em> (旧 tool-architect / tool-project / tool-utility / tool-self-improve の 4 件) の責務 / 境界 / 詳細仕様を <code>dig</code> skill で対話的に詰めた結果をまとめる。</em><em>spec 本体への反映は別途実施</em>*。</p>
+<p><strong>source</strong>: 本 session で <code>dig</code> skill を 3 軸 × 5 ラウンド = 20 question 実施。</p>
+<p><strong>user の核心意図</strong>:
+- 長期安定する仕組みを最初の設計段階で作り込む
+- 公式 verify を sandbox で実機検証 + hyperlink で spec 表現
+- pre-tool-use hooks の error 鬱陶しい → 既に無効化済 (commit <code>de0ec97a</code>)</p>
+<hr />
+<h2 id="0-3-tool-tool-utility">0. 結論 (3 tool 構成、tool-utility 廃止)</h2>
+<table>
+<thead>
+<tr>
+<th>tool</th>
+<th>由来</th>
+<th>役割</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>tool-architect</strong></td>
+<td>co-architect rebrand</td>
+<td>HTML spec 対話的維持 + 自律 verify (2 層) + 軽量 PR cycle</td>
+</tr>
+<tr>
+<td><strong>tool-project</strong></td>
+<td>co-project rebrand + 拡張</td>
+<td>GitHub Project 一括設定 + template + verify (3 軽 scope)</td>
+</tr>
+<tr>
+<td><strong>tool-sandbox-runner</strong></td>
+<td>co-self-improve rebrand</td>
+<td>sandbox × feature matrix で twill + 他 project のテスト + log 分析 + Idea Issue 起票</td>
+</tr>
+<tr>
+<td>~~tool-utility~~</td>
+<td>(廃止)</td>
+<td>commands は architect/project/admin/sandbox-runner に再分配</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="05-verify-status-source-dig-claim-2026-05-13">0.5 verify status と公式 source (本 dig 各 claim 検証、2026-05-13 追加)</h2>
+<blockquote>
+<p><strong>本 section の目的</strong>: 本 dig で確定した各 claim を <code>verified</code> / <code>deduced</code> / <code>inferred</code> / <code>experiment-verified</code> の 4-state status で分類し、公式 source URL を提示する。ユーザーフィードバック (2026-05-13): 「dig report も当然最新公式ソースを使った verify が必要」。</p>
+</blockquote>
+<h3 id="legend-4-state-verification-status">legend (4-state verification status)</h3>
+<table>
+<thead>
+<tr>
+<th>status</th>
+<th>意味</th>
+<th>表記</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>verified</strong></td>
+<td>公式 docs / 既存実装で確認済</td>
+<td><code>[verified]</code></td>
+</tr>
+<tr>
+<td><strong>deduced</strong></td>
+<td>型・docs・既存実装から逆算 (公式直接記載なし)</td>
+<td><code>[deduced]</code></td>
+</tr>
+<tr>
+<td><strong>inferred</strong></td>
+<td>推測 (実機 EXP 実行で確定予定)</td>
+<td><code>[inferred → EXP-NNN]</code></td>
+</tr>
+<tr>
+<td><strong>experiment-verified</strong></td>
+<td>sandbox 実機再現済 (将来、Phase 1 PoC 以降)</td>
+<td><code>[experiment-verified]</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="dig-webfetch-verify-docs-2026-05-13">本 dig で新規 WebFetch verify した公式 docs (2026-05-13)</h3>
+<table>
+<thead>
+<tr>
+<th>docs URL</th>
+<th>verify 内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://code.claude.com/docs/en/plugins">code.claude.com/docs/en/plugins</a></td>
+<td><code>--plugin-dir</code> flag, <code>.claude-plugin/plugin.json</code> schema, skill namespace <code>/plugin:skill</code>, <code>monitors/monitors.json</code> schema, <code>hooks/hooks.json</code> 配置、<code>bin/</code> PATH 注入、<code>.lsp.json</code> LSP server, <code>settings.json</code> で <code>agent</code> key</td>
+</tr>
+<tr>
+<td><a href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a></td>
+<td>matcher singular field, exit code 0/1/2 semantics (PreToolUse は exit 2 で block, PostToolUse は block 不可で stderr → Claude へ), <code>permissionDecision</code> enum: <code>allow|deny|ask|defer</code>, env: <code>CLAUDE_PROJECT_DIR</code> / <code>CLAUDE_PLUGIN_ROOT</code> / <code>CLAUDE_PLUGIN_DATA</code> / <code>CLAUDE_ENV_FILE</code> / <code>CLAUDE_EFFORT</code>, stdin JSON schema (tool_name, tool_input, tool_use_id, session_id, transcript_path, cwd, permission_mode, hook_event_name)</td>
+</tr>
+<tr>
+<td><a href="https://cli.github.com/manual/gh_project">cli.github.com/manual/gh_project</a></td>
+<td>sub-commands 全 19 件: close / copy / create / delete / edit / field-create / field-delete / field-list / item-add / item-archive / item-create / item-delete / item-edit / item-list / link / list / mark-template / unlink / view。write-capable は 15 件</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tool-architect-1-claim-verify">tool-architect §1 各 claim の verify</h3>
+<table>
+<thead>
+<tr>
+<th>section</th>
+<th>claim</th>
+<th>status</th>
+<th>source / 備考</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>§1.1 役割</td>
+<td>HTML spec の対話的維持 + feature-dev workflow 経由</td>
+<td>[deduced]</td>
+<td>tool 設計選択 (検証不要、設計合意)</td>
+</tr>
+<tr>
+<td>§1.2 層 1</td>
+<td>spec 全 file grep で 4-state status listing</td>
+<td>[verified]</td>
+<td>LLM 規律 (自明、本 dig で確認)</td>
+</tr>
+<tr>
+<td>§1.2 層 2</td>
+<td>PostToolUse hook (<code>verify-coverage.sh</code>) で grep-based warn</td>
+<td>[verified]</td>
+<td><a href="https://code.claude.com/docs/en/hooks">hooks docs</a>: "PostToolUse can't block, stderr fed to Claude" — warn のみ運用と整合</td>
+</tr>
+<tr>
+<td>§1.2 層 2</td>
+<td>exit 0 + JSON で <code>decision: "block"</code> not set → tool allowed</td>
+<td>[verified]</td>
+<td>hooks docs Exit Code table (上記)</td>
+</tr>
+<tr>
+<td>§1.2 EXP</td>
+<td><a href="EXP-027">EXP-027</a> verify-coverage.sh の grep 動作検証</td>
+<td>[inferred → EXP-027]</td>
+<td>(実機未検証、Phase 1 PoC で実行)</td>
+</tr>
+<tr>
+<td>§1.3 PR cycle</td>
+<td><code>gh pr create --auto-merge=false</code></td>
+<td>[verified]</td>
+<td><a href="https://cli.github.com/manual/gh_pr_create">gh CLI manual</a></td>
+</tr>
+<tr>
+<td>§1.3 PR cycle</td>
+<td>worker-spec-review 1 agent + fix loop 3 回</td>
+<td>[deduced]</td>
+<td>既存 worker-pr-cycle 8 specialist との対比で軽量化判断、検証 EXP-029</td>
+</tr>
+<tr>
+<td>§1.3 PR cycle</td>
+<td><a href="EXP-029">EXP-029</a> 3 回 loop で収束 or escalate</td>
+<td>[inferred → EXP-029]</td>
+<td>(実機未検証)</td>
+</tr>
+<tr>
+<td>§1.4 spec hook</td>
+<td>PreToolUse <code>Edit\|Write</code> matcher の pipe syntax</td>
+<td>[verified]</td>
+<td>hooks docs: "exact match or <code>\|</code>-separated alternatives"</td>
+</tr>
+<tr>
+<td>§1.4 spec hook</td>
+<td>exit 2 で PreToolUse 上の Edit/Write を block</td>
+<td>[verified]</td>
+<td>hooks docs Exit Code table: "exit 2 blocks PreToolUse"</td>
+</tr>
+<tr>
+<td>§1.4 spec hook</td>
+<td>既存 pre-tool-use-worktree-boundary.sh の deny pattern を継承</td>
+<td>[verified]</td>
+<td><code>plugins/twl/scripts/hooks/pre-tool-use-worktree-boundary.sh</code> (Inv B 実装、本 spec で活用継承)</td>
+</tr>
+<tr>
+<td>§1.4 caller 識別</td>
+<td>env 変数 <code>CLAUDE_PLUGIN_ROOT</code> 経由</td>
+<td>[verified]</td>
+<td>hooks docs: "CLAUDE_PLUGIN_ROOT: Plugin installation directory (plugin hooks only)"</td>
+</tr>
+<tr>
+<td>§1.4 caller 識別</td>
+<td>env 変数 <code>TWL_TOOL_CONTEXT</code> 経由 (新規)</td>
+<td>[inferred → EXP-028]</td>
+<td>twl 独自設計、<code>spawn-tmux.sh</code> で env export 想定 (要 EXP)</td>
+</tr>
+<tr>
+<td>§1.5 EXP hub</td>
+<td>experiment-index.html が全 EXP-001〜031 集約</td>
+<td>[verified]</td>
+<td>既存 file 存在 + 本 dig で 13 件追加 (EXP-019〜031)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tool-project-2-claim-verify">tool-project §2 各 claim の verify</h3>
+<table>
+<thead>
+<tr>
+<th>section</th>
+<th>claim</th>
+<th>status</th>
+<th>source / 備考</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>§2.1 3 軽 scope</td>
+<td>GitHub Project + template + verify の 3 機能</td>
+<td>[deduced]</td>
+<td>tool 設計選択、scope 限定の合意</td>
+</tr>
+<tr>
+<td>§2.2 matrix 4 手段</td>
+<td>gh CLI / GraphQL API / gh-mcp / twl-mcp</td>
+<td>[verified] (手段存在)</td>
+<td>gh project 19 sub-commands (<a href="https://cli.github.com/manual/gh_project">cli.github.com/manual/gh_project</a>)、GraphQL Projects v2 API は GitHub Docs に記載</td>
+</tr>
+<tr>
+<td>§2.2 領域 5 × 手段 4</td>
+<td>status field option 追加 / kanban col order / label / view / filter の write 可能性</td>
+<td>[inferred → EXP-019〜023]</td>
+<td>gh CLI には <code>field-create</code> / <code>field-delete</code> / <code>item-edit</code> 存在、ただし status field の <strong>option 追加</strong> や <strong>kanban col order 変更</strong> の specific path は cli 直接表現が不明。GraphQL projects v2 で <code>updateProjectV2Field</code> 等が存在するが要実機検証</td>
+</tr>
+<tr>
+<td>§2.2 新 MCP tool 価値</td>
+<td><a href="EXP-024">EXP-024</a> twl_validate_project_setup の必要性</td>
+<td>[inferred → EXP-024]</td>
+<td>tool-project で gh CLI / GraphQL で十分か、独自 MCP tool 化価値あるか</td>
+</tr>
+<tr>
+<td>§2.3 template</td>
+<td>git submodule + tag versioning</td>
+<td>[verified]</td>
+<td><a href="https://git-scm.com/docs/git-submodule">git-submodule(1) man</a>、<code>git submodule add</code> + tag pinning は標準</td>
+</tr>
+<tr>
+<td>§2.3 stack 3 件</td>
+<td>TS Next.js+Hono / Supabase / Docker Compose</td>
+<td>[verified] (stack 存在)</td>
+<td>(一般技術、verify 不要)</td>
+</tr>
+<tr>
+<td>§2.4 安全性</td>
+<td>git tag pre-template-<code>&lt;ts&gt;</code> + <code>git reset --hard</code> rollback</td>
+<td>[verified]</td>
+<td><a href="https://git-scm.com/docs/git-tag">git docs</a> + git reset man</td>
+</tr>
+<tr>
+<td>§2.4 idempotent</td>
+<td>template 2 回 apply → 同一 state</td>
+<td>[inferred → EXP-026]</td>
+<td>tool 実装後検証</td>
+</tr>
+<tr>
+<td>§2.4 EXP</td>
+<td><a href="EXP-025">EXP-025</a> template apply + build smoke test</td>
+<td>[inferred → EXP-025]</td>
+<td>実装後検証</td>
+</tr>
+<tr>
+<td>§2.5 既存 project</td>
+<td>default skip + verify diff 提示</td>
+<td>[deduced]</td>
+<td>tool 内部設計選択</td>
+</tr>
+<tr>
+<td>§2.6 sub-command</td>
+<td>init / setup-board / apply-template / verify-board / migrate / snapshot / plugin-create / prompt-audit (8 件)</td>
+<td>[deduced]</td>
+<td>既存 co-project の sub-command 継承 + init 追加</td>
+</tr>
+<tr>
+<td>§2.6 新 MCP tool</td>
+<td><code>twl_validate_project_setup</code> の実装</td>
+<td>[inferred → 実装]</td>
+<td><code>cli/twl/src/twl/validation/project_setup.py</code> ~80 行 (Phase 1 PoC で実装)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tool-sandbox-runner-3-claim-verify">tool-sandbox-runner §3 各 claim の verify</h3>
+<table>
+<thead>
+<tr>
+<th>section</th>
+<th>claim</th>
+<th>status</th>
+<th>source / 備考</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>§3.1 役割</td>
+<td>sandbox × feature matrix で twill self test + 他 project test</td>
+<td>[deduced]</td>
+<td>tool 設計選択、scope 合意</td>
+</tr>
+<tr>
+<td>§3.2 起動形式</td>
+<td><code>--sandbox=&lt;name&gt; --features=&lt;list&gt; --collect-logs=all</code></td>
+<td>[deduced]</td>
+<td>slash command 引数 設計選択</td>
+</tr>
+<tr>
+<td>§3.3 catalog 場所</td>
+<td><code>plugins/twl/sandboxes/&lt;name&gt;/</code></td>
+<td>[verified]</td>
+<td><a href="https://code.claude.com/docs/en/plugins">plugins docs</a>: plugin root に任意 directory 配置可、<code>bin/</code> / <code>monitors/</code> 等の precedent あり</td>
+</tr>
+<tr>
+<td>§3.3 manifest 3 件</td>
+<td><code>sandbox.yaml</code> / <code>setup.sh</code> / <code>features.yaml</code></td>
+<td>[deduced]</td>
+<td>catalog 設計選択 (deps.yaml v3.0 style 参考)</td>
+</tr>
+<tr>
+<td>§3.4 twill-self sandbox</td>
+<td><code>test-target/main</code> orphan branch + dedicated worktree</td>
+<td>[verified]</td>
+<td>既存 <code>plugins/twl/skills/co-self-improve/SKILL.md</code> L (test-target/main 直接参照)</td>
+</tr>
+<tr>
+<td>§3.4 security</td>
+<td>GH_TOKEN test-repo 専用 (main へは read-only)</td>
+<td>[deduced]</td>
+<td>sandbox security 設計選択、cleanup pattern は既存 <code>git worktree remove --force</code> 継承</td>
+</tr>
+<tr>
+<td>§3.5 log 収集</td>
+<td><code>claude --plugin-dir</code> + <code>CLAUDE_PROJECT_DIR</code> 経由 sandbox 起動</td>
+<td>[verified]</td>
+<td><a href="https://code.claude.com/docs/en/plugins">plugins docs</a>: "claude --plugin-dir ./my-plugin" verbatim、<code>--plugin-dir</code> flag は公式 development/testing path</td>
+</tr>
+<tr>
+<td>§3.5 jsonl path</td>
+<td><code>~/.claude/projects/$(encoded $(pwd))/*.jsonl</code></td>
+<td>[verified]</td>
+<td>既存 jsonl 監視で実体験済 (本 session の <code>7775f0cd-...jsonl</code> 参照)</td>
+</tr>
+<tr>
+<td>§3.5 tmux 命名</td>
+<td><code>sandbox-${RUN_ID}-&lt;role&gt;</code> window</td>
+<td>[deduced]</td>
+<td>tmux new-window naming 設計選択</td>
+</tr>
+<tr>
+<td>§3.5 capture-pane</td>
+<td><code>tmux capture-pane -p -S -10000</code></td>
+<td>[verified]</td>
+<td>tmux(1) man、本 spec で複数箇所 verified</td>
+</tr>
+<tr>
+<td>§3.6 LLM 分析</td>
+<td>pattern catalog 6 件 + freeform 両対応</td>
+<td>[deduced]</td>
+<td>設計選択 (pattern-only or freeform-only の disadvantage を hybrid で解消)</td>
+</tr>
+<tr>
+<td>§3.6 LLM output schema</td>
+<td>JSON <code>{problems: [{pattern_id, freeform_title, confidence, impact_scope, log_excerpt}]}</code></td>
+<td>[deduced]</td>
+<td>schema 設計選択</td>
+</tr>
+<tr>
+<td>§3.7 doobidoo</td>
+<td><code>mcp__doobidoo__memory_search</code> mode=hybrid</td>
+<td>[verified]</td>
+<td>既存 MCP server tool interface (本 session で実利用、9 hash 蓄積)</td>
+</tr>
+<tr>
+<td>§3.7 similarity threshold</td>
+<td>similarity &gt; 0.75 で重複判定</td>
+<td>[inferred → EXP-031]</td>
+<td>doobidoo の similarity score 範囲 (0-1) は verified、0.75 閾値は EXP で false +/- 率検証</td>
+</tr>
+<tr>
+<td>§3.7 Idea Issue 起票</td>
+<td>severity=critical のみ起票、minor は doobidoo のみ</td>
+<td>[deduced]</td>
+<td>設計選択 (Issue spam 回避)</td>
+</tr>
+<tr>
+<td>§3.8 timeout</td>
+<td>wall-clock 30m default</td>
+<td>[deduced]</td>
+<td>設計選択、<code>--timeout=30m</code> で override 可</td>
+</tr>
+<tr>
+<td>§3.8 budget threshold</td>
+<td>budget 5h % &gt; 50 で timeout</td>
+<td>[deduced]</td>
+<td>Inv Q format (<a href="invariant-fate-table.html#inv-q">verified</a>) を判定に流用、50% 閾値は設計選択</td>
+</tr>
+<tr>
+<td>§3.8 EXP</td>
+<td><a href="EXP-030">EXP-030</a> sandbox 1 cycle 動作 + log 収集検証</td>
+<td>[inferred → EXP-030]</td>
+<td>(実機未検証、Phase 1 PoC で実行)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tool-utility-4-verify">tool-utility 廃止 §4 の verify</h3>
+<table>
+<thead>
+<tr>
+<th>claim</th>
+<th>status</th>
+<th>source / 備考</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>tool-utility SKILL.md 79 行</td>
+<td>[verified]</td>
+<td><code>plugins/twl/skills/co-utility/SKILL.md</code> 行数 (file size 確認済)</td>
+</tr>
+<tr>
+<td>commands 再分配先 (architect / project / admin / sandbox-runner)</td>
+<td>[deduced]</td>
+<td>設計合意、各 command の責務帰属判断</td>
+</tr>
+</tbody>
+</table>
+<h3 id="helper-file-6-verify">新規 helper / file §6 の verify</h3>
+<table>
+<thead>
+<tr>
+<th>file</th>
+<th>status</th>
+<th>source / 備考</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>verify-coverage.sh</code> (~50 行)</td>
+<td>[inferred → 実装]</td>
+<td>grep-based warn の規模推定、実装で確定</td>
+</tr>
+<tr>
+<td><code>pre-tool-use-spec-write-boundary.sh</code> (~30 行)</td>
+<td>[inferred → 実装]</td>
+<td>既存 worktree-boundary (~40 行) 参照、規模推定</td>
+</tr>
+<tr>
+<td><code>worker-spec-review.md</code> (~100 行 SKILL.md)</td>
+<td>[inferred → 実装]</td>
+<td>review agent prompt 規模推定</td>
+</tr>
+<tr>
+<td><code>problem-patterns.yaml</code> (~50 行、6 pattern)</td>
+<td>[deduced]</td>
+<td>catalog 設計、6 pattern 確定</td>
+</tr>
+<tr>
+<td>sandbox <code>sandbox.yaml + setup.sh + features.yaml</code> (per sandbox)</td>
+<td>[inferred → 実装]</td>
+<td>manifest 規模推定 (~30+50+50 行)</td>
+</tr>
+<tr>
+<td><code>cli/twl/src/twl/validation/project_setup.py</code> (~80 行)</td>
+<td>[inferred → 実装]</td>
+<td>MCP tool validation 規模推定</td>
+</tr>
+<tr>
+<td><code>shuu5/twill-templates</code> 別 repo</td>
+<td>[inferred → 実装]</td>
+<td>別 repo 構造 (Phase 1 PoC 以降で作成)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="7-verify">削除対象 §7 の verify</h3>
+<table>
+<thead>
+<tr>
+<th>削除対象</th>
+<th>status</th>
+<th>source / 備考</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>plugins/twl/skills/co-utility/SKILL.md</code> (79 行)</td>
+<td>[verified]</td>
+<td>file 行数確認済</td>
+</tr>
+<tr>
+<td>co-utility 関連 catalog / script</td>
+<td>[deduced]</td>
+<td>関連ファイルは co-utility/SKILL.md 内 reference 確認後決定</td>
+</tr>
+</tbody>
+</table>
+<h3 id="8-verify">残課題 §8 の verify</h3>
+<p>§8 の残課題は全て <strong>[inferred] (将来 dig / 実装段階で詰める)</strong>。worker-spec-review prompt / verify-coverage.sh grep regex / caller 識別ロジック等は実装 PR cycle で確定する。</p>
+<h3 id="core-lesson-11-verify">core lesson §11 の verify</h3>
+<table>
+<thead>
+<tr>
+<th>lesson</th>
+<th>status</th>
+<th>source / 備考</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>§11.1 tool-utility 不要</td>
+<td>[verified]</td>
+<td>79 行 SKILL.md + 他 3 tool + admin inline で吸収可能、本 dig で確認</td>
+</tr>
+<tr>
+<td>§11.2 self-improve → sandbox-runner rename</td>
+<td>[deduced]</td>
+<td>命名選択 (intent 明確化)</td>
+</tr>
+<tr>
+<td>§11.3 tool-architect spec author 単一化</td>
+<td>[deduced]</td>
+<td>spec edit boundary 設計選択、PreToolUse deny で機械 enforce</td>
+</tr>
+<tr>
+<td>§11.4 PR cycle 軽量化</td>
+<td>[deduced]</td>
+<td>worker-pr-cycle 8 specialist との対比</td>
+</tr>
+<tr>
+<td>§11.5 2 層 verify 併用</td>
+<td>[verified]</td>
+<td><a href="https://code.claude.com/docs/en/hooks">hooks docs</a>: PostToolUse は warn-only に適、PreToolUse は block 可、両層併用は設計妥当</td>
+</tr>
+<tr>
+<td>§11.6 plugin scope catalog</td>
+<td>[verified]</td>
+<td><a href="https://code.claude.com/docs/en/plugins">plugins docs</a>: plugin root に任意 directory OK</td>
+</tr>
+<tr>
+<td>§11.7 既存 verified pattern 継承</td>
+<td>[verified]</td>
+<td><code>pre-tool-use-worktree-boundary.sh</code> (Inv B 実装) / <code>session-atomic-write.sh</code> (flock pattern) / <code>test-target/main</code> orphan branch (co-self-improve 実装) を本 dig で全て確認済</td>
+</tr>
+</tbody>
+</table>
+<h3 id="verify">verify 結果サマリ</h3>
+<ul>
+<li><strong>verified</strong>: 19 件 (公式 docs / 既存実装で確認済)</li>
+<li><strong>deduced</strong>: 18 件 (型・docs・既存実装からの逆算、設計選択合意)</li>
+<li><strong>inferred → EXP</strong>: 13 件 (EXP-019〜031 で実機検証予定)</li>
+<li><strong>inferred → 実装</strong>: 7 件 (実装段階で規模 / 詳細確定)</li>
+</ul>
+<p>合計 ~57 claim、verify gap は 20 件 (EXP / 実装で順次解消)。<strong>最大の inferred gap</strong> は §2.2 GitHub Project 5 領域 × 4 手段 matrix (EXP-019〜023)、<strong>実装で確定</strong> は §6 新規 helper file 規模 ~7 件。</p>
+<hr />
+<h2 id="1-tool-architect">1. tool-architect 詳細</h2>
+<h3 id="11">1.1 役割</h3>
+<ul>
+<li>HTML 形式 architecture spec を <strong>「現仕様」</strong> として対話的に維持</li>
+<li>feature-dev workflow 経由 (issue を介さない、直接対話)</li>
+<li>後の実装指針の大本</li>
+</ul>
+<h3 id="12-verify-2">1.2 verify 強制機構 (<strong>2 層併用</strong>)</h3>
+<p><strong>層 1: SKILL.md MUST (LLM 規律)</strong>
+- Step 0: spec 全 file を grep して 4-state status (inferred / deduced / verified / experiment-verified) を listing、未 verified を todo 化
+- Step N: 新 feature 追加時に EXP 候補生成必須</p>
+<p><strong>層 2: PostToolUse hook (機械検証)</strong> — <code>verify-coverage.sh</code> (新規)
+- 動作:
+  1. <code>grep -c '&lt;span class="vs inferred"&gt;' spec/*.html</code> → N inferred (warn)
+  2. <code>grep -c '&lt;span class="vs deduced"&gt;' spec/*.html</code> → M deduced (warn)
+  3. <code>git diff HEAD -- spec/*.html</code> で new section に <code>&lt;a class="exp-link"&gt;</code> 不在を warn
+  4. <code>changelog.html</code> を git diff と突合、本日 entry 不在を warn
+- 振る舞い: <strong>warn のみ</strong> (block せず)、PR review で LLM が評価して fix 要求</p>
+<h3 id="13-pr-cycle">1.3 軽量 PR cycle</h3>
+<table>
+<thead>
+<tr>
+<th>step</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>feature-dev で spec edit</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>git commit</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>gh pr create --auto-merge=false</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>worker-spec-review</code> spawn (1 agent、新規軽量 review agent)</td>
+</tr>
+<tr>
+<td>5</td>
+<td>review findings: 未 verified claim listing / EXP 漏れ check / changelog 漏れ check</td>
+</tr>
+<tr>
+<td>6</td>
+<td>tool-architect 自己 fix loop (<strong>最大 3 回</strong>)</td>
+</tr>
+<tr>
+<td>7</td>
+<td>review PASS or 3 回到達 → user <code>AskUserQuestion</code> approve</td>
+</tr>
+<tr>
+<td>8</td>
+<td>merge</td>
+</tr>
+</tbody>
+</table>
+<p><strong>recursive PR rule</strong>: tool-architect が自身の spec を更新する PR 作成 <strong>OK</strong>、ただし review は self skip、user / 他 tool に委譲。</p>
+<h3 id="14-spec-edit">1.4 spec edit 所有権</h3>
+<table>
+<thead>
+<tr>
+<th>entity</th>
+<th>edit 権</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>tool-architect</td>
+<td>✅ (PR cycle 経由)</td>
+</tr>
+<tr>
+<td>user</td>
+<td>✅ (手動 edit)</td>
+</tr>
+<tr>
+<td>admin / phase-<em> / worker-</em> / tool-project / tool-sandbox-runner</td>
+<td>❌ (read-only)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>hook enforce</strong>: <code>pre-tool-use-spec-write-boundary.sh</code> (新規)
+- matcher: <code>Edit|Write architecture/spec/*</code>
+- deny 条件: caller が tool-architect / user 以外
+- plugin scope で配置</p>
+<h3 id="15-spec-verify-status">1.5 spec 全体の verify status 集約</h3>
+<ul>
+<li><code>experiment-index.html</code> (本 session 第 3 弾で確定) が全 EXP-001〜018 の status listing hub</li>
+<li>個別 spec file は <code>&lt;span class="vs ..."&gt;</code> で claim 単位の status</li>
+<li>将来 CI で自動 status 更新 (実行結果 → badge 更新)</li>
+</ul>
+<hr />
+<h2 id="2-tool-project">2. tool-project 詳細</h2>
+<h3 id="21-3-scope">2.1 役割 (3 軽 scope)</h3>
+<ul>
+<li><strong>GitHub Project 一括設定</strong>: status field 6 stage + kanban view (col order) + label</li>
+<li><strong>template apply</strong>: 主要 stack (TS Next.js+Hono / Supabase / Docker Compose)</li>
+<li><strong>verify</strong>: <code>twl_validate_project_setup</code> MCP tool (新規) で設定が正しいか assert</li>
+</ul>
+<h3 id="22-github-write-boundary-5-4-matrix">2.2 GitHub write boundary 調査 (5 領域 × 4 手段 matrix)</h3>
+<p>新規 EXP 計 5 件で <strong>5 領域 × 4 手段</strong> の write 可能性を実機検証:</p>
+<table>
+<thead>
+<tr>
+<th>領域</th>
+<th>EXP-id</th>
+<th>gh CLI</th>
+<th>GraphQL</th>
+<th>gh-mcp</th>
+<th>twl-mcp</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>status field option 追加</td>
+<td>EXP-019</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>kanban col order 変更</td>
+<td>EXP-020</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>label add/remove</td>
+<td>EXP-021</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>view switch (kanban/table)</td>
+<td>EXP-022</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>filter / group-by 設定</td>
+<td>EXP-023</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+<td>N/A</td>
+</tr>
+</tbody>
+</table>
+<p>調査結果に基づき、最も信頼性高い手段を採用 (<code>twl_validate_project_setup</code> は MCP 化候補)。</p>
+<h3 id="23-template">2.3 template 詳細</h3>
+<p><strong>stack 3 件 + 別 git repo + git submodule versioning</strong>:</p>
+<pre><code>twill-templates/ (別 git repo、shuu5/twill-templates)
+├── ts-nextjs-hono-mono/
+│   ├── package.json (workspaces)
+│   ├── apps/web/ (Next.js)
+│   ├── apps/api/ (Hono)
+│   └── packages/shared/
+├── supabase/
+│   ├── schema.sql
+│   ├── migrations/
+│   └── .env.example
+└── docker-compose/
+    └── compose.yml
+</code></pre>
+<ul>
+<li>twill main から git submodule で fetch、tag (例 <code>v0.1.0</code>) で version pin</li>
+<li>将来拡張: python-fastapi / r-quarto / k8s</li>
+<li>拡張は tech-debt Issue として段階追加</li>
+</ul>
+<h3 id="24-template-apply">2.4 template apply の安全性</h3>
+<p><strong>dry-run default + file のみ add (既存上書き禁止) + rollback snapshot</strong>:</p>
+<pre><code>flow:
+  1. tool-project apply-template --stack=ts-nextjs-hono-mono
+  2. default dry-run: file 一覧 + conflict listing
+  3. user approve → 実適用
+  4. git tag pre-template-&lt;ts&gt; (rollback 用 snapshot)
+  5. file add only (既存は skip)
+     conflict file: user override のみ overwrite
+  6. error 時: git reset --hard pre-template-&lt;ts&gt;
+</code></pre>
+<p><strong>EXP-026</strong> (新規): template を 2 回 apply して同一 state を verify (idempotent)</p>
+<h3 id="25-project-idempotency">2.5 既存 project の idempotency</h3>
+<p><strong>default skip + verify diff 提示 + user 確認</strong>:</p>
+<pre><code>flow:
+  1. detect 既存 setting
+  2. verify mode (diff 表示):
+     expected: ...
+     actual:   ...
+     diff:     ...
+  3. AskUserQuestion: skip / overwrite / merge
+  4. destructive (kanban 順位変更 / label 削除) は user approve 必須
+</code></pre>
+<p><strong>EXP-022</strong> (上記再掲): 既存 project に 2 回 setup 適用して idempotent verify</p>
+<h3 id="26-sub-command-init">2.6 sub-command 設計 (<strong>init 統合 + 別個コマンド</strong>)</h3>
+<table>
+<thead>
+<tr>
+<th>sub-command</th>
+<th>役割</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>init</strong></td>
+<td>GitHub Project + template + verify を sequence 実行 (新規 project 用)</td>
+</tr>
+<tr>
+<td>setup-board</td>
+<td>Project のみ (既存 project 用)</td>
+</tr>
+<tr>
+<td>apply-template</td>
+<td>template のみ</td>
+</tr>
+<tr>
+<td>verify-board</td>
+<td>設定検証</td>
+</tr>
+<tr>
+<td>migrate</td>
+<td>既存 → 新 version</td>
+</tr>
+<tr>
+<td>snapshot</td>
+<td>現 state を template 化</td>
+</tr>
+<tr>
+<td>plugin-create</td>
+<td>plugin 作成 (既存継承)</td>
+</tr>
+<tr>
+<td>prompt-audit</td>
+<td>(既存継承)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>使い分け</strong>:
+- 新規 project: <code>init</code> 1 発
+- 既存 project: <code>setup-board</code> or <code>apply-template</code> 個別
+- 検証のみ: <code>verify-board</code></p>
+<hr />
+<h2 id="3-tool-sandbox-runner-rename-from-tool-self-improve">3. tool-sandbox-runner 詳細 (rename from tool-self-improve)</h2>
+<h3 id="31">3.1 役割</h3>
+<ul>
+<li>twill plugin sandbox で twill 自身を実行 + 全層 (admin/pilot/worker) log 収集 + 問題分析 + Idea Issue 起票</li>
+<li>twill 以外の sandbox (TS Next.js Hono モノレポ等) で tool-project から一気通貫テスト</li>
+</ul>
+<h3 id="32-sandbox-feature-matrix">3.2 起動形式 (<strong>sandbox × feature matrix</strong>)</h3>
+<pre><code class="language-bash">/twl:tool-sandbox-runner \
+  --sandbox=twill-self \
+  --features=admin,pilot,worker \
+  --collect-logs=all
+</code></pre>
+<h3 id="33-sandbox-catalog">3.3 sandbox catalog (場所)</h3>
+<p><strong><code>plugins/twl/sandboxes/&lt;name&gt;/</code></strong> に manifest 配置:</p>
+<pre><code>plugins/twl/sandboxes/
+├── twill-self/
+│   ├── sandbox.yaml      # manifest (description, features サポート一覧)
+│   ├── setup.sh          # orphan branch + worktree 作成
+│   └── features.yaml     # feature 一覧と test 方法
+├── ts-nextjs-hono-mono/
+│   ├── sandbox.yaml
+│   ├── setup.sh          # template apply + tool-project init
+│   └── features.yaml
+└── _shared/
+    └── problem-patterns.yaml  # LLM 分析 pattern catalog
+</code></pre>
+<ul>
+<li>feature catalog: deps.yaml v3.0 + skill discovery と <strong>integrity check</strong> で同期</li>
+</ul>
+<h3 id="34-twill-self-sandbox-verified-pattern">3.4 twill-self sandbox の具体構造 (verified pattern 継承)</h3>
+<p>既存 <code>co-self-improve</code> の <code>test-target/main</code> orphan branch 方式を継承:</p>
+<pre><code class="language-bash"># setup-sandbox.sh
+export TWL_SANDBOX_RUN_ID=$(date +%s)
+export TWL_SANDBOX_DIR=worktrees/sandbox-${TWL_SANDBOX_RUN_ID}
+
+git checkout --orphan test-target/main
+cp -r test-fixtures/minimal-plugin .
+git worktree add $TWL_SANDBOX_DIR test-target/main
+</code></pre>
+<p><strong>security</strong>:
+- <code>GH_TOKEN</code> = test-repo 専用 (main API へは read-only)
+- PR 作成は test-repo のみ
+- cleanup: <code>git worktree remove --force</code> + <code>git branch -D test-target/main</code></p>
+<h3 id="35-log-env-run-id">3.5 log 収集 (env + run-id タグ)</h3>
+<p><strong>sandbox 内 Claude Code 起動</strong>:</p>
+<pre><code class="language-bash">cd $TWL_SANDBOX_DIR
+CLAUDE_PROJECT_DIR=$(pwd) claude --plugin-dir ./plugins/twl
+# jsonl: ~/.claude/projects/$(encoded $(pwd))/*.jsonl
+</code></pre>
+<p><strong>tmux window 命名</strong>: <code>sandbox-${RUN_ID}-admin</code> / <code>sandbox-${RUN_ID}-phase-impl-1660</code> etc</p>
+<p><strong>収集 script</strong> (<code>.sandbox-logs/&lt;run-id&gt;/</code> に集約):</p>
+<pre><code>~/.claude/projects/$(encoded $TWL_SANDBOX_DIR)/*.jsonl
+tmux capture-pane -p -S -10000 -t sandbox-${RUN_ID}-*
+$TWL_SANDBOX_DIR/.mailbox/*/inbox.jsonl
+$TWL_SANDBOX_DIR/.audit/&lt;run-id&gt;/
+</code></pre>
+<h3 id="36-llm-pattern-catalog-freeform">3.6 LLM 分析 (<strong>pattern catalog + freeform 両方</strong>)</h3>
+<p><strong><code>plugins/twl/sandboxes/_shared/problem-patterns.yaml</code></strong> (catalog):</p>
+<pre><code class="language-yaml">patterns:
+  - id: stuck-loop
+    description: 同一 step を N 回以上 retry
+    severity: critical
+  - id: mailbox-loss
+    description: pilot が worker mail を N min 未受信
+    severity: high
+  - id: context-bloat
+    description: token 使用率 &gt; 80% で仕事未完了
+    severity: medium
+  - id: phase-gate-mistake
+    severity: high
+  - id: step-abort-cascade
+    severity: critical
+  - id: subagent-misuse
+    severity: medium
+</code></pre>
+<p><strong>LLM output schema</strong>:</p>
+<pre><code class="language-json">{
+  &quot;problems&quot;: [
+    {
+      &quot;pattern_id&quot;: &quot;stuck-loop&quot;,          // catalog match or null (freeform)
+      &quot;freeform_title&quot;: &quot;...&quot;,
+      &quot;confidence&quot;: &quot;high|medium|low&quot;,
+      &quot;impact_scope&quot;: &quot;single-step|phase|system&quot;,
+      &quot;log_excerpt&quot;: &quot;...&quot;
+    }
+  ]
+}
+</code></pre>
+<h3 id="37-doobidoo-check-idea-issue">3.7 doobidoo 重複 check + Idea Issue 起票</h3>
+<p><strong>flow</strong> (semantic search + similarity &gt; 0.75 で link):</p>
+<pre><code>for each problem in LLM output:
+  query = problem.title + problem.detail (first 200 chars)
+  results = mcp__doobidoo__memory_search(query, mode=hybrid)
+  if results[0].similarity &gt; 0.75:
+    # 重複 → Issue 起票しない、doobidoo hash を log
+    log &quot;重複: doobidoo $hash&quot;
+    continue
+  else:
+    # 新規 → Idea Issue 起票
+    gh issue create \
+      --title &quot;[sandbox/$sandbox_name] $summary&quot; \
+      --label &quot;discovered-by-sandbox-runner,bug|improvement,severity-$sev&quot; \
+      --body &quot;$detail + log excerpt + sandbox run-id + doobidoo hash&quot;
+    mcp__doobidoo__memory_store new problem
+</code></pre>
+<p><strong>Issue 起票条件</strong>: severity = <strong>critical</strong> のみ Idea Issue 起票、minor は doobidoo のみ。</p>
+<h3 id="38-failure-recovery-wall-clock-budget-timeout">3.8 failure recovery (wall-clock + budget 両方で timeout)</h3>
+<p><strong>timeout 条件</strong>:
+- wall-clock &gt; 30 min (default、<code>--timeout=30m</code>)
+- budget 5h % &gt; 50</p>
+<p><strong>timeout flow</strong>:</p>
+<pre><code>1. log 収集 (kill 前に必ず実行)
+2. tmux send-keys C-c (graceful stop 試行)
+3. 5 min wait
+4. 未終了 → tmux kill-window
+5. cleanup (worktree remove + branch delete)
+6. mailbox -&gt; admin &quot;sandbox-timeout&quot; mail
+7. AskUserQuestion: continue / abort
+</code></pre>
+<p><strong>implementation</strong>: admin polling で sandbox window 存在 + duration check、budget は Inv Q format で解釈</p>
+<hr />
+<h2 id="4-tool-utility-commands">4. tool-utility 廃止 (commands 再分配)</h2>
+<table>
+<thead>
+<tr>
+<th>旧 command</th>
+<th>新配置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>size-check</td>
+<td>tool-architect (spec 品質) / tool-project (プロジェクト品質)</td>
+</tr>
+<tr>
+<td>lint</td>
+<td>tool-architect / tool-project</td>
+</tr>
+<tr>
+<td>worktree-list</td>
+<td>administrator/SKILL.md inline</td>
+</tr>
+<tr>
+<td>worktree-cleanup</td>
+<td>administrator/SKILL.md inline</td>
+</tr>
+<tr>
+<td>archive</td>
+<td><strong>廃止</strong> (git で十分)</td>
+</tr>
+<tr>
+<td>spec-diagnose</td>
+<td>tool-architect 統合</td>
+</tr>
+<tr>
+<td>(sandbox 関連)</td>
+<td>tool-sandbox-runner</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-exp-dig">5. 新規 EXP 追加 (本 dig 由来)</h2>
+<table>
+<thead>
+<tr>
+<th>EXP-id</th>
+<th>検証対象</th>
+<th>担当 tool</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EXP-019</td>
+<td>GitHub Project status field option 追加 (4 手段)</td>
+<td>tool-project</td>
+</tr>
+<tr>
+<td>EXP-020</td>
+<td>kanban col order 変更 (4 手段)</td>
+<td>tool-project</td>
+</tr>
+<tr>
+<td>EXP-021</td>
+<td>label add/remove (4 手段)</td>
+<td>tool-project</td>
+</tr>
+<tr>
+<td>EXP-022</td>
+<td>view switch (kanban/table)</td>
+<td>tool-project</td>
+</tr>
+<tr>
+<td>EXP-023</td>
+<td>filter / group-by 設定</td>
+<td>tool-project</td>
+</tr>
+<tr>
+<td>EXP-024</td>
+<td>(将来) twl MCP custom tool 価値調査</td>
+<td>tool-project</td>
+</tr>
+<tr>
+<td>EXP-025</td>
+<td>template apply + build smoke test</td>
+<td>tool-project</td>
+</tr>
+<tr>
+<td>EXP-026</td>
+<td>template idempotent (2 回 apply で同一 state)</td>
+<td>tool-project</td>
+</tr>
+</tbody>
+</table>
+<p>加えて tool-architect verify 系の EXP も新規 (現 spec で言及済の EXP-001〜018 と並列):</p>
+<table>
+<thead>
+<tr>
+<th>EXP-id</th>
+<th>検証対象</th>
+<th>担当</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EXP-027 (新規候補)</td>
+<td>verify-coverage.sh の 4-state grep が正しく未 verified を catch</td>
+<td>tool-architect verify</td>
+</tr>
+<tr>
+<td>EXP-028 (新規候補)</td>
+<td>pre-tool-use-spec-write-boundary.sh が tool-architect / user 以外を deny</td>
+<td>tool-architect verify</td>
+</tr>
+<tr>
+<td>EXP-029 (新規候補)</td>
+<td>worker-spec-review agent が 3 回 fix loop で収束 or escalate</td>
+<td>tool-architect PR cycle</td>
+</tr>
+<tr>
+<td>EXP-030 (新規候補)</td>
+<td>sandbox-runner で twill-self sandbox の 1 cycle 動作 + log 収集</td>
+<td>tool-sandbox-runner</td>
+</tr>
+<tr>
+<td>EXP-031 (新規候補)</td>
+<td>doobidoo 重複 check (similarity &gt; 0.75) の false positive/negative 率</td>
+<td>tool-sandbox-runner</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-helper-file-dig">6. 新規 helper / file 追加 (本 dig 由来)</h2>
+<table>
+<thead>
+<tr>
+<th>file</th>
+<th>用途</th>
+<th>規模</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>plugins/twl/scripts/lib/verify-coverage.sh</code></td>
+<td>tool-architect verify hook (層 2)</td>
+<td>~50 行</td>
+</tr>
+<tr>
+<td><code>plugins/twl/scripts/hooks/pre-tool-use-spec-write-boundary.sh</code></td>
+<td>spec edit 所有権 enforce</td>
+<td>~30 行</td>
+</tr>
+<tr>
+<td><code>plugins/twl/agents/worker-spec-review.md</code></td>
+<td>tool-architect PR cycle review agent</td>
+<td>~100 行 (SKILL.md)</td>
+</tr>
+<tr>
+<td><code>plugins/twl/sandboxes/_shared/problem-patterns.yaml</code></td>
+<td>LLM 分析 pattern catalog</td>
+<td>~50 行</td>
+</tr>
+<tr>
+<td><code>plugins/twl/sandboxes/&lt;name&gt;/sandbox.yaml</code></td>
+<td>sandbox manifest (per sandbox)</td>
+<td>~30 行</td>
+</tr>
+<tr>
+<td><code>plugins/twl/sandboxes/&lt;name&gt;/setup.sh</code></td>
+<td>sandbox setup (per sandbox)</td>
+<td>~50 行</td>
+</tr>
+<tr>
+<td><code>plugins/twl/sandboxes/&lt;name&gt;/features.yaml</code></td>
+<td>feature 一覧 (per sandbox)</td>
+<td>~50 行</td>
+</tr>
+<tr>
+<td><code>cli/twl/src/twl/validation/project_setup.py</code></td>
+<td><code>twl_validate_project_setup</code> MCP tool</td>
+<td>~80 行</td>
+</tr>
+<tr>
+<td><code>shuu5/twill-templates</code> (別 git repo)</td>
+<td>template repository</td>
+<td>repo-level</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-dig">7. 削除対象 (本 dig 由来の追加)</h2>
+<table>
+<thead>
+<tr>
+<th>file / concept</th>
+<th>削除理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>plugins/twl/skills/co-utility/SKILL.md</code> (79 行)</td>
+<td>tool-utility 廃止</td>
+</tr>
+<tr>
+<td>co-utility 関連 catalog / script</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>(現 co-architect の architect-fixtures があれば)</td>
+<td>tool-architect 統合</td>
+</tr>
+</tbody>
+</table>
+<p>合計削減: tool-utility 79 行 + 関連 files</p>
+<hr />
+<h2 id="8-dig">8. 残課題 (本 dig で扱わず、将来詰める)</h2>
+<h3 id="_1">詳細実装レベル</h3>
+<ul>
+<li><code>worker-spec-review</code> agent の正確な prompt (findings 出力形式)</li>
+<li><code>verify-coverage.sh</code> の正確な grep regex + warn message format</li>
+<li><code>pre-tool-use-spec-write-boundary.sh</code> の caller 識別ロジック (env 変数経由?)</li>
+<li>problem-patterns.yaml の各 pattern severity threshold 値</li>
+<li>template version migration の semver / breaking change handling</li>
+</ul>
+<h3 id="_2">運用設計</h3>
+<ul>
+<li>twill-templates 別 repo の管理者 / PR review policy</li>
+<li>sandbox 並列実行 (複数 sandbox 同時) の可否 + resource conflict</li>
+<li>sandbox-runner timeout の budget threshold 値 (50% 妥当か)</li>
+</ul>
+<h3 id="tool-architect">tool-architect 追加検討</h3>
+<ul>
+<li>recursive PR の review 委譲先 (user only? 他 tool? user/admin/他 tool の優先順位)</li>
+<li>spec file 削除 / file rename の handling (worker-spec-review で catch?)</li>
+</ul>
+<h3 id="tool-project">tool-project 追加検討</h3>
+<ul>
+<li>cross-repo support (twill 外の repo に apply 可?)</li>
+<li><code>migrate</code> sub-command の動作 (旧 version → 新 version の diff 反映)</li>
+<li><code>snapshot</code> sub-command の動作 (現 state を新 template として抽出?)</li>
+</ul>
+<h3 id="tool-sandbox-runner">tool-sandbox-runner 追加検討</h3>
+<ul>
+<li>sandbox 内 twill が更に sandbox-runner を呼ぶ recursive 制限</li>
+<li>features.yaml の sync method (実 SKILL.md 一覧との integrity check 自動化)</li>
+</ul>
+<hr />
+<h2 id="9-spec">9. 関連 spec ファイル (未反映)</h2>
+<p>本 dig 結果を将来反映する spec file:</p>
+<table>
+<thead>
+<tr>
+<th>spec file</th>
+<th>反映内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tool-architecture.html</code></td>
+<td>全面書き直し (4 tool → 3 tool、各 tool の 1.x〜3.x 詳細を埋め込み)</td>
+</tr>
+<tr>
+<td><code>experiment-index.html</code></td>
+<td>EXP-019〜031 追加</td>
+</tr>
+<tr>
+<td><code>sandbox-experiment.html</code></td>
+<td>sandbox catalog の plugins/twl/sandboxes/ 確定、problem-patterns catalog 追加</td>
+</tr>
+<tr>
+<td><code>deletion-inventory.html</code></td>
+<td>tool-utility 廃止 + 79 行削除 reference</td>
+</tr>
+<tr>
+<td><code>rebuild-plan.html</code></td>
+<td>Phase 1 PoC の ★ STEP 群に EXP-019〜031 を組込み</td>
+</tr>
+<tr>
+<td><code>boundary-matrix.html</code></td>
+<td>4 entity (admin/pilot/worker/tool-*) を確定 (5 entity → 4 entity 整理)</td>
+</tr>
+<tr>
+<td><code>glossary.html</code></td>
+<td>tool-sandbox-runner / tool-utility 廃止 反映</td>
+</tr>
+<tr>
+<td><code>README.html</code></td>
+<td>tool 一覧更新 (3 件構成)</td>
+</tr>
+<tr>
+<td><code>changelog.html</code></td>
+<td>第 4 弾履歴 (本 dig 結果)</td>
+</tr>
+<tr>
+<td><code>ADR-043</code> (md)</td>
+<td>tool 構成変更を Decision section に追記</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="10-dig-transparency">10. dig 履歴 (transparency)</h2>
+<h3 id="round-1-a-tool-4-question">Round 1 (A 軸: tool-* 存在意義 + 境界、4 question)</h3>
+<ol>
+<li>verify 強制レイヤー構造 → <strong>機械 hook + SKILL.md MUST 2 層併用</strong></li>
+<li>PR cycle 採否 → <strong>採用、ただし軽量サイクル</strong></li>
+<li>tool-self-improve rename + scope → <strong>rename 「tool-sandbox-runner」 + sandbox×feature matrix</strong></li>
+<li>tool-utility 存続 → <strong>廃止 (3 tool 構成)</strong></li>
+</ol>
+<h3 id="round-2-a-4-question">Round 2 (A 軸続き、4 question)</h3>
+<ol>
+<li>verify hook 実装 → <strong>4-state class grep + EXP マークアップ、warn のみ</strong></li>
+<li>PR cycle safety → <strong>fix loop 3 回上限 + user approve は review PASS 後</strong></li>
+<li>tool-project scope → <strong>GitHub Project + template + verify の 3 軽</strong></li>
+<li>sandbox-runner log + 起票 → <strong>全層 log + LLM 分析 + doobidoo 重複 check + Idea 起票</strong></li>
+</ol>
+<h3 id="round-3-a-4-question">Round 3 (A 軸完結、4 question)</h3>
+<ol>
+<li>spec edit 所有権 → <strong>tool-architect + user 手動のみ</strong></li>
+<li>tool-project idempotency → <strong>default skip + verify diff 提示 + user 確認</strong></li>
+<li>sandbox catalog 場所 → <strong>plugins/twl/sandboxes/ directory + sandbox.yaml</strong></li>
+<li>twill-self sandbox 構造 → <strong>test-target/main orphan branch + dedicated worktree + read-only API</strong></li>
+</ol>
+<h3 id="round-4-b-tool-project-4-question">Round 4 (B 軸: tool-project 詳細、4 question)</h3>
+<ol>
+<li>GitHub write boundary 調査 → <strong>5 領域全取調査 (EXP-019〜023)</strong></li>
+<li>template stack + versioning → <strong>stack 3 件 + git submodule versioning + apply test EXP</strong></li>
+<li>template apply 安全性 → <strong>dry-run default + file のみ add + rollback snapshot</strong></li>
+<li>sub-command 設計 → <strong>init 統合 sub-command + 他是別個コマンド</strong></li>
+</ol>
+<h3 id="round-5-c-tool-sandbox-runner-4-question">Round 5 (C 軸: tool-sandbox-runner 詳細、4 question)</h3>
+<ol>
+<li>LLM 分析 prompt 設計 → <strong>pattern catalog + freeform 両方</strong></li>
+<li>log 収集 path 解決 → <strong>env 変数で sandbox dir 明示 + run-id タグ</strong></li>
+<li>doobidoo 重複 check + Idea 起票 → <strong>semantic search + similarity &gt; 0.75 で link</strong></li>
+<li>sandbox failure recovery → <strong>wall-clock timeout + budget % 両方で timeout</strong></li>
+</ol>
+<p><strong>全 20 question で「Recommended」選択肢が user 採用</strong>。dig インタビュー完了。</p>
+<hr />
+<h2 id="11-dig-core-lesson">11. 本 dig の core lesson</h2>
+<ol>
+<li><strong>tool-utility は不要だった</strong>: 他 3 tool + admin inline で吸収可能、責務未分化が drift 原因</li>
+<li><strong>tool-self-improve → tool-sandbox-runner rename</strong>: "self-improve" は scope 不明確、"sandbox-runner" で意図明確化</li>
+<li><strong>tool-architect は spec の唯一 author (recursive OK)</strong>: spec edit 所有権を機械 enforce することで drift 防止</li>
+<li><strong>PR cycle は spec にも適用価値あり</strong>: worker-pr-cycle (8 specialist) は重すぎ、worker-spec-review 1 agent の軽量 cycle で十分</li>
+<li><strong>2 層 verify (hook + SKILL.md MUST)</strong>: LLM だけでも hook だけでも漏れる、両方必須</li>
+<li><strong>sandbox catalog は plugin scope に置く</strong>: plugin 化方針と整合、test-fixtures/experiments/ とは別配置</li>
+<li><strong>既存 verified pattern を最大限継承</strong>: <code>test-target/main</code> orphan branch + <code>session-atomic-write.sh</code> flock + <code>pre-tool-use-worktree-boundary.sh</code> の deny pattern を新 architecture に流用</li>
+</ol>
+<hr />
+<h2 id="12">12. 次のアクション選択肢</h2>
+<p>(A) 本 dig 結果を spec 本体に反映 (<code>tool-architecture.html</code> 全面書き直し + 他 9 file 更新 + ADR-043 追記、~1-2 session)</p>
+<p>(B) tool-architect 先行実装 (本 dig の決定事項を実コードに落とす、Phase 1 PoC の前段)</p>
+<p>(C) 残課題 (§8) を更に dig (詳細実装レベル、運用設計)</p>
+<p>(D) 別軸を dig (例: administrator / phase-<em> / worker-</em> の詳細、step.sh framework 内部、boundary-matrix の admin 列詳細)</p>
+<p>(E) Phase 1 PoC 着手 (★ STEP -1 hook 無効化済 → STEP 0 sandbox EXP → STEP 1 twl plugin 化 → 本 dig 結果を実装)</p>
+
+</body>
+</html>

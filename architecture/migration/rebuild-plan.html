@@ -17,7 +17,7 @@
 
 <div class="caution">本 file は <code>twill-plugin-rebuild</code> spec の outline。次 session で Strangler Fig 4 phase rebuild plan の詳細を実装する。draft-v1 §11 を発展、<code>Phase 1 PoC</code> (#1660 sanitize) の具体手順を deep-dive。</div>
 
-<div class="info"><strong>第 5 弾 dig (2026-05-13) 反映</strong>: <code>Phase 1 PoC</code> の ★ STEP 0 で実行する EXP を <strong>EXP-001〜031 (31 件) → EXP-001〜038 (38 件)</strong> に拡張。第 5 弾 dig 由来の 7 件 (EXP-032 registry audit / EXP-033 atomic composition / EXP-034 registry↔SKILL 整合 / EXP-035 disable-model-invocation 効果実測 / EXP-036 atomic-Agent spawn / EXP-037 doobidoo Tailscale 安定性 / EXP-038 vocabulary audit) を追加。verify points も VP-13〜VP-16 → VP-17〜VP-20 (registry.yaml audit / atomic composition / disable-model-invocation 効果 / vocabulary 命名衝突検出) を追加。詳細: <a href="../research/experiment-index.html">experiment-index.html カテゴリ N</a> + <a href="../research/dig-report-ssot-2026-05-13.md">dig-report-ssot-2026-05-13.md §9.4 新規 EXP</a>。
+<div class="info"><strong>第 5 弾 dig (2026-05-13) 反映</strong>: <code>Phase 1 PoC</code> の ★ STEP 0 で実行する EXP を <strong>EXP-001〜031 (31 件) → EXP-001〜038 (38 件)</strong> に拡張。第 5 弾 dig 由来の 7 件 (EXP-032 registry audit / EXP-033 atomic composition / EXP-034 registry↔SKILL 整合 / EXP-035 disable-model-invocation 効果実測 / EXP-036 atomic-Agent spawn / EXP-037 doobidoo Tailscale 安定性 / EXP-038 vocabulary audit) を追加。verify points も VP-13〜VP-16 → VP-17〜VP-20 (registry.yaml audit / atomic composition / disable-model-invocation 効果 / vocabulary 命名衝突検出) を追加。詳細: <a href="../research/experiment-index.html">experiment-index.html カテゴリ N</a> + <a href="../research/dig-report-ssot-2026-05-13.html">dig-report-ssot-2026-05-13.md §9.4 新規 EXP</a>。
 <br>
 さらに <code>Phase 1 PoC</code> で新規作成: <code>plugins/twl/registry.yaml</code> (新規、6 section schema、glossary section seed = core 22 entity = 10 role + 11 non-role + 1 deprecated、Phase F 2026-05-14 で verify-status 追加)。<code>Phase 2 dual-stack</code> で components 完全 listing、<code>Phase 3 cutover</code> で <code>cli/twl/types.yaml</code> + <code>plugins/twl/deps.yaml</code> + 第 3 弾 dig 案 3 <code>step.sh framework</code> + <code>chain-steps.sh</code> (廃止予告 mark) を全廃、<code>Phase 4 cleanup</code> で命名 policy ADR (ADR-045 = 2026-05-14 Accepted 済) の experiment-verified 化完遂。</div>
 
@@ -173,7 +173,7 @@
   <li><strong>research-findings.html</strong> (公式 verified、120 sources、Critique PASS、本 spec の根拠): <a href="../research/research-findings.html">research-findings.html</a> §4 (mcp-watchdog 4 段階 migration) + §7 (本 session 5 件 WebFetch verified)</li>
   <li><a href="../spec/admin-cycle.html">admin-cycle.html</a> §6 (案 2 先行実装の構成)</li>
   <li><a href="../spec/gate-hook.html">gate-hook.html</a> §11 (<code>Phase 1 PoC</code> verify VP-9〜VP-12 の根拠)</li>
-  <li><strong><a href="../research/dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a></strong> (第 4 弾 dig 詳細、tool-* 3 件構成の根拠、VP-13〜VP-16 の根拠、§0.5 verify status)</li>
+  <li><strong><a href="../research/dig-report-tools-2026-05-13.html">dig-report-tools-2026-05-13.md</a></strong> (第 4 弾 dig 詳細、tool-* 3 件構成の根拠、VP-13〜VP-16 の根拠、§0.5 verify status)</li>
   <li><a href="../spec/tool-architecture.html">tool-architecture.html</a> (第 4 弾 dig 反映、tool-architect / tool-project / tool-sandbox-runner 詳細仕様)</li>
   <li>既存 draft <code>draft-v1.html</code> §11 (原案、archive、図 5 timeline)</li>
 </ul>
