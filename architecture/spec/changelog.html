@@ -21,7 +21,36 @@
   <strong>関連</strong>: <a href="README.html">README</a> / <a href="architecture-graph.html">architecture-graph</a>
 </div>
 
-<h2 id="phase-feature-dev">2026-05-15 (2nd): architecture spec dir-first 精緻 refactoring (feature-dev:feature-dev workflow)</h2>
+<h2 id="2026-05-15-3rd">2026-05-15 (3rd): tool-architecture + 全 spec drift 一括 fix (Q2/Q3)</h2>
+
+<h3>核心成果</h3>
+
+<p>前 round の精緻 refactoring (2nd) 後の user 提起 3 懸念点 (Q1: graph/README visual / Q2: tool-architect spec page / Q3: 他 spec drift audit) のうち <strong>Q2 → Q3</strong> を完遂。Q1 は別 phase で polish 予定。</p>
+
+<ol>
+  <li><strong>Q2 tool-architecture.html 整合化</strong>: draft-v3 (2026-05-13) → draft-v4 (2026-05-15、Clean redesign 反映)。旧 prefix phase-*/worker-* 全置換 (10 role canonical phaser/workflow/atomic/specialist)、sandbox-runner §5 内 admin/pilot/worker 全置換、status badge done 追加、§3.6 「Clean redesign との整合性」section 新設 (R-10 / dir-first / 5 cluster / ADR-0012 / SKILL.md 委譲先 listing)、§11.1 list に ADR-0012 + SKILL.md/spec-management-rules.md 追加。3 軸 cross-ref 完備 (tool-architecture.html ↔ SKILL.md ↔ spec-management-rules.md)。</li>
+  <li><strong>Q3 全 spec 18 file audit (3 並列 code-explorer)</strong>: CRITICAL 19 件 identify (旧 prefix 7 / 旧 actor 名 9 / 内容矛盾 5 / changelog 2 / その他)、WARN 多数、曖昧点 13 件。</li>
+  <li><strong>Q3 旧用語 + 旧 actor 名 一括 fix (8 file)</strong>: failure-analysis (worker-spec-review → specialist-spec-review + F-4 追記)、admin-cycle (pilot → phaser 7 箇所、SVG label 含む)、crash-failure-mode (約 20 箇所、SVG label atomic-1/2/3 + .heartbeat/phaser-*.json + 表 + 本文 + L2-3 統合表記)、gate-hook (phase-* → phaser-*、phase-gate.sh → phaser-gate.sh)、spawn-protocol (worker (L2) → L2-3、3 階層 → 3 層、tool-self-improve → tool-sandbox-runner)、twl-mcp-integration (admin/pilot/worker 3 階層 → administrator/phaser/L2-3 3 層、specialist-test-ready → workflow-test-ready)、ssot-design (新 type 名表記更新)、overview (header v4)。</li>
+  <li><strong>Q3 内容矛盾解消 5 件</strong>: failure-analysis に F-4 (用語 SSoT 不在) 追記 (overview §7 と整合)、crash-failure-mode SLA "~60 min" → "10 min" (§4.5 Phase I 確定と整合)、crash-failure-mode CronCreate durable=true "persistent" → "BROKEN (#40228)" (admin-cycle と整合)、twl-mcp-integration §4.3/§8 MUST 4 "types.yaml SSoT" → "registry.yaml#token_thresholds" (§4 廃止決定と整合)、twl-mcp-integration §8 SHOULD 1 "chain SSoT 2-way (step.sh + deps.yaml.chains)" → "registry.yaml#chains 1-way 統合 SSoT" ((2026-05-13) 案 4 と整合)。</li>
+  <li><strong>session marker 残存 fix</strong>: glossary §8.5 「第 F 弾」削除、changelog L55/L125 「(本 Phase 7)」を実 commit hash (<code>b8c82764</code> / <code>4ffdeb37</code>) に置換。anchor id <code>phase-feature-dev</code> → <code>2026-05-15-3rd</code> (旧 phase- prefix を anchor id から除去)。</li>
+</ol>
+
+<h3>累積 commit (Q2/Q3 サイクル)</h3>
+
+<ul>
+  <li><code>8b5a4fc0</code> — Q2: tool-architecture.html drift fix + Clean redesign 整合性宣言 + SKILL.md/refs/ 双方向 cross-ref</li>
+  <li><code>e664181f</code> — Q3: 全 spec drift 一括 fix + 内容矛盾解消 (8 file)</li>
+  <li>(本 commit) — Q3 補足: changelog update + session marker fix</li>
+</ul>
+
+<h3>defer された task</h3>
+
+<ul>
+  <li><strong>Q1: graph + README visual polish</strong> (Phase 6 review WARN-3〜10): cluster-bg 色衝突軽減、4 sub-intensity colorblind compatibility、legend node size 凡例完備、hub size 4px 差視認性、cross-dir edge 拡充。</li>
+  <li><strong>Q3 曖昧点 13 件</strong> (overview 不変条件数 / pilot failure mail event 名 / boundary-matrix tool-* 表記 / ADR-045 timeline / etc): /dig skill で個別 dig (本 session 内予定)。</li>
+</ul>
+
+<h2 id="2026-05-15-2nd">2026-05-15 (2nd): architecture spec dir-first 精緻 refactoring (feature-dev:feature-dev workflow)</h2>
 
 <h3>核心成果</h3>
 
@@ -52,7 +81,7 @@
 <ul>
   <li><code>a312f7ae</code> — Phase 5 Implementation (Clean redesign、dir-first refactoring)</li>
   <li><code>2d6b0047</code> — Phase 6 review findings fix (CRITICAL 11 件)</li>
-  <li>(本 Phase 7) — changelog 拡張 + final summary</li>
+  <li><code>b8c82764</code> — Phase 7: changelog 拡張 + final summary</li>
 </ul>
 
 <h3>Phase 7 で defer された未完 task (別 phase 推奨)</h3>
@@ -122,7 +151,7 @@
   <li><code>0c5cea92</code> — Phase 4: spec 整合性 fix</li>
   <li><code>351f1c07</code> — Phase 5: su-* → admin-* rebrand spec + ADR-0012 起票</li>
   <li><code>55c1b1f8</code> — Phase 6: 3 並列 opus review fix (CRITICAL 9 件)</li>
-  <li>(本 Phase 7 commit) — changelog 分割 + 仕上げ</li>
+  <li><code>4ffdeb37</code> — Phase 7: changelog 分割 + 仕上げ</li>
 </ul>
 
 <h2>関連</h2>
