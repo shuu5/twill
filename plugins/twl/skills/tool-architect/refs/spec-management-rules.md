@@ -405,8 +405,10 @@ R-5 の「badge 識別基準」section 参照。
 ## 関連
 
 - [tool-architect SKILL.md](../SKILL.md) (本 doc の親 SKILL)
+- `architecture/spec/tool-architecture.html` (tool-* 3 件 spec、本 doc の規律が適用される対象 spec page、§3.6 で Clean redesign 整合性宣言)
 - `architecture/spec/README.html` (spec index、R-1 強制 target)
 - `architecture/spec/architecture-graph.html` (link graph、R-2 強制 target)
+- `architecture/decisions/ADR-0012-administrator-rebrand.md` (administrator rebrand、Proposed)
 - `scripts/spec-anchor-link-check.py` (link integrity tool、R-3 / R-8 機械検証)
 - `.github/workflows/spec-link-check.yml` (CI gate、R-8 強制)
 - `plugins/twl/scripts/hooks/pre-tool-use-spec-write-boundary.sh` (caller marker hook、R-7 強制)

@@ -91,9 +91,11 @@ git add architecture/spec/ && git commit -m "spec(<file>): <change summary>" && 
 
 ## 関連 spec / file
 
+- `architecture/spec/tool-architecture.html` — tool-* 3 件 architecture spec (役割 / verify 機構 / PR cycle、本 SKILL の高レベル仕様 SSoT、§3.6 で Clean redesign 整合性宣言)
 - `architecture/spec/architecture-graph.html` — link 図 hub (R-2 強制 target)
 - `architecture/spec/README.html` — index hub (R-1 強制 target、entry point)
 - `architecture/spec/registry-schema.html` — registry.yaml schema 定義
+- `architecture/decisions/ADR-0012-administrator-rebrand.md` — administrator rebrand (Proposed)
 - `scripts/spec-anchor-link-check.py` — link integrity 機械検証 tool
 - `.github/workflows/spec-link-check.yml` — CI gate (R-8 強制)
 - `plugins/twl/scripts/hooks/pre-tool-use-spec-write-boundary.sh` — caller marker enforce (R-7 強制)

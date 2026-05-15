@@ -19,13 +19,13 @@
 
 <header class="doc-header">
   <h1>tool-* 3 件 architecture — 責務 / verify 機構 / sandbox / migration</h1>
-  <div class="meta">draft-v3 (2026-05-13) &middot; tool-* 3 件 (architect/project/sandbox-runner) + 10 role 体系内位置付け + specialist-spec-review (旧 worker-spec-review rename)</div>
+  <div class="meta">status: <span class="badge done">done</span> &middot; draft-v4 (2026-05-15、Clean redesign 反映) &middot; tool-* 3 件 (architect/project/sandbox-runner) + 10 role 体系内位置付け + specialist-spec-review (旧 worker-spec-review rename)</div>
 </header>
 
 <div class="info">
   <strong>目的</strong>: 新 architecture の tool-* 層 (status 遷移と無関係、user/admin 直接 invoke の独立 tool 群) の責務 boundary・自律 verify 機構・sandbox 実機検証・既存 co-* skill からの migration を仕様化する。<br>
   <br>
-  <strong>位置づけ</strong>: <a href="overview.html">overview.html</a> 図 1 では右独立ボックスとして描画済。L0 administrator / L1 phaser (phase-*) / L2 workflow+specialist (worker-*) の 3 階層とは別、status 遷移と無関係な独立 invoke 群。<br>
+  <strong>位置づけ</strong>: <a href="overview.html">overview.html</a> 図 1 では右独立ボックスとして描画済。L0 administrator / L1 phaser / L2-3 workflow+atomic+specialist の 3 階層とは別、status 遷移と無関係な独立 invoke 群。<br>
   <br>
   <strong>(2026-05-13) の核心成果</strong>: 旧 4 tool → 3 tool に再構成 (tool-utility 廃止)、各 tool の自律 verify / sandbox 検証 / PR cycle / log 分析 / Idea Issue 起票 etc. の詳細仕様を <code>dig</code> skill 3 軸 × 5 ラウンド = 20 question で確定。<br>
   source: <a href="../archive/research/dig-report-tools-2026-05-13.html">dig-report-tools-2026-05-13.html</a> (spec sessionの独立 dig artifact、12 section / ~470 行)。
@@ -81,7 +81,7 @@
     <tr>
       <td>tool-architect</td>
       <td><code>user</code> (明示)、<span class="vs deduced">deduced</span> <code>admin</code> (ADR-040 gate 経由)</td>
-      <td>phase-* / worker-* から直接 invoke MUST NOT</td>
+      <td>phaser / workflow / atomic / specialist から直接 invoke MUST NOT</td>
     </tr>
     <tr>
       <td>tool-project</td>
@@ -99,7 +99,7 @@
 <h3>2.2 mailbox 規約</h3>
 
 <ul>
-  <li>tool-* は <strong>status 遷移と無関係</strong>、phase-* / worker-* の per-specialist mailbox (<code>.mailbox/&lt;session&gt;/inbox.jsonl</code>) は使用しない</li>
+  <li>tool-* は <strong>status 遷移と無関係</strong>、phaser / workflow / atomic / specialist の per-specialist mailbox (<code>.mailbox/&lt;session&gt;/inbox.jsonl</code>) は使用しない</li>
   <li>tool-sandbox-runner のみ admin への完了 mail 必要 (旧 su-observer 経路の継承、<a href="admin-cycle.html">admin-cycle.html</a> §3.1 で受信)</li>
   <li>tool-architect / tool-project は結果を user に直接提示 (admin mailbox 通知不要)</li>
 </ul>
@@ -122,7 +122,7 @@
 <h3>2.4 step.sh framework 利用可否</h3>
 
 <ul>
-  <li>tool-* は <strong>step.sh framework を利用しない</strong> (status 遷移と無関係、step-verification の post-verify 機械検証 (<a href="../migration/invariant-fate-table.html#inv-u">不変条件 U</a>) は phase-* / worker-* 専用)</li>
+  <li>tool-* は <strong>step.sh framework を利用しない</strong> (status 遷移と無関係、step-verification の post-verify 機械検証 (<a href="../migration/invariant-fate-table.html#inv-u">不変条件 U</a>) は phaser / workflow / atomic / specialist 専用)</li>
   <li>tool 内部の step 管理は各 tool の SKILL.md で完結 (chain step との混同を避ける)</li>
 </ul>
 
@@ -130,7 +130,7 @@
 
 <ul>
   <li>tool-* は <a href="gate-hook.html">gate-hook.html</a> の phase-gate <strong>対象外</strong> (status 遷移と無関係)</li>
-  <li>phase-gate.sh の粗フィルタは <code>if: "Skill(phase-*)"</code> で tool-* を素通り</li>
+  <li>phaser-gate.sh の粗フィルタは <code>if: "Skill(phaser-*)"</code> で tool-* を素通り</li>
   <li>tool-* の起動承認は ADR-040 (user 明示依頼許可) が SSoT</li>
   <li>tool-architect は別系統で <strong>spec edit boundary hook</strong> を保持 (§3.4 で詳述)</li>
 </ul>
@@ -211,7 +211,7 @@
   <tbody>
     <tr><td>tool-architect</td><td>✅ (PR cycle 経由)</td></tr>
     <tr><td>user</td><td>✅ (手動 edit、IDE / git CLI 経由)</td></tr>
-    <tr><td>admin / phase-* / worker-* / tool-project / tool-sandbox-runner</td><td>❌ (read-only)</td></tr>
+    <tr><td>administrator / phaser / workflow / atomic / specialist / tool-project / tool-sandbox-runner</td><td>❌ (read-only)</td></tr>
   </tbody>
 </table>
 
@@ -232,6 +232,20 @@
   <li>個別 spec file は <code>&lt;span class="vs ..."&gt;</code> で claim 単位の status</li>
   <li>将来 CI で自動 status 更新 (実行結果 → badge 更新)</li>
   <li>過去 dig (2026-05-13 dig) で EXP-019〜031 が新規追加 (合計 31 EXP)</li>
+</ul>
+
+<h3>3.6 Clean redesign との整合性 (2026-05-15)</h3>
+
+<div class="info">
+本 spec は tool-* 高レベル仕様 (役割 / verify 機構 / PR cycle / edit 所有権)。新 file 追加時の dir 決定や node 配置等の手続詳細は <strong>SKILL.md + spec-management-rules.md に責務分離</strong>。本 section は 2026-05-15 の Clean redesign 後の整合点 5 件を listing。
+</div>
+
+<ul>
+  <li><strong>R-10 decision tree</strong>: 新 file 追加時の dir + sub-category 自動決定 (Q1-Q7 の決定木、詳細: <code>plugins/twl/skills/tool-architect/refs/spec-management-rules.md</code> R-10)。tool-architect は R-10 に従って配置先を選択、<code>spec/</code> 内は <code>orientation/core/policy/auxiliary</code> の 4 sub-category に分類</li>
+  <li><strong>dir-first README</strong>: <a href="README.html">README.html</a> は dir 構造 (<code>spec/migration/research/archive/decisions</code> の 5 dir section) + <code>spec/</code> 4 sub-category h3 で entry 配置。tool-architect は新 file 追加時に該当 sub-category table に entry MUST (R-1)</li>
+  <li><strong>5 cluster architecture-graph</strong>: <a href="architecture-graph.html">architecture-graph.html</a> は 5 cluster (<code>spec/migration/research/archive/decisions</code>) + <code>spec/</code> 4 sub-category 内 sub-intensity color で SVG 描画 (8 <code>cat-*</code> class)。tool-architect は新 file 追加時に該当 cluster に node + edge 追加 MUST (R-2)</li>
+  <li><strong>ADR-0012 administrator rebrand</strong>: 旧 <code>su-*</code> (su-observer / su-compact) → 新 <code>administrator</code> rebrand を <a href="../decisions/ADR-0012-administrator-rebrand.md">ADR-0012</a> で確定 (Proposed)。tool-architect の <code>spawnable_by: administrator</code> entry は ADR-0012 表記と整合</li>
+  <li><strong>SKILL.md + spec-management-rules.md 委譲先</strong>: tool-architect 実 invoke 時の手続詳細 (R-1〜R-10 適用方法 + checklist + HTML template + CI gate 一覧) は <code>plugins/twl/skills/tool-architect/SKILL.md</code> および同 <code>refs/spec-management-rules.md</code> に委譲。本 spec は「規律の存在」を宣言し、規律の中身は SKILL.md/refs/ を canonical SSoT とする</li>
 </ul>
 
 </div>
@@ -355,7 +369,7 @@
 <h3>5.1 役割</h3>
 
 <ul>
-  <li>twill plugin sandbox で twill 自身を実行 + 全層 (admin/pilot/worker) log 収集 + 問題分析 + Idea Issue 起票</li>
+  <li>twill plugin sandbox で twill 自身を実行 + 全層 (administrator/phaser/workflow/atomic/specialist) log 収集 + 問題分析 + Idea Issue 起票</li>
   <li>twill 以外の sandbox (TS Next.js Hono モノレポ等) で tool-project から一気通貫テスト</li>
 </ul>
 
@@ -363,7 +377,7 @@
 
 <pre><code>/twl:tool-sandbox-runner \
   --sandbox=twill-self \
-  --features=admin,pilot,worker \
+  --features=administrator,phaser,workflow,atomic,specialist \
   --collect-logs=all</code></pre>
 
 <p><strong>sandbox × feature matrix の利点</strong> (dig の核心): scenario 単位より sandbox × feature の方が再現性高く、admin が管理しやすい。</p>
@@ -434,7 +448,7 @@ $TWL_SANDBOX_DIR/.audit/&lt;run-id&gt;/</code></pre>
     description: 同一 step を N 回以上 retry
     severity: critical
   - id: mailbox-loss
-    description: pilot が worker mail を N min 未受信
+    description: phaser が atomic mail を N min 未受信
     severity: high
   - id: context-bloat
     description: token 使用率 &gt; 80% で仕事未完了
@@ -548,13 +562,13 @@ FOR each idea_issue IN board.filter(status="Idea"):
 spawn_tmux \
   --window-name "tool-sandbox-runner-twill-self-$(date +%s)" \
   --skill twl:tool-sandbox-runner \
-  --args "--sandbox=twill-self --features=admin,pilot,worker"</code></pre>
+  --args "--sandbox=twill-self --features=administrator,phaser,workflow,atomic,specialist"</code></pre>
 
 <h3>7.3 禁止経路 (Inv 関連)</h3>
 
 <ul>
-  <li>phase-* (pilot) が tool-* を <code>Skill</code> で呼ぶ → <strong>MUST NOT</strong> (ADR-040 違反)</li>
-  <li>worker-* (worker) が tool-* を <code>Skill</code> で呼ぶ → <strong>MUST NOT</strong></li>
+  <li>phaser が tool-* を <code>Skill</code> で呼ぶ → <strong>MUST NOT</strong> (ADR-040 違反)</li>
+  <li>workflow / atomic / specialist が tool-* を <code>Skill</code> で呼ぶ → <strong>MUST NOT</strong></li>
   <li>cross-stack invoke (旧 su-observer ↔ 新 administrator 経由の tool-* 呼び出し) → dual-stack 期間中 MUST NOT</li>
   <li>tool-architect 以外が <code>architecture/spec/</code> を edit → <strong>MUST NOT</strong> (層 1: hook deny、§3.4)</li>
 </ul>
@@ -662,6 +676,8 @@ spawn_tmux \
   <li><a href="../migration/deletion-inventory.html">deletion-inventory.html</a> §6b (tool-utility 79 行廃止 + 関連削除)</li>
   <li><a href="../migration/rebuild-plan.html">rebuild-plan.html</a> <code>Phase 1 PoC</code> (EXP-019〜031 組込み)</li>
   <li><a href="../archive/research/dig-report-tools-2026-05-13.html">dig-report-tools-2026-05-13.html</a> (過去 dig の独立 artifact、20 question 詳細)</li>
+  <li><a href="../decisions/ADR-0012-administrator-rebrand.md">ADR-0012-administrator-rebrand.md</a> (administrator rebrand 確定、2026-05-15 Proposed)</li>
+  <li><code>plugins/twl/skills/tool-architect/SKILL.md</code> + <code>refs/spec-management-rules.md</code> (tool-architect 実 invoke 規律詳細、R-1〜R-10)</li>
 </ul>
 
 <h3>11.2 関連 EXP-id 一覧 (過去 dig 由来 13 件)</h3>
