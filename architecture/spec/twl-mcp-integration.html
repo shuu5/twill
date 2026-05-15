@@ -255,10 +255,10 @@ workflow / atomic / specialist
   </ul>
 </div>
 
-<h2>§4. <code>types.yaml</code> 廃止 + <code>registry.yaml</code> 統合 SSoT (過去 dig (2026-05-13))</h2>
+<h2>§4. <code>types.yaml</code> 廃止 + <code>registry.yaml</code> 統合 SSoT ((2026-05-13))</h2>
 
 <div class="critical"><strong>(2026-05-13) で方針転換</strong>: 旧「<code>types.yaml</code> を token 閾値 SSoT として維持」から「<code>types.yaml</code> 全廃 + <code>plugins/twl/registry.yaml</code> 統合 SSoT に再配置」へ変更。component 型 listing は <code>registry.yaml#components</code> section、token 閾値 は <code>registry.yaml#integrity_rules</code> section に統合。types.py <code>_FALLBACK_TOKEN_THRESHOLDS</code> は Derived として registry.yaml から自動生成。<br>
-詳細: <a href="ssot-design.html">ssot-design.html §4 (案 4 registry.yaml 統合 SSoT)</a> + <a href="registry-schema.html#s2">registry-schema.html §2 (5 section schema)</a> + <a href="../archive/research/dig-report-ssot-2026-05-13.html">dig-report-ssot-2026-05-13.md</a> §6 (registry.yaml 完全 schema 案)。</div>
+詳細: <a href="ssot-design.html">ssot-design.html §4 (案 4 registry.yaml 統合 SSoT)</a> + <a href="registry-schema.html#s2">registry-schema.html §2 (5 section schema)</a> + <a href="../archive/research/dig-report-ssot-2026-05-13.html">dig-report-ssot-2026-05-13.html</a> §6 (registry.yaml 完全 schema 案)。</div>
 
 <h3>§4.0 旧 types.yaml SSoT の歴史的記述 (廃止前提、保全)</h3>
 
@@ -292,8 +292,8 @@ workflow / atomic / specialist
   <tbody>
     <tr><td>administrator</td><td>L0、長命 main session、polling cycle</td><td>2000</td><td>3000</td><td>su-observer から rebrand</td></tr>
     <tr><td>phaser-*</td><td>L1、status 遷移 1:1 担当 phaser (旧 pilot)</td><td>1500</td><td>2500</td><td>旧 controller を継承</td></tr>
-    <tr><td>workflow-*</td><td>L2、phaser から Skill 呼び出し、atomic launcher (disable-model-invocation: true)</td><td>800</td><td>1500</td><td>過去 dig (2026-05-13) 新 role</td></tr>
-    <tr><td>atomic-*</td><td>最小実行単位、workflow から Skill 呼び出し、SKILL.md 内 4-phase lifecycle</td><td>800</td><td>1500</td><td>過去 dig (2026-05-13) 新 role (旧 step.sh framework 廃止)</td></tr>
+    <tr><td>workflow-*</td><td>L2、phaser から Skill 呼び出し、atomic launcher (disable-model-invocation: true)</td><td>800</td><td>1500</td><td>(2026-05-13) 新 role</td></tr>
+    <tr><td>atomic-*</td><td>最小実行単位、workflow から Skill 呼び出し、SKILL.md 内 4-phase lifecycle</td><td>800</td><td>1500</td><td>(2026-05-13) 新 role (旧 step.sh framework 廃止)</td></tr>
     <tr><td>tool-*</td><td>独立 invoke、status 遷移と無関係</td><td>1500</td><td>2500</td><td>旧 controller を継承</td></tr>
     <tr><td>specialist-*</td><td>agents/ directory、Agent 経由 subagent、subagent spawn 不可</td><td>1800</td><td>2500</td><td>旧 worker-* + specialist を統合 rename</td></tr>
   </tbody>

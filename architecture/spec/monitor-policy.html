@@ -11,8 +11,8 @@
   <h1>Monitor primitive 規定 — actor / signal / composite / lifecycle (Phase I 2026-05-15 確定)</h1>
 </header>
 
-<div class="info"><strong>過去 dig (2026-05-13) Round 1 (Phase I 2026-05-15)</strong> で確定。User 懸念「Monitor は administrator が使う予定だがその使い方に考察の余地」への dig 4 件結果を SSoT 化。<br>
-旧 <code>.supervisor/events/</code> ファイル signal (existence / mtime / JSON body 混在) は <strong>過去 dig (2026-05-13) Round 10 で完全廃止済</strong>、mailbox JSON event に一元化。</div>
+<div class="info"><strong>(2026-05-13) Round 1 (Phase I 2026-05-15)</strong> で確定。User 懸念「Monitor は administrator が使う予定だがその使い方に考察の余地」への dig 4 件結果を SSoT 化。<br>
+旧 <code>.supervisor/events/</code> ファイル signal (existence / mtime / JSON body 混在) は <strong>(2026-05-13) Round 10 で完全廃止済</strong>、mailbox JSON event に一元化。</div>
 
 <h2 id="s1">§1. Monitor primitive 公式仕様 (Claude Code Sonnet 4.6 / Opus 4.7、<span class="vs verified">verified</span>)</h2>
 
@@ -44,7 +44,7 @@
 
 <h2 id="s3">§3. signal primary strategy (Phase I dig Q2 確定)</h2>
 
-<p>Monitor pattern の signal source は <strong>mailbox JSON event 単一化</strong>。旧 <code>.supervisor/events/</code> ファイル方式 (existence / mtime / JSON body 混在) は <strong>過去 dig (2026-05-13) Round 10 で廃止済</strong>。</p>
+<p>Monitor pattern の signal source は <strong>mailbox JSON event 単一化</strong>。旧 <code>.supervisor/events/</code> ファイル方式 (existence / mtime / JSON body 混在) は <strong>(2026-05-13) Round 10 で廃止済</strong>。</p>
 
 <h3>3.1 canonical Monitor pattern</h3>
 

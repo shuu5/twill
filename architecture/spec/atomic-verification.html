@@ -13,10 +13,10 @@
 
 <header class="doc-header">
   <h1>twill plugin rebuild — atomic skill verification</h1>
-  <div class="meta">draft-v3 (2026-05-13、過去 dig (2026-05-13) 反映) &middot; 旧 step-verification.html から rename &middot; LLM 責務 + 機械検証 の clean 分離 &middot; 不変条件 U の根拠</div>
+  <div class="meta">draft-v3 (2026-05-13、(2026-05-13) 反映) &middot; 旧 step-verification.html から rename &middot; LLM 責務 + 機械検証 の clean 分離 &middot; 不変条件 U の根拠</div>
 </header>
 
-<div class="info">本 file は <a href="registry-schema.html">registry-schema.html</a> の参照下にある。過去 dig (2026-05-13) (Round 9) で <code>step</code> 概念液化が決定し、本 file は旧 <code>step-verification.html</code> から rename された。<code>step.sh framework</code> 外部 bash 呼び出しを廃止し、atomic SKILL.md 本文に 4-phase lifecycle を <strong>inline 実装</strong> する specification を提供する。</div>
+<div class="info">本 file は <a href="registry-schema.html">registry-schema.html</a> の参照下にある。(2026-05-13) (Round 9) で <code>step</code> 概念液化が決定し、本 file は旧 <code>step-verification.html</code> から rename された。<code>step.sh framework</code> 外部 bash 呼び出しを廃止し、atomic SKILL.md 本文に 4-phase lifecycle を <strong>inline 実装</strong> する specification を提供する。</div>
 
 <h2>§1. 目的</h2>
 
@@ -163,11 +163,11 @@ allowed-tools: [Bash, Read, Edit, Agent]
 
 <h2>§5. EXP-011 / 012 の atomic lifecycle 検証 (repurpose 設計)</h2>
 
-<div class="info">旧 EXP-011/012 は <code>step.sh framework</code> 前提だったが、過去 dig (2026-05-13) で atomic skill lifecycle 検証に repurpose。詳細: <a href="../research/experiment-index.html">experiment-index.html</a> カテゴリ G (旧 "step.sh framework" → 新 "atomic skill lifecycle")</div>
+<div class="info">旧 EXP-011/012 は <code>step.sh framework</code> 前提だったが、(2026-05-13) で atomic skill lifecycle 検証に repurpose。詳細: <a href="../research/experiment-index.html">experiment-index.html</a> カテゴリ G (旧 "step.sh framework" → 新 "atomic skill lifecycle")</div>
 
 <table>
   <thead>
-    <tr><th>EXP-id</th><th>verify 対象 (旧)</th><th>verify 対象 (新、過去 dig (2026-05-13) repurpose)</th></tr>
+    <tr><th>EXP-id</th><th>verify 対象 (旧)</th><th>verify 対象 (新、(2026-05-13) repurpose)</th></tr>
   </thead>
   <tbody>
     <tr><td>EXP-011</td><td>旧: <code>step::run</code> 4 phase lifecycle (bats、<code>step.sh</code> 依存)</td><td>新: atomic SKILL.md の <code>Step 0</code>〜<code>Step 3</code> が順序通り実行、各 phase で mailbox event 発行</td></tr>
@@ -177,11 +177,11 @@ allowed-tools: [Bash, Read, Edit, Agent]
 
 <h2>§6. 不変条件 U (Atomic skill verification) との binding</h2>
 
-<p>本 file は不変条件 U の core specification である。Inv U の text は過去 dig (2026-05-13) (Round 9) で以下に rename + 改訂された:</p>
+<p>本 file は不変条件 U の core specification である。Inv U の text は(2026-05-13) (Round 9) で以下に rename + 改訂された:</p>
 
 <table>
   <thead>
-    <tr><th>項目</th><th>旧 (draft-v2)</th><th>新 (draft-v3、過去 dig (2026-05-13))</th></tr>
+    <tr><th>項目</th><th>旧 (draft-v2)</th><th>新 (draft-v3、(2026-05-13))</th></tr>
   </thead>
   <tbody>
     <tr><td>title</td><td class="deprecated">Step verification framework</td><td><strong>Atomic skill verification</strong></td></tr>

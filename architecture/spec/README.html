@@ -35,7 +35,7 @@
     <tr>
       <td><a href="#spec"><code>spec/</code></a></td>
       <td>18 HTML + common.css</td>
-      <td><strong>新 twill 仕様 SSoT</strong> (orientation / core / policy / 補助)</td>
+      <td><strong>新 twill 仕様 SSoT</strong> (orientation / core / policy / auxiliary)</td>
     </tr>
     <tr>
       <td><a href="#migration"><code>migration/</code></a></td>
@@ -169,7 +169,7 @@
   </tbody>
 </table>
 
-<h3 id="spec-auxiliary">補助 — navigation / 用語 / 履歴 (3 file + common.css)</h3>
+<h3 id="spec-auxiliary">auxiliary — navigation / 用語 / 履歴 (3 file + common.css)</h3>
 
 <table>
   <thead>
@@ -305,14 +305,14 @@
       <td>実装作業 log (Phase F-J / Phase 1 PoC Cluster N 等の歴史保存)</td>
     </tr>
     <tr>
-      <td><a href="../archive/research/dig-report-ssot-2026-05-13.html"><code>archive/research/dig-report-ssot-2026-05-13.html</code></a></td>
+      <td><a href="../archive/research/dig-report-ssot-2026-05-13.html"><code>dig-report-ssot-2026-05-13.html</code></a></td>
       <td><span class="badge archive">archive</span></td>
-      <td>第 5 弾 dig 独立 artifact (registry.yaml 統合 SSoT 設計、調査完了)</td>
+      <td>registry.yaml 統合 SSoT 設計 dig 独立 artifact (2026-05-13、調査完了)</td>
     </tr>
     <tr>
-      <td><a href="../archive/research/dig-report-tools-2026-05-13.html"><code>archive/research/dig-report-tools-2026-05-13.html</code></a></td>
+      <td><a href="../archive/research/dig-report-tools-2026-05-13.html"><code>dig-report-tools-2026-05-13.html</code></a></td>
       <td><span class="badge archive">archive</span></td>
-      <td>第 4 弾 dig 独立 artifact (tool-* 3 件構成 finalization)</td>
+      <td>tool-* 3 件構成 finalization dig 独立 artifact (2026-05-13)</td>
     </tr>
     <tr>
       <td><code>archive/decisions/ADR-0006〜0011a/0011b.md</code></td>
@@ -387,6 +387,8 @@
   <li><strong>新 spec file (例: phaser-lifecycle.html)</strong>: <code>spec/</code> 配下 (role 責務系なので core sub)、README の <a href="#spec-core">spec/core</a> table に entry + <a href="architecture-graph.html">graph</a> に node 追加 (R-1 + R-2)</li>
   <li><strong>新 research file (例: dig-report-XXX-YYYY-MM-DD.html)</strong>: <code>research/</code> 配下、README の <a href="#research">research/</a> table に entry 追加</li>
 </ul>
+
+<p><strong>注</strong>: <code>decisions/</code> / <code>research/</code> / <code>migration/</code> 配下 file 自体の追加は tool-architect 編集対象外 (user manual edit)、ただし本 README への entry 追加 (R-1) は <code>spec/</code> 編集にあたるため <code>export TWL_TOOL_CONTEXT=tool-architect</code> caller marker MUST。</p>
 
 <h2 id="ssot">SSoT 位置</h2>
 

@@ -17,10 +17,10 @@
 
 <header class="doc-header">
   <h1>sandbox experiment architecture — 実地検証 + spec hyperlink</h1>
-  <div class="meta">draft-v3 (2026-05-13、第 5 弾 dig 反映) &middot; 4-state verification status + EXP-id 体系 (38 EXP) + 既存 sandbox 機能継承 + <code>plugins/twl/sandboxes/</code> catalog + tool-sandbox-runner 連携 + 第 5 弾 dig 由来 atomic skill composition EXP 追加</div>
+  <div class="meta">draft-v3 (2026-05-13、2026-05-13 dig 反映) &middot; 4-state verification status + EXP-id 体系 (38 EXP) + 既存 sandbox 機能継承 + <code>plugins/twl/sandboxes/</code> catalog + tool-sandbox-runner 連携 + 2026-05-13 dig 由来 atomic skill composition EXP 追加</div>
 </header>
 
-<div class="info"><strong>第 5 弾 dig (2026-05-13) 反映</strong>: 第 4 弾 dig 由来 31 EXP に <strong>第 5 弾 dig 由来 7 EXP (EXP-032〜038)</strong> を追加し、合計 38 EXP 体系を構成。新規 EXP は registry.yaml audit (EXP-032) / atomic skill composition (EXP-033、<code>workflow → Skill(atomic-X) chain</code> 動作検証) / registry.yaml ↔ SKILL.md 整合性 (EXP-034) / <code>disable-model-invocation: true</code> 効果実測 (EXP-035) / atomic-Agent spawn (EXP-036) / doobidoo Tailscale 安定性 (EXP-037) / vocabulary audit (EXP-038)。詳細: <a href="experiment-index.html">experiment-index.html カテゴリ N</a>。</div>
+<div class="info"><strong>2026-05-13 dig (2026-05-13) 反映</strong>: 2026-05-13 dig 由来 31 EXP に <strong>2026-05-13 dig 由来 7 EXP (EXP-032〜038)</strong> を追加し、合計 38 EXP 体系を構成。新規 EXP は registry.yaml audit (EXP-032) / atomic skill composition (EXP-033、<code>workflow → Skill(atomic-X) chain</code> 動作検証) / registry.yaml ↔ SKILL.md 整合性 (EXP-034) / <code>disable-model-invocation: true</code> 効果実測 (EXP-035) / atomic-Agent spawn (EXP-036) / doobidoo Tailscale 安定性 (EXP-037) / vocabulary audit (EXP-038)。詳細: <a href="experiment-index.html">experiment-index.html カテゴリ N</a>。</div>
 
 <div class="info">
   <strong>目的</strong>: 公式 docs WebFetch verified した内容を sandbox で <strong>実機再現確認</strong>し、各 spec claim の信頼度を 4-state status (inferred → deduced → verified → experiment-verified) で表現する。spec を <strong>living document</strong> として、未検証部分 (穴) を計画的に EXP で埋めていく仕組みを構築。<br>
@@ -119,7 +119,7 @@
 ├── EXP-008-bypasspermissions-deny-effective.bats
 ├── EXP-009-plugin-monitor-notification.smoke.sh
 ├── EXP-010-plugin-namespace-loading.smoke.sh
-├── EXP-019-gh-project-status-option-write.smoke.sh   # 第 4 弾 dig 由来
+├── EXP-019-gh-project-status-option-write.smoke.sh   # 2026-05-13 dig 由来
 ├── EXP-020-kanban-col-order-write.smoke.sh
 ├── EXP-021-label-add-remove-write.smoke.sh
 ├── EXP-022-view-switch-write.smoke.sh
@@ -137,11 +137,11 @@ test-fixtures/experiments/hooks/    # bats unit test (mock 可能)
 ├── EXP-003-permission-decision-enum.bats
 ├── EXP-006-mailbox-flock-race.bats
 ├── EXP-007-tier1-tier2-parallel.bats
-├── EXP-027-verify-coverage-grep.bats                  # 第 4 弾 dig 由来
+├── EXP-027-verify-coverage-grep.bats                  # 2026-05-13 dig 由来
 ├── EXP-028-spec-write-boundary-deny.bats
 └── ...
 
-plugins/twl/sandboxes/                # 第 4 弾 dig 由来 sandbox catalog (plugin scope)
+plugins/twl/sandboxes/                # 2026-05-13 dig 由来 sandbox catalog (plugin scope)
 ├── twill-self/                       # twill plugin sandbox (tool-sandbox-runner 用)
 │   ├── sandbox.yaml                  # manifest (description, features サポート一覧)
 │   ├── setup.sh                      # orphan branch test-target/main + worktree 作成
@@ -157,7 +157,7 @@ plugins/twl/sandboxes/                # 第 4 弾 dig 由来 sandbox catalog (pl
 <ul>
   <li><code>test-fixtures/experiments/hooks/</code>: bats unit test (mock 可能、CI run)</li>
   <li><code>experiments/</code> top-level: Claude Code セッション or 公式 tool (CronCreate / Plugin Monitor) が必要な smoke test</li>
-  <li><strong><code>plugins/twl/sandboxes/</code></strong> (第 4 弾 dig 追加): tool-sandbox-runner が実行する <strong>sandbox 環境 catalog</strong>。各 sandbox は <code>setup.sh</code> で orphan branch + worktree を作成、<code>claude --plugin-dir</code> で完全分離 Claude session を起動して E2E test を行う</li>
+  <li><strong><code>plugins/twl/sandboxes/</code></strong> (2026-05-13 dig 追加): tool-sandbox-runner が実行する <strong>sandbox 環境 catalog</strong>。各 sandbox は <code>setup.sh</code> で orphan branch + worktree を作成、<code>claude --plugin-dir</code> で完全分離 Claude session を起動して E2E test を行う</li>
 </ul>
 
 <p><strong>problem-patterns.yaml</strong> (新規 file): tool-sandbox-runner の LLM 分析で使用。6 pattern × {severity, description} を YAML で定義し、LLM output schema (<code>pattern_id</code> field) と整合させる。詳細は <a href="../spec/tool-architecture.html">tool-architecture.html</a> §5.6 参照。</p>
@@ -356,9 +356,9 @@ PreToolUse hook schema は &lt;code&gt;matcher&lt;/code&gt; 単数を使う
   </tbody>
 </table>
 
-<h2>§8. 第 4 弾 dig 由来 EXP-019〜031 (13 件追加、tool-* 仕様 finalization)</h2>
+<h2>§8. 2026-05-13 dig 由来 EXP-019〜031 (13 件追加、tool-* 仕様 finalization)</h2>
 
-<p><strong>dig source</strong>: <a href="dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a> (3 軸 × 5 ラウンド = 20 question)。全 EXP の詳細は <a href="experiment-index.html">experiment-index.html</a> カテゴリ I〜M 参照。</p>
+<p><strong>dig source</strong>: <a href="../archive/research/dig-report-tools-2026-05-13.html">dig-report-tools-2026-05-13.md</a> (3 軸 × 5 ラウンド = 20 question)。全 EXP の詳細は <a href="experiment-index.html">experiment-index.html</a> カテゴリ I〜M 参照。</p>
 
 <table class="exp-table">
   <thead><tr><th>EXP-id</th><th>検証対象</th><th>担当 tool</th><th>分類</th></tr></thead>
@@ -390,11 +390,11 @@ PreToolUse hook schema は &lt;code&gt;matcher&lt;/code&gt; 単数を使う
   <li><strong>EXP-007 ~ EXP-008</strong> (tier 1+2 hook): <code>Phase 1 PoC</code> の前提</li>
   <li><strong>EXP-011 ~ EXP-013</strong> (step.sh): <code>Phase 1 PoC</code> で実装と並走</li>
   <li><strong>EXP-015 ~ EXP-018</strong> (toolchain): 各 helper 実装前に動作確認</li>
-  <li><strong>EXP-019 ~ EXP-023</strong> (第 4 弾 dig、GitHub Project write boundary): tool-project 実装前に 5 領域 × 4 手段 matrix の実機検証、最適手段を特定</li>
-  <li><strong>EXP-027 ~ EXP-028</strong> (第 4 弾 dig、tool-architect verify): bats で完結、verify-coverage.sh + spec-write-boundary.sh の動作確認</li>
-  <li><strong>EXP-025 ~ EXP-026</strong> (第 4 弾 dig、template): tool-project apply-template 機能の動作確認 + idempotent</li>
-  <li><strong>EXP-029</strong> (第 4 弾 dig、specialist-spec-review): tool-architect の軽量 PR cycle 動作確認 (3 回 fix loop 収束)</li>
-  <li><strong>EXP-030 ~ EXP-031</strong> (第 4 弾 dig、tool-sandbox-runner): sandbox 1 cycle + doobidoo 重複 check 精度測定 (最後、他 EXP 完走後)</li>
+  <li><strong>EXP-019 ~ EXP-023</strong> (2026-05-13 dig、GitHub Project write boundary): tool-project 実装前に 5 領域 × 4 手段 matrix の実機検証、最適手段を特定</li>
+  <li><strong>EXP-027 ~ EXP-028</strong> (2026-05-13 dig、tool-architect verify): bats で完結、verify-coverage.sh + spec-write-boundary.sh の動作確認</li>
+  <li><strong>EXP-025 ~ EXP-026</strong> (2026-05-13 dig、template): tool-project apply-template 機能の動作確認 + idempotent</li>
+  <li><strong>EXP-029</strong> (2026-05-13 dig、specialist-spec-review): tool-architect の軽量 PR cycle 動作確認 (3 回 fix loop 収束)</li>
+  <li><strong>EXP-030 ~ EXP-031</strong> (2026-05-13 dig、tool-sandbox-runner): sandbox 1 cycle + doobidoo 重複 check 精度測定 (最後、他 EXP 完走後)</li>
   <li><strong>EXP-024</strong> (将来 / <code>Phase 2</code> 以降): twl MCP custom tool 価値調査 (gh CLI + GraphQL + gh-mcp の組み合わせで十分か判断)</li>
 </ol>
 
@@ -430,7 +430,7 @@ PreToolUse hook schema は &lt;code&gt;matcher&lt;/code&gt; 単数を使う
   </thead>
   <tbody>
     <tr><td>案 1: <code>test-fixtures/experiments/hooks/</code> 拡張</td><td><strong>採用</strong></td><td>bats 化可能な unit test (mock 可能)。既存 governance (CLAUDE.md hook ブロック) 継承、最小侵食</td></tr>
-    <tr><td>案 2: <code>tool-sandbox-runner</code> 強化 (旧 tool-self-improve rename、第 4 弾 dig 確定)</td><td><strong>全面採用</strong></td><td>orphan worktree pattern を catalog (<code>plugins/twl/sandboxes/&lt;name&gt;/</code>) として恒久化、sandbox × feature matrix で twill self test + 他 project test を統合。EXP-030 で 1 cycle 動作検証</td></tr>
+    <tr><td>案 2: <code>tool-sandbox-runner</code> 強化 (旧 tool-self-improve rename、2026-05-13 dig 確定)</td><td><strong>全面採用</strong></td><td>orphan worktree pattern を catalog (<code>plugins/twl/sandboxes/&lt;name&gt;/</code>) として恒久化、sandbox × feature matrix で twill self test + 他 project test を統合。EXP-030 で 1 cycle 動作検証</td></tr>
     <tr><td>案 3: <code>experiments/</code> top-level 新設</td><td><strong>採用</strong></td><td>Claude Code セッション実行が必要な smoke test 置き場、bats と分離</td></tr>
     <tr><td>案 4: 別 repo <code>twill-sandbox</code></td><td>不採用</td><td>twl 依存複製コスト大、本 phase では不要</td></tr>
   </tbody>

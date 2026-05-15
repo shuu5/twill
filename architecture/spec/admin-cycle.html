@@ -18,7 +18,7 @@
 
 <header class="doc-header">
   <h1>administrator polling cycle — 6-step + 不変条件 I-1〜I-7 (公式 verified)</h1>
-  <div class="meta">draft-v3 (2026-05-13、過去 dig (2026-05-13) 反映) &middot; CronCreate 制約反映済 (#40228 known bug 対応) &middot; 案 2 先行実装案 &middot; tmux window prefix phaser-&lt;type&gt;-&lt;issue&gt; (旧 phase-* から rename)</div>
+  <div class="meta">draft-v3 (2026-05-13、(2026-05-13) 反映) &middot; CronCreate 制約反映済 (#40228 known bug 対応) &middot; 案 2 先行実装案 &middot; tmux window prefix phaser-&lt;type&gt;-&lt;issue&gt; (旧 phase-* から rename)</div>
 
 <div class="info"><strong>(2026-05-13) 反映</strong>: administrator が spawn する controller の tmux window prefix を <code>phase-&lt;type&gt;-&lt;issue&gt;</code> から <code>phaser-&lt;type&gt;-&lt;issue&gt;</code> に rename (sed 機械化)。<code>STATUS_TRANSITION_MAP</code> のキー更新と spawn 判断ロジック (§3.4) も連動。Mail event field の <code>skill</code> 値変更 (<code>phase-impl</code> → <code>phaser-impl</code>)。Crash failure mode の <code>durable: true</code> 記述は <a href="failure-analysis.html">failure-analysis.html</a> + <a href="crash-failure-mode.html">crash-failure-mode.html</a> §6 で「BROKEN (Issue #40228)」と整合確認 (durable=false で fallback 必須)。</div>
 </header>
@@ -347,7 +347,7 @@ fi</code></pre>
 
 <ul>
   <li><a href="overview.html">overview.html</a> §3 (3 階層 architecture 全体図、administrator L0 図解)</li>
-  <li><a href="monitor-policy.html">monitor-policy.html</a> (Monitor primitive 規定 — actor / signal / composite / lifecycle、過去 dig (2026-05-13) Phase I 確定)</li>
+  <li><a href="monitor-policy.html">monitor-policy.html</a> (Monitor primitive 規定 — actor / signal / composite / lifecycle、(2026-05-13) Phase I 確定)</li>
   <li><a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> 不変条件 G (crash 検知) + T (mailbox atomic) + V (per-specialist scope)</li>
   <li><a href="crash-failure-mode.html">crash-failure-mode.html</a> §3 (heartbeat 検知 + 3 階層 SLA)</li>
   <li><a href="gate-hook.html">gate-hook.html</a> (phase-gate 経由の deny 受信処理)</li>

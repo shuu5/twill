@@ -15,7 +15,7 @@
 
 <header class="doc-header">
   <h1>PreToolUse gate hook — 不変条件 W 機械化 (公式 verified)</h1>
-  <div class="meta">draft-v3 (2026-05-13、過去 dig (2026-05-13) 反映) &middot; tier 1 (command hook) + tier 2 (MCP shadow) 階層防御 &middot; 全 schema 公式 docs verified &middot; phaser-* SKILL invoke gate (旧 phase-* から rename)</div>
+  <div class="meta">draft-v3 (2026-05-13、(2026-05-13) 反映) &middot; tier 1 (command hook) + tier 2 (MCP shadow) 階層防御 &middot; 全 schema 公式 docs verified &middot; phaser-* SKILL invoke gate (旧 phase-* から rename)</div>
 </header>
 
 <div class="info"><strong>(2026-05-13) 反映</strong>: hook の <code>if</code> field 内 SKILL pattern を <code>Skill(phase-*)</code> から <code>Skill(phaser-*)</code> に rename (sed 機械化)。<code>phase-gate.sh</code> handler は概念的に「gate hook handler」と呼ぶ (vocabulary <code>hook</code> entity の一部、forbidden synonym: <code>phase-gate</code>)。tier 2 MCP handler の <code>_extract_issue_num(skill_name)</code> regex も <code>phaser-(explore|refine|impl|pr)-(\d+)</code> に更新する必要 (実装段階)。<a href="registry-schema.html">registry-schema.html</a> hooks section が SSoT。</div>
@@ -287,7 +287,7 @@ if mcp is not None:
   </tbody>
 </table>
 
-<p>各 phaser invocation 前に対応 status を確認、不一致なら deny。tool-* (tool-architect / tool-project / tool-sandbox-runner、過去 dig (2026-05-13) で tool-utility 廃止 + tool-self-improve → tool-sandbox-runner rename) は gate 対象外 (status と無関係、ADR-040 で別系統 gate)。</p>
+<p>各 phaser invocation 前に対応 status を確認、不一致なら deny。tool-* (tool-architect / tool-project / tool-sandbox-runner、(2026-05-13) で tool-utility 廃止 + tool-self-improve → tool-sandbox-runner rename) は gate 対象外 (status と無関係、ADR-040 で別系統 gate)。</p>
 
 <h2>§7. deny 経路 (administrator notify)</h2>
 

@@ -13,7 +13,7 @@
 
 <header class="doc-header">
   <h1>spawn protocol — 10 role spawn + file mailbox + plugin 化</h1>
-  <div class="meta">draft-v3 (2026-05-13、過去 dig (2026-05-13) 反映) &middot; twl plugin 化前提 + tmux 公式 verified + flock atomic + JSON Lines &middot; phaser-* SKILL.md (旧 phase-* から rename)</div>
+  <div class="meta">draft-v3 (2026-05-13、(2026-05-13) 反映) &middot; twl plugin 化前提 + tmux 公式 verified + flock atomic + JSON Lines &middot; phaser-* SKILL.md (旧 phase-* から rename)</div>
 
 <div class="info"><strong>(2026-05-13) 反映</strong>: skill 名 <code>phase-explore</code>/<code>phase-refine</code>/<code>phase-impl</code>/<code>phase-pr</code> 4 件を <code>phaser-*</code> に rename (sed 機械化)。<code>administrator → phaser → workflow/atomic + specialist</code> の階層 spawn を <a href="boundary-matrix.html">boundary-matrix.html</a> + <a href="overview.html">overview.html</a> 図 1 で表現。<code>Skill</code> 公式機構 = workflow/atomic spawn、<code>Agent</code> 公式機構 = specialist spawn (subagent spawn 不可 <span class="vs verified">verified</span>)。詳細: <a href="registry-schema.html#s3">registry-schema.html §3 (10 role × concern matrix)</a>。</div>
 </header>
@@ -31,7 +31,7 @@
 <ol>
   <li>twl を plugin として正式化: <code>plugins/twl/.claude-plugin/plugin.json</code> 作成</li>
   <li>plugin として load: <code>claude --plugin-dir plugins/twl</code> or marketplace 経由 <code>/plugin install twl</code></li>
-  <li>skill invoke は <strong>slash command + namespace</strong>: <code>/twl:administrator</code>, <code>/twl:phaser-impl &lt;args&gt;</code>, <code>/twl:workflow-test-ready &lt;args&gt;</code> (旧 specialist-test-ready から過去 dig (2026-05-13) で rename)</li>
+  <li>skill invoke は <strong>slash command + namespace</strong>: <code>/twl:administrator</code>, <code>/twl:phaser-impl &lt;args&gt;</code>, <code>/twl:workflow-test-ready &lt;args&gt;</code> (旧 specialist-test-ready から(2026-05-13) で rename)</li>
 </ol>
 これにより namespace 衝突防止 (強制 <code>/twl:*</code>)、<code>/reload-plugins</code> 自動 reload、<code>--plugin-dir</code> local test、Plugin Monitor (公式機能) 利用が可能 <a class="exp-link" href="../research/experiment-index.html#EXP-010">EXP-010</a>
 </div>
@@ -47,14 +47,14 @@
 │   ├── phaser-refine/SKILL.md
 │   ├── phaser-impl/SKILL.md
 │   ├── phaser-pr/SKILL.md
-│   ├── workflow-test-ready/SKILL.md  # 旧 specialist-test-ready (過去 dig (2026-05-13) rename)
+│   ├── workflow-test-ready/SKILL.md  # 旧 specialist-test-ready ((2026-05-13) rename)
 │   ├── workflow-pr-verify/SKILL.md   # 旧 specialist-pr-cycle (Phase 1 PoC で実装)
 │   ├── atomic-test-scaffold/SKILL.md
 │   ├── atomic-green-impl/SKILL.md
 │   ├── atomic-check/SKILL.md
 │   ├── tool-architect/SKILL.md
 │   ├── tool-project/SKILL.md
-│   └── tool-sandbox-runner/SKILL.md  # 旧 tool-self-improve rename、tool-utility 廃止 (過去 dig (2026-05-13))
+│   └── tool-sandbox-runner/SKILL.md  # 旧 tool-self-improve rename、tool-utility 廃止 ((2026-05-13))
 ├── hooks/
 │   └── hooks.json                 # PreToolUse phase-gate hook 等
 ├── monitors/

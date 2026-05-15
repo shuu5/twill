@@ -18,7 +18,7 @@
 
 <header class="doc-header">
   <h1>experiment-index — 全 EXP 一覧 (EXP-001〜042)</h1>
-  <div class="meta">draft-v4 (2026-05-15、Phase I 反映) &middot; 42 EXP planned (第 4 弾 dig で 13 件追加 EXP-019〜031、第 5 弾 dig で 7 件追加 EXP-032〜038、Phase I で 4 件追加 EXP-039〜042) &middot; status は過去 session 時点 (実行前は <span class="vs verified">verified</span> / <span class="vs deduced">deduced</span> / <span class="vs inferred">inferred</span> 併存、実行で <span class="vs experiment-verified">experiment-verified</span> 化)</div>
+  <div class="meta">draft-v4 (2026-05-15、Phase I 反映) &middot; 42 EXP planned (2026-05-13 dig で 13 件追加 EXP-019〜031、2026-05-13 dig で 7 件追加 EXP-032〜038、Phase I で 4 件追加 EXP-039〜042) &middot; status は過去 session 時点 (実行前は <span class="vs verified">verified</span> / <span class="vs deduced">deduced</span> / <span class="vs inferred">inferred</span> 併存、実行で <span class="vs experiment-verified">experiment-verified</span> 化)</div>
 </header>
 
 <div class="info">
@@ -206,9 +206,9 @@
   </dl>
 </div>
 
-<h2>カテゴリ G: atomic skill lifecycle (EXP-011〜014、第 5 弾 dig で repurpose)</h2>
+<h2>カテゴリ G: atomic skill lifecycle (EXP-011〜014、2026-05-13 dig で repurpose)</h2>
 
-<div class="info">第 5 弾 dig (Round 9) で <code>step</code> 概念液化 + <code>atomic skill</code> への統一が決定。本カテゴリの EXP は旧 <code>step.sh framework</code> 前提から、新 <code>atomic SKILL.md 本文 inline 4-phase lifecycle</code> 検証に repurpose される。詳細: <a href="../spec/atomic-verification.html">atomic-verification.html</a> §5。</div>
+<div class="info">2026-05-13 dig (Round 9) で <code>step</code> 概念液化 + <code>atomic skill</code> への統一が決定。本カテゴリの EXP は旧 <code>step.sh framework</code> 前提から、新 <code>atomic SKILL.md 本文 inline 4-phase lifecycle</code> 検証に repurpose される。詳細: <a href="../spec/atomic-verification.html">atomic-verification.html</a> §5。</div>
 
 <div class="exp-block" id="EXP-011">
   <h3>EXP-011: step::run 4 phase lifecycle</h3>
@@ -307,7 +307,7 @@
 
 <h2>カテゴリ I: GitHub Project write boundary (EXP-019〜023) — tool-project</h2>
 
-<p>本 dig (第 4 弾) で確定した <strong>5 領域 × 4 手段 matrix</strong> の write 可能性を実機検証。GitHub Projects v2 の status field option 追加 / kanban col order 変更 / label 操作 / view 切替 / filter 設定について、gh CLI / GraphQL API / GitHub 公式 MCP / twl MCP の 4 手段それぞれで write 可能か確認する。</p>
+<p>本 dig (2026-05-13 dig) で確定した <strong>5 領域 × 4 手段 matrix</strong> の write 可能性を実機検証。GitHub Projects v2 の status field option 追加 / kanban col order 変更 / label 操作 / view 切替 / filter 設定について、gh CLI / GraphQL API / GitHub 公式 MCP / twl MCP の 4 手段それぞれで write 可能か確認する。</p>
 
 <div class="exp-block" id="EXP-019">
   <h3>EXP-019: status field option 追加 (4 手段)</h3>
@@ -317,7 +317,7 @@
     <dt>verify source</dt><dd><a class="src-link" href="https://cli.github.com/manual/gh_project">cli.github.com/manual/gh_project</a> (15 write-capable sub-commands verified)、<a class="src-link" href="https://docs.github.com/en/graphql/reference/mutations#updateprojectv2field">GraphQL updateProjectV2Field</a></dd>
     <dt>分類</dt><dd>smoke (test project に対して実行、終了時 rollback)、<code>experiments/EXP-019-status-field-option-add.smoke.sh</code></dd>
     <dt>期待結果</dt><dd>少なくとも 1 手段で write 成功、最適手段を特定</dd>
-    <dt>関連 spec</dt><dd><a href="../spec/tool-architecture.html">tool-architecture.html</a> §4.2、<a href="dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a> §2.2</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/tool-architecture.html">tool-architecture.html</a> §4.2、<a href="../archive/research/dig-report-tools-2026-05-13.html">dig-report-tools-2026-05-13.md</a> §2.2</dd>
   </dl>
 </div>
 
@@ -417,7 +417,7 @@
     <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a> (PostToolUse は exit code 2 で block 不可、stderr → Claude verbatim)</dd>
     <dt>分類</dt><dd>bats unit (mock 可)、<code>test-fixtures/experiments/hooks/EXP-027-verify-coverage-grep.bats</code></dd>
     <dt>期待結果</dt><dd>inferred / deduced を含む spec.html で warn 出力、verified のみで warn なし</dd>
-    <dt>関連 spec</dt><dd><a href="../spec/tool-architecture.html">tool-architecture.html</a> §3.2、<a href="dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a> §1.2</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/tool-architecture.html">tool-architecture.html</a> §3.2、<a href="../archive/research/dig-report-tools-2026-05-13.html">dig-report-tools-2026-05-13.md</a> §1.2</dd>
   </dl>
 </div>
 
@@ -466,7 +466,7 @@
     <dt>verify source</dt><dd><code>mcp__doobidoo__memory_search</code> tool interface (mode=hybrid + quality_boost、、9 hash 蓄積)</dd>
     <dt>分類</dt><dd>調査 (実 doobidoo に対して N=20+ query で precision/recall 測定)</dd>
     <dt>期待結果</dt><dd>true positive (重複検出) > 80%、false positive (誤検出) < 20%。threshold 0.75 が不適切なら調整</dd>
-    <dt>関連 spec</dt><dd><a href="../spec/tool-architecture.html">tool-architecture.html</a> §5.7、<a href="dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a> §3.7</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/tool-architecture.html">tool-architecture.html</a> §5.7、<a href="../archive/research/dig-report-tools-2026-05-13.html">dig-report-tools-2026-05-13.md</a> §3.7</dd>
   </dl>
 </div>
 
@@ -491,9 +491,9 @@ $ bash experiments/run-all.sh
 # 本 file の status badge は手動で update (<code>Phase 4</code> で CI 自動化検討)
 </code></pre>
 
-<h2>カテゴリ N: registry.yaml + vocabulary + atomic composition (EXP-032〜038) — 第 5 弾 dig</h2>
+<h2>カテゴリ N: registry.yaml + vocabulary + atomic composition (EXP-032〜038) — 2026-05-13 dig</h2>
 
-<div class="info">第 5 弾 dig (2026-05-13、10 round + 33+ question) で確定した「registry.yaml 統合 SSoT」「vocabulary 6 field schema」「atomic skill composition」「公式名衝突回避」を検証する 7 件 EXP。詳細: <a href="dig-report-ssot-2026-05-13.md">dig-report-ssot-2026-05-13.md</a> §0.5。</div>
+<div class="info">2026-05-13 dig (2026-05-13、10 round + 33+ question) で確定した「registry.yaml 統合 SSoT」「vocabulary 6 field schema」「atomic skill composition」「公式名衝突回避」を検証する 7 件 EXP。詳細: <a href="../archive/research/dig-report-ssot-2026-05-13.html">dig-report-ssot-2026-05-13.md</a> §0.5。</div>
 
 <div class="exp-block" id="EXP-032">
   <h3>EXP-032: registry.yaml audit 機能 (重複 concern 検出 + prefix↔role 整合 + forbidden 使用検出)</h3>
@@ -649,9 +649,9 @@ $ bash experiments/run-all.sh
   <li><a href="sandbox-experiment.html">sandbox-experiment.html</a> (本 file の上位 spec、experiment hyperlink architecture)</li>
   <li><a href="../migration/rebuild-plan.html">rebuild-plan.html</a> (<code>Phase 1 PoC</code> 前提として EXP 実行)</li>
   <li><a href="research-findings.html">research-findings.html</a> (verify source 集約)</li>
-  <li><a href="../spec/registry-schema.html">registry-schema.html</a> (第 5 弾 dig 新規、本 file の EXP-032〜038 が検証する仕様)</li>
+  <li><a href="../spec/registry-schema.html">registry-schema.html</a> (2026-05-13 dig 新規、本 file の EXP-032〜038 が検証する仕様)</li>
   <li><a href="../spec/atomic-verification.html">atomic-verification.html</a> (atomic skill lifecycle、本 file の EXP-011/012 + EXP-033 + EXP-035 + EXP-036 が検証)</li>
-  <li><a href="dig-report-ssot-2026-05-13.md">dig-report-ssot-2026-05-13.md</a> (第 5 弾 dig 独立 artifact、EXP-032〜038 の経緯)</li>
+  <li><a href="../archive/research/dig-report-ssot-2026-05-13.html">dig-report-ssot-2026-05-13.md</a> (2026-05-13 dig 独立 artifact、EXP-032〜038 の経緯)</li>
   <li>個別 EXP の関連 spec section は各 EXP block の「関連 spec」field 参照</li>
 </ul>
 
