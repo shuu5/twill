@@ -440,19 +440,35 @@ hooks-monitors:
       concern: spec edit authority (tool-architect / user 以外を deny)
       description: "architecture/spec/ への Edit/Write/NotebookEdit を tool-architect / user 以外は deny"
 
-    - name: hook-gate-phaser
+    - name: hook-phase-gate
       event: PreToolUse
       matcher: "Skill"
+      if: "Skill(phaser-*)"
       handler_type: command
-      handler: scripts/hooks/gate-hook-handler.sh
-      concern: phaser invocation の前提 status verify (Inv W)
-      description: "phaser-* skill invocation 時に Project Board status を verify、不一致なら deny"
+      handler: scripts/hooks/pre-tool-use-phase-gate.sh
+      concern: hook-gate-phaser
+      description: "phaser-* skill invocation 時に tier 1 fast path、TWL_PHASE_GATE_BYPASS=1 厳格 bypass、tier 2 (twl_phase_gate_check MCP tool) は Phase 1 PoC C3/C5 で wire 予定。Phase 1 PoC C1 配置 2026-05-15、`if` field は公式 hook schema (gate-hook.html §1.3 verified) 準拠"
+
+    - name: hook-failure-learn
+      event: PostToolUseFailure
+      matcher: "Bash"
+      handler_type: command
+      handler: scripts/hooks/post-tool-use-failure-learn.sh
+      concern: Bash 失敗 pattern の auto-learning (mcp__doobidoo__memory_store 経由)
+      description: "Stage A command hook (Phase 1 PoC C1 配置 2026-05-15)、additionalContext で LLM に memory_store 促進。Stage C で mcp_tool hook 直接 migrate 予定 (EXP-043 verify trigger、hooks-mcp-policy.html §5.2)"
 
   monitors:
-    - name: monitor-twl-mcp-health
-      command: "tail -F .mcp-health.log"
-      description: "twl MCP server health log を tail、disconnect/error を stdout 通知"
-      concern: MCP health observability (Inv X、mcp-watchdog 代替)
+    # monitor-twl-mcp-health は Phase 2 で実装予定 (現状 monitors.json に未実装、Phase 6 review C-1 drift fix で本 registry からも削除)
+    # 旧 entry: tail -F .mcp-health.log で twl MCP server health log を tail、ADR-040 mcp-watchdog 代替設計
+    # 復活時は monitor-policy.html §5.1 schema 準拠で monitors.json に同時追加
+
+    - name: monitor-admin-inbox-tail
+      command: "mkdir -p .mailbox/administrator .supervisor && touch .mailbox/administrator/inbox.jsonl && tail -F .mailbox/administrator/inbox.jsonl | jq -rc --unbuffered 'select(.event != null) | \"[\\(.event)] from=\\(.from) ts=\\(.ts) detail=\\(.detail // {} | tojson)\"'"
+      timeout_sec: 3600
+      stderr_sink: ".supervisor/monitor-stderr-admin-inbox.log"
+      auto_restart: true
+      description: "administrator mailbox event stream (monitor-policy.html §5.1、Phase 1 PoC C2 配置 2026-05-15)。Cluster 5 admin-cycle Step 0 で health-check、phaser-mailbox-tail は Cluster 5 で追加予定"
+      concern: administrator mail event stream (monitor-policy.html §5、Inv H-3 hook independence)
 
 # =========================================================================
 # §5. integrity_rules — audit ルール定義 (twl audit --registry で使用)

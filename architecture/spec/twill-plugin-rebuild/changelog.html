@@ -15,6 +15,79 @@
   <div class="meta">本 spec の変更履歴</div>
 </header>
 
+<h2>2026-05-15 Phase 1 PoC Cluster 3 — plugin.json 拡張 + registry.yaml hooks-monitors 追記 + Phase 6 review 4 件 fix (scope re-evaluation 適用)</h2>
+
+<h3>核心成果</h3>
+
+<ol>
+  <li><strong>scope re-evaluation (user 指摘で実施)</strong>: Plan の主要 scope (registry.yaml components seed + lib/twl-audit-registry.sh + EXP-032/034/038) は **Phase F seed で既に完了**、本 cluster は plugin.json metadata 拡張 + .mcp.json 整備 + registry.yaml hooks-monitors 追記の 3 file に focus</li>
+  <li><strong>plugin.json metadata 拡張 (5 行 → 21 行)</strong>: 公式 plugin manifest schema (Anthropic Claude Code plugins-reference) 準拠の field を完備:
+    <ul>
+      <li>必須: name / version (3.0.0 維持、Phase 4 cleanup で 4.0.0 bump 予定)</li>
+      <li>推奨: description (UI brief 想定で短縮) / author (object: name + url) / homepage / repository / license / keywords (7 件)</li>
+      <li>削除 (Phase 6 review W-2): <code>displayName</code> 非公式 schema field、Claude Code plugin loader が silently ignore のため</li>
+    </ul>
+  </li>
+  <li><strong>.mcp.json 整備</strong>: 当初 github-readonly entry 追加を試みたが、Phase 6 review CRITICAL 1+2 で <strong>本 commit 削除</strong>に変更:
+    <ul>
+      <li>URL <code>api.githubcopilot.com/mcp/readonly</code> は公式 endpoint に <code>/readonly</code> suffix が非存在 (正規は <code>/mcp/</code>)</li>
+      <li>HTTP version は GitHub Copilot 契約依存可能性 + 認証 header 必要 (OAuth flow は interactive MCP host 前提、Claude Code HTTP MCP では未サポートかも)</li>
+      <li>stdio version は GITHUB_PERSONAL_ACCESS_TOKEN 必要</li>
+      <li><strong>本 commit では entry 削除、Phase 2 dig topic「github MCP 認証戦略 (PAT vs Copilot vs no-auth)」として defer</strong></li>
+    </ul>
+  </li>
+  <li><strong>registry.yaml §4 hooks-monitors 追記 (3 hook + 1 monitor)</strong>:
+    <ul>
+      <li><code>hook-spec-write-boundary</code>: 既存維持 (Phase F seed)</li>
+      <li><code>hook-phase-gate</code> (旧 hook-gate-phaser から rename + file path 更新): scripts/hooks/pre-tool-use-phase-gate.sh (Cluster 1 配置)、<code>if: "Skill(phaser-*)"</code> 公式 hook schema field 採用 (Phase 6 review C-1 fix)、<code>concern: hook-gate-phaser</code> canonical list 整合 (Phase 6 review C-2 fix)</li>
+      <li><code>hook-failure-learn</code> 新規: scripts/hooks/post-tool-use-failure-learn.sh (Cluster 1 配置)、Stage A command hook、Stage C migration trigger は EXP-043</li>
+      <li><code>monitor-admin-inbox-tail</code> 新規: monitors.json と同期 (Cluster 2 配置)、jq filter format は monitor-policy.html §3.1 canonical (<code>from=</code><code>ts=</code> 含む)</li>
+      <li><code>monitor-twl-mcp-health</code> 削除 (Phase 6 review C-1、drift fix): monitors.json に実装なし、Phase 2 で本格実装時 monitors.json と同期して復活</li>
+    </ul>
+  </li>
+</ol>
+
+<h3>Phase 6 review (cross-AI bias 低減、3 並列 sonnet code-reviewer)</h3>
+
+<ul>
+  <li><strong>Agent 1 (plugin.json + .mcp.json schema)</strong>: CRITICAL 2 (github URL /readonly suffix 非公式 / 認証 header 不在) + WARN 4 (description 過長 / displayName 非公式 / Copilot 契約依存 / session plugin 非対称) + INFO 3</li>
+  <li><strong>Agent 2 (registry.yaml drift detection)</strong>: CRITICAL 2 (monitor-twl-mcp-health drift / 3 hook script 不在 ※誤検知) + WARN 3 + INFO 2</li>
+  <li><strong>Agent 3 (spec compliance + Inv 整合)</strong>: CRITICAL 2 (handler_match_if 非公式 field / concern canonical 不一致) + WARN 3 + INFO 1</li>
+</ul>
+
+<p>CRITICAL 4 件 (重複統合後、A2-C2 hook script 不在は誤検知で除外) + WARN 主要 2 件を本 commit で全 fix:</p>
+<ul>
+  <li><strong>github-readonly entry 削除</strong> (A1-C1 + A1-C2 統合): URL 非公式 + 認証問題で本 commit から削除、Phase 2 dig topic 化</li>
+  <li><strong>monitor-twl-mcp-health 削除</strong> (A2-C1): monitors.json と整合、復活時 spec §5.1 schema 準拠</li>
+  <li><strong>handler_match_if → if rename</strong> (A3-C1): 公式 hook schema (gate-hook.html §1.3) 準拠</li>
+  <li><strong>concern → hook-gate-phaser canonical</strong> (A3-C2): integrity_rules no_duplicate_concern audit 整合</li>
+  <li><strong>displayName 削除</strong> (A1-W2): Anthropic 公式 plugin schema 未定義、silent ignore リスク</li>
+  <li><strong>description 短縮</strong> (A1-W1): UI brief 想定の意図準拠 (184 → 80 chars)</li>
+</ul>
+
+<p>誤検知: A2-C2「3 hook script 不在」は Cluster 1 commit (58679908) で push 済、Agent の Glob 結果 stale 由来。Bash ls で全 script 実在確認。</p>
+
+<p>残 WARN/INFO は INFO level (author.url が repo でなく profile / version 維持判断 / spec HTML 旧名称残存 / session plugin 非対称等)、本 Cluster scope 外 or Phase 2 dig topic として defer。</p>
+
+<h3>編集 / 新規 file (Phase 1 PoC C3、計 4 file)</h3>
+
+<ul>
+  <li><strong>modified</strong> (4): <code>plugins/twl/.claude-plugin/plugin.json</code> (5 行 → 21 行 metadata 完備) / <code>.mcp.json</code> (github-readonly 一度追加→削除) / <code>plugins/twl/registry.yaml</code> (§4 hooks-monitors 3 hook + 1 monitor 追記、1 monitor drift fix) / <code>architecture/spec/twill-plugin-rebuild/changelog.html</code> (本 entry)</li>
+  <li><strong>new</strong>: なし (registry-audit.sh は既存 lib/twl-audit-registry.sh で sufficient)</li>
+</ul>
+
+<h3>Phase 1 PoC C3 完遂判定 + Cluster 4 (atomic SKILL) 着手 ready</h3>
+
+<p>本 commit で C3 完遂判定:</p>
+<ul>
+  <li>plugin.json + .mcp.json valid JSON、registry.yaml valid YAML (uv env pyyaml)</li>
+  <li>bats baseline 102 tests PASS 維持 (EXP-034 test 27 のみ pyyaml 不在で fail、Phase 2 dig topic として defer 確定)</li>
+  <li>Phase 6 review CRITICAL 4 + WARN 2 = 6 件全 fix 統合済</li>
+  <li>Phase 2 dig topics 追加: github MCP 認証戦略 / pyyaml 不在問題</li>
+</ul>
+
+<p>次 cluster (<strong>C4 atomic SKILL.md + workflow scaffolding、~6h</strong>): phaser-impl + workflow-test-ready + atomic-test-scaffold / atomic-green-impl / atomic-check の 5 SKILL.md 実装。Step 0/2/3 hardcode + Step 1 LLM 自由生成 pattern 確立 (atomic-verification.html §3 inline 実装 standard)。VP-mapping: VP-3 (step verification = atomic 4-phase) / VP-7 (fail-fast at step level) / VP-18 (atomic composition)。</p>
+
 <h2>2026-05-15 Phase 1 PoC Cluster 2 — helper 4 + monitors.json + Phase 6 review 9 件 fix (bats 102/102 PASS hard gate 達成)</h2>
 
 <h3>核心成果</h3>

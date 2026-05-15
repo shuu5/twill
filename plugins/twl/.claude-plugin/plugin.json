@@ -1,5 +1,21 @@
 {
   "name": "twl",
   "version": "3.0.0",
-  "description": "Claude Code 開発ワークフロープラグイン（chain-driven + autopilot-first）"
+  "description": "TWiLL workflow plugin — phaser-based status-driven development with mailbox 3-tier spawn, hook gate, registry SSoT",
+  "author": {
+    "name": "shuu5",
+    "url": "https://github.com/shuu5"
+  },
+  "homepage": "https://github.com/shuu5/twill",
+  "repository": "https://github.com/shuu5/twill",
+  "license": "MIT",
+  "keywords": [
+    "workflow",
+    "tdd",
+    "phaser",
+    "status-driven",
+    "mailbox",
+    "claude-code-plugin",
+    "atomic-skill"
+  ]
 }
