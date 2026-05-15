@@ -306,9 +306,11 @@ mailbox_read {
 
 <h3>6.1 event 種別 (本 spec で固定):</h3>
 
+<div class="info"><strong>命名規約</strong>: mail event 名の <code>phase-*</code> / <code>step-*</code> prefix は <strong>canonical event 名</strong>として継続、role prefix (<code>phaser-*</code> / <code>workflow-*</code> / <code>atomic-*</code>) とは独立な名前空間。<code>twl audit --vocabulary</code> の forbidden 検出は role prefix 用、event 名 prefix は exclusion_context として除外する。</div>
+
 <ul>
   <li><strong>spawn 系</strong>: <code>spawn-completed</code>, <code>spawn-failed</code>, <code>spawn-skip</code></li>
-  <li><strong>phase 系</strong>: <code>phase-started</code>, <code>phase-progress</code>, <code>phase-completed</code>, <code>phase-failed</code></li>
+  <li><strong>phase 系</strong>: <code>phase-started</code>, <code>phase-progress</code>, <code>phase-completed</code>, <code>phase-failed</code> (canonical event 名、role prefix とは独立)</li>
   <li><strong>step 系</strong> (atomic→phaser): <code>step-started</code>, <code>step-completed</code>, <code>step-precheck-failed</code>, <code>step-postverify-failed</code> (mail event 名の <code>step-*</code> prefix は canonical event 名として継続、role prefix とは独立)</li>
   <li><strong>gate 系</strong>: <code>phase-gate-denied</code></li>
   <li><strong>tool 系</strong>: <code>tool-completed</code> (tool-sandbox-runner のみ administrator に送る、旧 tool-self-improve rename)</li>

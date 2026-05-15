@@ -46,11 +46,11 @@
       <td><code>phaser</code> SKILL.md として動作</td>
     </tr>
     <tr>
-      <td><strong>spawn 先</strong></td>
+      <td><strong>spawn 先</strong> (注: 本欄は <strong>tmux new-window による独立 session spawn</strong> を指す。<code>Skill</code> / <code>Agent</code> 経由の subagent spawn は別概念で次行参照)</td>
       <td><code>phaser</code> + tool-architect / tool-sandbox-runner (限定、ADR-040 gate)</td>
       <td>workflow / atomic (<code>Skill</code>) + specialist (<code>Agent</code>)</td>
-      <td>specialist は spawn 禁止 (公式制約 <span class="vs verified">verified</span>)、workflow/atomic は <code>Skill</code> chain 続行 + <code>Agent(specialist-*)</code> 可</td>
-      <td>(spawn 禁止)</td>
+      <td>specialist は tmux session spawn 禁止 (公式制約 <span class="vs verified">verified</span>)、workflow/atomic は <code>Skill</code> chain 続行 + <code>Agent(specialist-*)</code> 1 階層内 spawn 可</td>
+      <td>tmux session spawn 禁止 (ただし tool-architect は <code>Agent(specialist-spec-review)</code> を 1 階層内 spawn 可、軽量 PR cycle 用)</td>
       <td>—</td>
     </tr>
     <tr>

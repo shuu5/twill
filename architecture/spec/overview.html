@@ -23,7 +23,7 @@
 <strong>現状の事実 (verified)</strong>:
 <ul>
   <li>plugin file 数 1177、bash orchestration 5175 lines</li>
-  <li>ADR 43 件、不変条件 19 件 (A-S、ただし <code>ref-invariants.md</code> 自身が「A-N (14 件)」と古い記述 = drift)</li>
+  <li>ADR 43 件、不変条件 19 件 (A-S、現状 snapshot。rename 計画は <a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> で A-X 24 件への拡張、Phase 4 cleanup 時に反映。<code>ref-invariants.md</code> 自身は現状 A-N 14 件のため Phase 1 PoC 実装で同期予定 = drift)</li>
   <li>9 件の P0 bug が本セッションで発見 (詳細 <a href="failure-analysis.html">failure-analysis.html</a>)</li>
   <li>用語多重化 (pilot/phase/controller 5 重、worker 5 重、step 5 重、state 2 重、mail/event/message 3 重) — (2026-05-13) で発覚</li>
   <li>横断要因 F-1 (並列 Wave 後付け) / F-2 (env var 限界) / F-3 (deploy/verify 分離欠如) / F-4 (用語 SSoT 不在、(2026-05-13) 追加)</li>
@@ -274,7 +274,7 @@
 
 <ul>
   <li>ADR 43 件の fate (保全 / Superseded / 削除 / 統合) は <a href="../migration/adr-fate-table.html">adr-fate-table.html</a></li>
-  <li>不変条件 19 件 (A-S) の継承戦略は <a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> (Inv U は(2026-05-13) で「Atomic skill verification」に rename)</li>
+  <li>不変条件 19 件 (A-S → Phase 4 cleanup で A-X 24 件に拡張計画) の継承戦略は <a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> (Inv U は(2026-05-13) で「Atomic skill verification」に rename)</li>
   <li>pitfalls-catalog の継承戦略は <a href="../migration/pitfalls-inheritance.html">pitfalls-inheritance.html</a></li>
 </ul>
 

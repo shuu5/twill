@@ -180,7 +180,7 @@
 [phaser-impl skill] ← 別 session window、description あり
     │ Skill(workflow-test-ready)
     ▼
-[workflow-test-ready skill] ← disable-model-invocation: true
+[workflow-test-ready skill] ← disable-model-invocation: true (Skill tool は使える、<span class="vs inferred">inferred</span>、EXP-010 で smoke 検証予定)
     │ Skill(atomic-test-scaffold) → Skill(atomic-green-impl) → ...
     ▼
 [atomic-test-scaffold skill] ← disable-model-invocation: true、4-phase lifecycle inline
@@ -268,7 +268,7 @@ allowed-tools: [Bash, Read, Edit, Agent]
     <tr><td><code>Phase 1 PoC</code></td><td>Day 1-3</td><td>registry.yaml 新規作成 + glossary section seed (core 12 entity) + EXP-032〜038 PASS + Issue #1660 sanitize 再実装</td></tr>
     <tr><td><code>Phase 2 dual-stack</code></td><td>Day 4-7</td><td>残り phaser / workflow / atomic / specialist 実装、旧 chain freeze、vocabulary table 拡張 (隠れ重複 entity 追加)</td></tr>
     <tr><td><code>Phase 3 cutover</code></td><td>Day 8-11</td><td>旧 chain.py / chain-steps.sh / chain-runner.sh / deps.yaml / types.yaml ~7,000 行削除、in-flight Issue 全完遂、用語 rename 完遂 (~2000+ occurrence)</td></tr>
-    <tr><td><code>Phase 4 cleanup</code></td><td>Day 12-14</td><td>docs 整合、bats regression 全 PASS、ADR-043 Accepted 化、命名 policy ADR (ADR-045) 起票</td></tr>
+    <tr><td><code>Phase 4 cleanup</code></td><td>Day 12-14</td><td>docs 整合、bats regression 全 PASS、ADR-043 Accepted 化 (命名 policy ADR-045 は (2026-05-14) で既に Accepted 化済、<a href="registry-schema.html#s9-5">registry-schema.html §9.5</a> 参照)</td></tr>
   </tbody>
 </table>
 

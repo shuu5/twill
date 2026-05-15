@@ -407,7 +407,7 @@ workflow / atomic / specialist
 <ul>
   <li><code>plugins/twl/.claude-plugin/plugin.json</code> manifest 作成 (name="twl", version, description)</li>
   <li>skill namespace <strong>強制</strong>: <code>/twl:administrator</code>, <code>/twl:phaser-impl</code>, <code>/twl:workflow-test-ready</code>, <code>/twl:tool-architect</code></li>
-  <li><code>plugins/twl/monitors/monitors.json</code> で Plugin Monitor 採用 → mcp-watchdog 廃止代替 <a class="exp-link" href="../research/experiment-index.html#EXP-009">EXP-009</a></li>
+  <li><code>plugins/twl/monitors/monitors.json</code> (Plugin Monitor 公式 format、auto-generated derived artifact、<a href="ssot-design.html">ssot-design.html</a> Authority/Derived 階層では <code>registry.yaml#monitors</code> が Authority SSoT、monitors.json は Derived) で Plugin Monitor 採用 → mcp-watchdog 廃止代替 <a class="exp-link" href="../research/experiment-index.html#EXP-009">EXP-009</a></li>
   <li><code>plugins/twl/.mcp.json</code> (plugin scope MCP) + repo root <code>.mcp.json</code> (github 公式 MCP) の 2 段構造</li>
   <li><code>plugins/twl/hooks/hooks.json</code> で PreToolUse phase-gate を plugin scope に</li>
   <li>local test: <code>claude --plugin-dir plugins/twl</code> + <code>/reload-plugins</code> で再 load</li>
