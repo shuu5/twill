@@ -78,7 +78,7 @@
 <div class="diagram-caption">図 1: atomic skill lifecycle — 1 atomic 呼び出しにつき Step 0 (pre-check) / Step 1 (exec) / Step 2 (post-verify) / Step 3 (report) の 4 phase。`Step N` は公式 SKILL.md 手順番号スタイル (backtick + 大文字、migration-stage entity との混同なし)</div>
 </div>
 
-<h2>§3. atomic SKILL.md inline 実装 standard</h2>
+<h2 id="s3">§3. atomic SKILL.md inline 実装 standard</h2>
 
 <p>旧 <code>step.sh framework</code> の外部 bash 呼び出しを廃止し、atomic SKILL.md 本文に <code>Step 0</code>〜<code>Step 3</code> として 4-phase を inline 実装。公式仕様 (<code>disable-model-invocation: true</code> + <code>allowed-tools: [Bash, Read, Edit, Agent]</code>) に準拠する。</p>
 

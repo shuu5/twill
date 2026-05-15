@@ -15,6 +15,65 @@
   <div class="meta">本 spec の変更履歴</div>
 </header>
 
+<h2>2026-05-15 Phase J navigation infrastructure — broken link 0 達成 + interactive SVG graph 新規 + CI 統合 + Phase 6 review 11 件 fix</h2>
+
+<h3>核心成果</h3>
+
+<ol>
+  <li><strong>navigation infrastructure 整備</strong>: Phase I 完遂後の navigation 課題 (新規 file 2 件が README から未 link、broken link 7 件残存、spec.css 不在 silent bug) を一括解決、31 spec file の navigation hub を新設</li>
+  <li><strong>broken link 7 件 fix (target side id 付与方式)</strong>:
+    <ul>
+      <li>spawn-protocol.html §3 / crash-failure-mode.html §3 / atomic-verification.html §3 / tool-architecture.html §9 に <code>id="sN"</code> 付与 (4 件)</li>
+      <li>monitor-policy.html / hooks-mcp-policy.html の back-link を <code>index.html</code> → <code>README.html</code> に修正 (2 件)</li>
+      <li>boundary-matrix.html#125/136 の §3 link は target 側 id 付与で同時 fix (1 件)</li>
+      <li>broken link 0 達成</li>
+    </ul>
+  </li>
+  <li><strong>spec.css silent bug fix (Phase 6 review 発見)</strong>: monitor-policy.html / hooks-mcp-policy.html が <code>spec.css</code> 参照していたが file 不在 (CSS 未適用 silent bug) → <code>common.css</code> に修正、class <code>spec-header</code> → <code>doc-header</code> rename で他 spec file 全 27 件と統一</li>
+  <li><strong>architecture-graph.html 新規作成 (~440 行)</strong>: 31 node × 7 category interactive SVG navigation hub。click で対応 spec file 遷移、hover で circle 強調 (stroke-width 3 + brightness)、<code>&lt;title&gt;</code> tooltip で概要表示。hub edge (brand 色) で 5 hub file (README / experiment-index / tool-architecture / rebuild-plan / registry-schema) からの link 関係を視覚化。<code>role="img"</code> + <code>aria-labelledby</code> + <code>&lt;title&gt;</code> + <code>&lt;desc&gt;</code> で a11y 対応</li>
+  <li><strong>README.html 拡張</strong>: G section 新設 (Phase I extension + Phase J navigation = 3 file)、h2 title "29 HTML + 2 MD = 31 file"、進捗 status table "done 28"、meta "draft-v4"、status 行 "Phase F-J 完遂" 更新、experiment-index 説明 EXP-001〜042 まで更新</li>
+  <li><strong>CI 統合 (.github/workflows/spec-link-check.yml 新規)</strong>: PR で <code>architecture/spec/**</code> 変更時に <code>scripts/spec-anchor-link-check.py</code> 自動実行、broken 検出時は PR merge block (exit 1)、artifact 14 日保存。permissions: contents: read で最小権限</li>
+  <li><strong>spec-anchor-link-check.py 改良</strong>: <code>_HrefExtractor</code> に <code>xlink:href</code> 抽出を追加、SVG navigation graph の 31 link が CI で正しく check されるよう修正 (Phase 6 Agent 1 発見の silent false negative 解消)。HTMLParser は namespace 認識せず attribute 名そのまま登録するため、<code>attr_dict.get("xlink:href")</code> fallback を chain に追加</li>
+</ol>
+
+<h3>Phase 6 review (cross-AI bias 低減 audit、3 並列 sonnet)</h3>
+
+<p>Phase I 同 pattern で 3 並列 code-reviewer agent (sonnet model) を spawn:</p>
+<ul>
+  <li><strong>Agent 1 (spec consistency + link integrity)</strong>: CRITICAL 2 (xlink:href silent false negative / spec-header undefined) + WARN 4 (F カウント / HTML 28 vs 実 29 / EXP 031 stale / SVG legend overflow) + INFO 1</li>
+  <li><strong>Agent 2 (SVG markup + interactive UX + a11y)</strong>: CRITICAL 2 (<code>&lt;title&gt;</code> 配置 / defs marker 未接続) + WARN 5 (z-order Safari filter / legend overflow / 色覚多様性 cat-f vs cat-g / aria-label 欠如 / xlink:href deprecated) + INFO 2</li>
+  <li><strong>Agent 3 (README hierarchy + Phase J coherence)</strong>: CRITICAL 3 (spec-header undefined / done カウント不整合 / draft-v2 残存) + WARN 3 (進捗 h2 日付 stale / 読む順序 Phase I 未掲載 / common.css 扱い曖昧) + INFO 2</li>
+</ul>
+
+<p>CRITICAL 5 件 (重複統合後) + WARN 主要 6 件 + INFO 1 件 = 計 12 件を本 commit で全 fix:</p>
+<ul>
+  <li>xlink:href 抽出追加 (silent false negative 解消)</li>
+  <li>spec-header → doc-header rename (CSS 未適用 silent bug fix)</li>
+  <li>defs/marker 削除 (unused dead code 排除、viewBox 拡大ついで)</li>
+  <li>draft-v2 → draft-v4 status 行更新</li>
+  <li>done 27 → 28 + F (4) → (5) カウント整合</li>
+  <li>HTML 28 → 29 file 数値整合 (architecture-graph も HTML)</li>
+  <li>進捗 h2 日付 2026-05-13 → 2026-05-15</li>
+  <li>experiment-index 説明 EXP-031 → EXP-042</li>
+  <li>cat-f / cat-g 色覚多様性対応 (#d8d8d8/#f0d0d8 → #b8c0c8/#f4a8c0 で明度差 widening)</li>
+  <li>viewBox 1000 → 1020 (legend overflow margin 拡大)</li>
+  <li>SVG root に role="img" + aria-labelledby + &lt;title&gt; + &lt;desc&gt; 追加 (a11y screen reader 対応)</li>
+  <li>failure-anlys → failure-anls typo fix</li>
+</ul>
+
+<p>残 WARN (xlink:href deprecated / cat color hardcode / 読む順序 Phase I 未掲載 / common.css 扱い等) は INFO level として future improvement、本 Phase J scope 外。</p>
+
+<h3>編集 / 新規 file (Phase J、計 10 file)</h3>
+
+<ul>
+  <li><strong>modified</strong> (8): README.html / monitor-policy.html / hooks-mcp-policy.html / spawn-protocol.html / crash-failure-mode.html / atomic-verification.html / tool-architecture.html / scripts/spec-anchor-link-check.py</li>
+  <li><strong>new</strong> (2): architecture/spec/twill-plugin-rebuild/architecture-graph.html (~440 行) / .github/workflows/spec-link-check.yml (~40 行)</li>
+</ul>
+
+<h3>Phase J scope 完遂 + Phase 1 PoC C1 着手 ready</h3>
+
+<p>Phase J 5 sub-task 全完遂 (J-1 broken link / J-2 README / J-3 SVG / J-4 CI / J-5 は optional skip)。Phase 1 PoC 着手 ready 状態に。次 session 開始時に <code>Skill(feature-dev:feature-dev)</code> invoke + plan file (<code>linked-jumping-eich.md</code>) の Phase 1 PoC Cluster 1 (~5h、STEP -1 + hook foundation) から着手。</p>
+
 <h2>2026-05-15 Phase I architecture dig — 5 既知 topic + Monitor + Hooks+MCP + spec drift cleanup 24 件 judgment SSoT 化</h2>
 
 <h3>核心成果</h3>

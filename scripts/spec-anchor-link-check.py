@@ -91,10 +91,11 @@ class _HrefExtractor(HTMLParser):
         self.hrefs: list[tuple[str, int]] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple]) -> None:
+        # "a" は HTML <a href> + SVG <a xlink:href> 両方を捕捉
         if tag not in ("a", "link"):
             return
         attr_dict = dict(attrs)
-        href = attr_dict.get("href") or attr_dict.get("HREF")
+        href = attr_dict.get("href") or attr_dict.get("HREF") or attr_dict.get("xlink:href")
         if href and href.strip():
             line, _ = self.getpos()
             self.hrefs.append((href.strip(), line))

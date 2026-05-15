@@ -1,0 +1,48 @@
+name: spec-link-check
+
+on:
+  pull_request:
+    paths:
+      - 'architecture/spec/**'
+      - 'scripts/spec-anchor-link-check.py'
+      - '.github/workflows/spec-link-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  link-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run spec-anchor-link-check
+        id: link-check
+        run: |
+          set -o pipefail
+          python3 scripts/spec-anchor-link-check.py --output text | tee link-check.txt
+          BROKEN=$(grep -oE 'broken: [0-9]+' link-check.txt | grep -oE '[0-9]+' | tail -1)
+          if [ -z "$BROKEN" ]; then
+            echo "::error::Could not parse broken count from link-check output"
+            exit 2
+          fi
+          echo "broken_count=$BROKEN" >> "$GITHUB_OUTPUT"
+          if [ "$BROKEN" -gt 0 ]; then
+            echo "::error::Found $BROKEN broken anchor link(s) in architecture/spec/. Fix before merge."
+            exit 1
+          fi
+          echo "All spec links OK (broken: 0)"
+
+      - name: Upload link-check artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spec-link-check-result
+          path: link-check.txt
+          retention-days: 14
