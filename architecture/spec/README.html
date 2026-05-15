@@ -9,6 +9,11 @@
   header.doc-header { border-bottom: 3px solid var(--brand); }
   .dir-section { margin-top: 32px; padding-top: 16px; border-top: 2px solid var(--gray-200); }
   .dir-purpose { background: var(--gray-50); padding: 12px 16px; border-left: 3px solid var(--brand); margin: 8px 0 16px 0; font-size: 14px; }
+  /* machine-readable index: AI parse 用 semantic structure (2026-05-15 Q1 追加) */
+  dl.mri { font-family: var(--font-mono); font-size: 12.5px; line-height: 1.45; margin: 16px 0; padding: 12px 16px; background: var(--gray-50); border-left: 3px solid var(--gray-400); border-radius: var(--radius-md); }
+  dl.mri dt { font-weight: 700; color: var(--brand-dark, #3d9e8f); margin-top: 6px; }
+  dl.mri dd { color: var(--gray-800); margin-left: 14px; margin-bottom: 2px; }
+  dl.mri dd code { color: var(--gray-700); font-size: 0.92em; }
 </style>
 </head>
 <body>
@@ -401,6 +406,124 @@
   <li>新 architecture の正典 ADR は <code>architecture/decisions/</code> 配下 (ADR-0012〜、本 spec を supplement として link)</li>
   <li><code>common.css</code> は <strong>HTML/MD boundary R-6 の例外</strong>、spec/ 配下に存続する唯一の CSS file (R-6 rationale および exception は <code>plugins/twl/skills/tool-architect/refs/spec-management-rules.md</code> R-6 参照)</li>
 </ul>
+
+<h2 id="machine-readable">machine-readable index (AI 用 semantic structure)</h2>
+
+<p>本 README は人間 + AI (将来 tool-architect 等) 両方の audience を想定。本 section は AI が parse しやすい <code>&lt;dl&gt;</code> 形式で全 file (33 entry、HTML + MD + CSS) の semantic structure を提供。<strong>SSoT は上部 directory tables、本 section は derived view (machine-readable mirror)</strong>。</p>
+
+<p>format: <code>&lt;dt&gt;path&lt;/dt&gt;&lt;dd&gt;dir=... | category=... | badge=... | desc=...&lt;/dd&gt;</code></p>
+
+<dl class="mri">
+
+<dt><code>spec/README.html</code></dt>
+<dd>dir=spec | category=auxiliary (entry point) | badge=done | desc=本 index (dir 構造 + 全 file entry + reading guide + SSoT 位置 + machine-readable index)</dd>
+
+<dt><code>spec/overview.html</code></dt>
+<dd>dir=spec | category=orientation | badge=done | desc=architecture overview (図 1: 10 role pyramid) + Key Points + 新原則 10 条</dd>
+
+<dt><code>spec/failure-analysis.html</code></dt>
+<dd>dir=spec | category=orientation | badge=done | desc=既存 plugin の失敗 9 件 P0 bug 深掘り + 横断要因 F-1/F-2/F-3/F-4 + MUST 15 件</dd>
+
+<dt><code>spec/boundary-matrix.html</code></dt>
+<dd>dir=spec | category=core | badge=done | desc=10 role 責務 boundary 行列 (administrator/phaser/workflow/atomic/specialist + tool/reference/script/hook/monitor)</dd>
+
+<dt><code>spec/crash-failure-mode.html</code></dt>
+<dd>dir=spec | category=core | badge=done | desc=3 階層 crash 検知 + recovery + SLA (Inv G 強化、Phase I 2026-05-15 admin-health-check 反映)</dd>
+
+<dt><code>spec/atomic-verification.html</code></dt>
+<dd>dir=spec | category=core | badge=done | desc=atomic skill 4-phase lifecycle (pre-check/exec/post-verify/report) + 機械検証規約 (Inv U)</dd>
+
+<dt><code>spec/spawn-protocol.html</code></dt>
+<dd>dir=spec | category=core | badge=done | desc=3 層 spawn (administrator → phaser → workflow/atomic/specialist) + file mailbox 仕様 (Inv I-1〜I-7)</dd>
+
+<dt><code>spec/gate-hook.html</code></dt>
+<dd>dir=spec | category=core | badge=done | desc=PreToolUse gate (tier 1 phaser-gate.sh + tier 2 MCP shadow) 階層防御 + 公式 verified schema (Inv W)</dd>
+
+<dt><code>spec/admin-cycle.html</code></dt>
+<dd>dir=spec | category=core | badge=done | desc=administrator polling cycle 6-step + Inv I-1〜I-7 + knowledge externalization 補足</dd>
+
+<dt><code>spec/tool-architecture.html</code></dt>
+<dd>dir=spec | category=core | badge=done | hub | desc=tool-* 3 件 (architect/project/sandbox-runner) 責務 + 自律 verify 2 層 + 軽量 PR cycle + sandbox catalog (R-10 decision tree 参照)</dd>
+
+<dt><code>spec/registry-schema.html</code></dt>
+<dd>dir=spec | category=core | badge=done | hub | desc=registry.yaml 9 section schema + 10 role × concern matrix + vocabulary 6 field schema + Authority/Reference/Derived 階層 (他 spec 参照基盤)</dd>
+
+<dt><code>spec/monitor-policy.html</code></dt>
+<dd>dir=spec | category=core | badge=done | desc=Monitor primitive 規定 (actor scope = administrator+phaser、mailbox JSON event 一元化、Inv M-1〜M-4)</dd>
+
+<dt><code>spec/hooks-mcp-policy.html</code></dt>
+<dd>dir=spec | category=core | badge=done | desc=Hooks 14 type + MCP 8 pattern + Inv H-1〜H-3 (hook independence) + PostToolUseFailure 自動学習</dd>
+
+<dt><code>spec/twl-mcp-integration.html</code></dt>
+<dd>dir=spec | category=policy | badge=done | desc=twl MCP server (30+ tool、12 audit sections、TWL_AUDIT env) の継承戦略 + 新 architecture 統合</dd>
+
+<dt><code>spec/ssot-design.html</code></dt>
+<dd>dir=spec | category=policy | badge=done | desc=registry.yaml 統合 SSoT (案 4 確定、(2026-05-13))、chain.py/step.sh/deps.yaml/types.yaml 三重化解消設計</dd>
+
+<dt><code>spec/glossary.html</code></dt>
+<dd>dir=spec | category=auxiliary | badge=done | desc=用語集 (10 role 体系 + vocabulary 6 field schema + 用語廃止 listing、1 entity = 1 canonical name)</dd>
+
+<dt><code>spec/changelog.html</code></dt>
+<dd>dir=spec | category=auxiliary | badge=done | desc=spec file の追加・削除・内容変更 履歴 (実装作業 log は archive/changelog-impl.html へ分離)</dd>
+
+<dt><code>spec/architecture-graph.html</code></dt>
+<dd>dir=spec | category=auxiliary | badge=done | desc=5 cluster + 4 sub-category interactive SVG navigation graph (Okabe-Ito colorblind-safe palette、cross-dir + within-cluster edge 2 軸)</dd>
+
+<dt><code>spec/common.css</code></dt>
+<dd>dir=spec | category=auxiliary | badge=done | desc=共通 stylesheet (design token + 4-state status badge + EXP/src link class、R-6 HTML/MD boundary 例外)</dd>
+
+<dt><code>migration/adr-fate-table.html</code></dt>
+<dd>dir=migration | category=fate-audit | badge=done | desc=旧 plugin ADR 43 件 1 件ずつ fate audit (保全 / Superseded / 削除 / 統合)</dd>
+
+<dt><code>migration/invariant-fate-table.html</code></dt>
+<dd>dir=migration | category=fate-audit | badge=done | desc=不変条件 A-S 19 件 + 新規 T-X 5 件 = A-X 24 件 継承戦略 + drift 訂正</dd>
+
+<dt><code>migration/pitfalls-inheritance.html</code></dt>
+<dd>dir=migration | category=fate-audit | badge=done | desc=既存 pitfalls-catalog 継承戦略 + 構造的不能化 mapping</dd>
+
+<dt><code>migration/deletion-inventory.html</code></dt>
+<dd>dir=migration | category=plan | badge=done | desc=削除対象 60+ 件 + 新規 helper 5 本 listing (rebuild scope の boundary)</dd>
+
+<dt><code>migration/rebuild-plan.html</code></dt>
+<dd>dir=migration | category=plan | badge=done | hub | desc=4 phase plan (PoC/dual-stack/cutover/cleanup) + Phase 1 PoC + 8 verify points</dd>
+
+<dt><code>migration/regression-test-strategy.html</code></dt>
+<dd>dir=migration | category=plan | badge=done | desc=既存 bats 90+ 継承 + 新 test 計画 (phaser-gate-hook.bats 等)</dd>
+
+<dt><code>migration/dual-stack-routing.html</code></dt>
+<dd>dir=migration | category=plan | badge=done | desc=su-observer 旧 vs administrator 新 共存ルール (Phase 2 dual-stack 期間)</dd>
+
+<dt><code>research/research-findings.html</code></dt>
+<dd>dir=research | badge=done | desc=公式 docs 計 13 件 verified + research session bce9c4e4 (stdio MCP / hooks / plugins / Plugin Monitor)</dd>
+
+<dt><code>research/sandbox-experiment.html</code></dt>
+<dd>dir=research | badge=done | desc=sandbox architecture + 4-state verification status (inferred/deduced/verified/experiment-verified) + EXP-id 体系</dd>
+
+<dt><code>research/experiment-index.html</code></dt>
+<dd>dir=research | badge=done | hub | desc=全 EXP-001〜042 listing + 現 status + 結果集約 (57+ inbound hub、EXP-id hyperlink target)</dd>
+
+<dt><code>archive/draft-v1.html</code></dt>
+<dd>dir=archive | badge=archive | desc=spec の原案 v1 (115 KB、rollback 用、新 spec へ replaced)</dd>
+
+<dt><code>archive/changelog-impl.html</code></dt>
+<dd>dir=archive | badge=archive | desc=実装作業 log (Phase F-J / Phase 1 PoC Cluster N 等の歴史保存)</dd>
+
+<dt><code>archive/research/dig-report-ssot-2026-05-13.html</code></dt>
+<dd>dir=archive/research | badge=archive | desc=registry.yaml 統合 SSoT 設計 dig 独立 artifact (2026-05-13、調査完了 + 案 4 確定)</dd>
+
+<dt><code>archive/research/dig-report-tools-2026-05-13.html</code></dt>
+<dd>dir=archive/research | badge=archive | desc=tool-* 3 件構成 finalization dig 独立 artifact (2026-05-13)</dd>
+
+<dt><code>archive/decisions/ADR-0006〜0011a/0011b.md</code> (集約 entry)</dt>
+<dd>dir=archive/decisions | badge=archive | desc=旧 ADR 7 件 (fate 議論済、adr-fate-table.html 参照、R-1 例外で集約 listing)</dd>
+
+<dt><code>archive/contexts/ + archive/domain/ + archive/migrations/ + archive/vision.md</code> (集約 entry)</dt>
+<dd>dir=archive | badge=archive | desc=旧 TWiLL DDD 資産 (context-map / glossary / model / tier-2-caller migration / vision、R-1 例外)</dd>
+
+<dt><code>decisions/ADR-0012-administrator-rebrand.md</code></dt>
+<dd>dir=decisions | badge=proposed | desc=su-* → admin-* rebrand (su-observer → administrator、su-compact → admin-compact、関連 script rename)</dd>
+
+</dl>
 
 <h2 id="management-rules">spec 管理規律</h2>
 
