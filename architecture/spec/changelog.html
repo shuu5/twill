@@ -21,6 +21,48 @@
   <strong>関連</strong>: <a href="README.html">README</a> / <a href="architecture-graph.html">architecture-graph</a>
 </div>
 
+<h2 id="phase-feature-dev">2026-05-15 (2nd): architecture spec dir-first 精緻 refactoring (feature-dev:feature-dev workflow)</h2>
+
+<h3>核心成果</h3>
+
+<p>前 refactoring (twill-spec-purify) で残った構造的 drift を <code>feature-dev:feature-dev</code> skill workflow (Phase 1-7 cycle) で精緻 refactoring。<strong>Clean Architecture 案 (B、~8.5h plan)</strong> を採用。</p>
+
+<ol>
+  <li><strong>dir-first README clean redesign</strong>: 7 旧 section (A〜G category) → 5 dir section (spec/migration/research/archive/decisions)。spec/ を 4 sub-category (orientation/core/policy/auxiliary) で構造化。dir 構造説明 table 新設、reading guide 3 persona path に <code>[spec/]</code> <code>[migration/]</code> dir prefix 表示、拡張性 scenario walkthrough 3 件 (新 ADR / 新 spec / 新 research) 追加。</li>
+  <li><strong>architecture-graph clean redesign</strong>: viewBox 1400x1020 → 940x880、7 column (A-G) → 5 cluster (spec/migration/research/archive/decisions)。cluster boundary <code>&lt;rect&gt;</code> 背景視覚化、5 dir base color + spec/ 4 sub-intensity (8 cat-* class)、edge 2 軸 (cross-dir brand 色 / within-cluster gray)。</li>
+  <li><strong>file 移動</strong>: <code>failure-analysis.html</code> research/ → spec/ (orientation sub-category 昇格)、<code>dig-report-*.html</code> 2 件 research/ → archive/research/ (badge=archive と dir 整合)。</li>
+  <li><strong>tool-architect 規律拡張</strong> (<code>spec-management-rules.md</code>): R-10 decision tree 追加 (新 file の dir + sub-category 機械的決定、Q1-Q7)、R-1 適用方法 rewrite (2 段 flow: dir 選択 → spec/ 内 sub-category)、拡張性 scenario walkthrough 3 件、research/ 追加注記、CI automation roadmap (Phase 2 R-1/R-2/R-5 機械化 + Phase 3 graph auto-gen)。</li>
+  <li><strong>drift 11 件 fix</strong>: 案 3 step.sh × 10 → 案 4 registry.yaml、crash-failure-mode meta worker/pilot → specialist/phaser、glossary/tool-architecture title session marker 除去、overview/README「radical rebuild」 → 「rebuild」。</li>
+  <li><strong>session marker 全削除</strong>: 「本/次 session」「第 N 弾 dig」「Phase F-J 完遂」を全 spec/ 配下 file から sed で除去。「過去 dig (2026-05-13)」化。</li>
+  <li><strong>Phase 6 review fix (CRITICAL 11 件 / WARN 主要)</strong>: 3 並列 opus reviewer 検出の CRITICAL 14 中 11 件 fix。dig-report broken link 6 箇所、tool-architecture 二重 meta、failure-analysis 内 link path、README dir prefix / 補助→auxiliary、拡張性 dual-author 注記、registry-schema href/text 不整合 等。</li>
+</ol>
+
+<h3>主要編集 file</h3>
+
+<ul>
+  <li><strong>新規</strong>: なし (既存 file の rewrite + 移動)</li>
+  <li><strong>全書換 (Write)</strong>: README.html (407 行、dir-first redesign) / architecture-graph.html (490 行、5 cluster redesign)</li>
+  <li><strong>移動</strong>: failure-analysis.html (research/ → spec/) / dig-report-*.html 2 件 (research/ → archive/research/)</li>
+  <li><strong>拡張 (Edit)</strong>: spec-management-rules.md (R-10 decision tree + CI roadmap、+109 行)</li>
+  <li><strong>drift fix sed</strong>: ~20 file (案 3→案 4、meta worker/pilot、title session marker、第 N 弾 dig、radical rebuild、補助→auxiliary、href/text 整合)</li>
+</ul>
+
+<h3>累積 commit (feature-dev cycle)</h3>
+
+<ul>
+  <li><code>a312f7ae</code> — Phase 5 Implementation (Clean redesign、dir-first refactoring)</li>
+  <li><code>2d6b0047</code> — Phase 6 review findings fix (CRITICAL 11 件)</li>
+  <li>(本 Phase 7) — changelog 拡張 + final summary</li>
+</ul>
+
+<h3>Phase 7 で defer された未完 task (別 phase 推奨)</h3>
+
+<ul>
+  <li><strong>worker/pilot 旧用語 100 箇所 audit</strong> (Phase 6 review CRITICAL-1, 2 Agent 3): spec/ 配下全 file に旧 role 名残存 (legitimate occurrence 含む)。scope 大、context 固有判断必要 (forbidden vs deprecated table 内 legitimate retain など)。慎重な individual audit + sed batch + manual review が必要。</li>
+  <li><strong>graph 視覚 polish</strong> (Phase 6 review WARN-3〜10 Agent 2): cluster-bg と node 色衝突軽減、4 sub-intensity の colorblind compatibility、cat-res/cat-dec の warm-tone 区別、legend node size 凡例完備、hub size 4px 差視認性、README→ADR-0012 cross-dir edge 等。視覚 polish 段階対応。</li>
+  <li><strong>CI automation Phase 2/3 実装</strong> (spec-management-rules.md roadmap): R-1/R-2/R-5/R-6 機械化 script 群、R-9 graph auto-gen。別 phase で実装。</li>
+</ul>
+
 <h2 id="phase-0-7">2026-05-15: architecture spec refactoring (twill-spec-purify Phase 0-7)</h2>
 
 <h3>核心成果</h3>
