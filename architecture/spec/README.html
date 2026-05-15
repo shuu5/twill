@@ -2,53 +2,69 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>twill plugin radical rebuild — index</title>
+<title>twill plugin rebuild — spec index</title>
 <link rel="stylesheet" href="common.css">
 <style>
   /* file-specific accent: index は brand #5ac8b8 で「入口」を象徴 */
   header.doc-header { border-bottom: 3px solid var(--brand); }
+  .dir-section { margin-top: 32px; padding-top: 16px; border-top: 2px solid var(--gray-200); }
+  .dir-purpose { background: var(--gray-50); padding: 12px 16px; border-left: 3px solid var(--brand); margin: 8px 0 16px 0; font-size: 14px; }
 </style>
 </head>
 <body>
 
 <header class="doc-header">
-  <h1>twill plugin radical rebuild — 仕様書 index</h1>
-  <div class="meta">draft-v4 (2026-05-15、Phase F-J 完遂) &middot; HTML 統一版 &middot; tool-* 3 件 + 10 role 体系 + registry.yaml 統合 SSoT &middot; design token: note DESIGN.md 部分採用 &middot; <a href="architecture-graph.html"><strong>📊 architecture-graph で全体俯瞰</strong></a></div>
+  <h1>twill plugin rebuild — spec index</h1>
+  <div class="meta">draft-v5 (2026-05-15、dir-first refactoring) &middot; 5 dir cluster (spec / migration / research / archive / decisions) &middot; <a href="architecture-graph.html"><strong>📊 architecture-graph で全体俯瞰</strong></a></div>
 </header>
 
 <div class="info">
-  <strong>目的</strong>: 既存 twill plugin (file 1177、bash 5175 lines、ADR 43 件、不変条件 19 件) を、
-  構造的欠陥を不能化する形で根本的に再設計する。<br>
-  <strong>status</strong>: draft-v4 (Phase F-J 完遂、HTML 統一 + twl mcp 継承戦略 + SSoT design + Phase I extension + Phase J navigation hub)、複数 session で fix-up 中。<br>
-  <strong>audience</strong>: 人間 (user / 設計者) + 将来 tool-architect (template 生成)。
+  <strong>目的</strong>: 既存 twill plugin (file 1177、bash 5175 lines、ADR 43 件、不変条件 19 件) を、構造的欠陥を不能化する形で根本的に再設計する。<br>
+  <strong>status</strong>: spec dir 内全 file content 化完了 (badge=done)、本 index で dir-first navigation 提供。<br>
+  <strong>audience</strong>: 人間 (user / 設計者) + 将来 tool-architect (template 生成)。<br>
+  <strong>SSoT 位置</strong>: 本 spec directory (<code>architecture/spec/</code>) = 新 twill 仕様 SSoT。詳細は本 file 末尾「SSoT 位置」section 参照。
 </div>
 
-<h2>構成 (HTML 29 + 2 dig-report MD = 31 file、Phase I/J 反映、内 1 は architecture-graph navigation hub)</h2>
+<h2 id="dir-overview">architecture/ ディレクトリ構造</h2>
 
-<div class="info"><strong>第 5 弾 dig (2026-05-13) 追加 file</strong>:
-<ul>
-  <li><a href="registry-schema.html"><code>registry-schema.html</code></a> (新規) — registry.yaml 9 section schema + 10 role × concern matrix + vocabulary 6 field schema + Authority/Reference/Derived 階層図 (他 spec file の参照基盤)</li>
-  <li><a href="atomic-verification.html"><code>atomic-verification.html</code></a> (旧 <code>step-verification.html</code> から rename) — atomic skill 4-phase lifecycle inline 実装 specification</li>
-  <li><a href="../research/dig-report-ssot-2026-05-13.html"><code>dig-report-ssot-2026-05-13.html</code></a> — 第 5 弾 dig 独立 artifact (10 round + 33+ question + 921 行)</li>
-</ul>
+<table>
+  <thead>
+    <tr><th style="width: 18%">dir</th><th style="width: 14%">file 数</th><th>役割</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="#spec"><code>spec/</code></a></td>
+      <td>18 HTML + common.css</td>
+      <td><strong>新 twill 仕様 SSoT</strong> (orientation / core / policy / 補助)</td>
+    </tr>
+    <tr>
+      <td><a href="#migration"><code>migration/</code></a></td>
+      <td>7 HTML</td>
+      <td>旧→新 移行計画 (fate audit / 実行計画)</td>
+    </tr>
+    <tr>
+      <td><a href="#research"><code>research/</code></a></td>
+      <td>3 HTML</td>
+      <td>調査・実験 (research-findings / sandbox-experiment / experiment-index)</td>
+    </tr>
+    <tr>
+      <td><a href="#archive"><code>archive/</code></a></td>
+      <td>2 HTML + 多数 MD</td>
+      <td>旧資産 + 過去 ADR + draft + dig artifact (rollback 保持)</td>
+    </tr>
+    <tr>
+      <td><a href="#decisions"><code>decisions/</code></a></td>
+      <td>1 MD</td>
+      <td>新 architecture ADR (ADR-0012 以降)</td>
+    </tr>
+  </tbody>
+</table>
 
-<strong>第 5 弾 dig での既存 file 全面書き直し</strong>: <a href="ssot-design.html"><code>ssot-design.html</code></a> (案 4 registry.yaml 統合 SSoT) / <a href="glossary.html"><code>glossary.html</code></a> (10 role + vocabulary 6 field + 用語廃止リスト) / <a href="overview.html"><code>overview.html</code></a> (図 1 L1 = phaser-* + 新原則 10 条) / <a href="boundary-matrix.html"><code>boundary-matrix.html</code></a> (10 role boundary)</div>
+<h2 id="spec" class="dir-section">spec/ — 新 twill 仕様 SSoT</h2>
 
-<div class="info"><strong>Phase I extension (2026-05-15)</strong>: User 懸念 (Monitor primitive / Hooks+MCP 組み合わせ) 第 5 弾 dig Round 1-2 を SSoT 化:
-<ul>
-  <li><a href="monitor-policy.html"><code>monitor-policy.html</code></a> (新規) — Monitor primitive 規定 (actor scope = administrator+phaser / mailbox JSON event 一元化 / composite emitter side / monitors.json daemon lifecycle)</li>
-  <li><a href="hooks-mcp-policy.html"><code>hooks-mcp-policy.html</code></a> (新規) — Hooks 14 type + MCP 8 pattern + Inv H-1〜3 (hook independence) + Phase 1 PoC PostToolUseFailure + memory_store 自動学習</li>
-</ul>
-<strong>Phase J navigation infrastructure (2026-05-15)</strong>: 31 file 管理のため navigation hub を新設:
-<ul>
-  <li><a href="architecture-graph.html"><code>architecture-graph.html</code></a> (新規) — 31 node × 6+1 category interactive SVG graph、click navigation + hover hub 強調</li>
-  <li>broken link 0 達成 (target side id 付与方式 by Phase J J-1) + CI 統合 (<code>.github/workflows/spec-link-check.yml</code> by J-4)</li>
-</ul>
-</div>
+<div class="dir-purpose"><strong>役割</strong>: 新 twill plugin architecture の純粋仕様 (HTML のみ、common.css 例外)。tool-architect skill の編集対象、R-1〜R-9 規律で管理。sub-category 4 種で構造化。</div>
 
-<p>本 spec は <code>note/DESIGN.md</code> design token を部分採用した HTML で統一する (色・タイポは note 準拠、layout は spec 用に max-width 1100px 維持)。共通 CSS は <code>common.css</code>、各 file は <code>&lt;link rel="stylesheet" href="common.css"&gt;</code> で参照。</p>
-
-<h3>A. 全体把握 (最初に読む)</h3>
+<h3 id="spec-orientation">orientation — 最初に読む (3 file)</h3>
 
 <table>
   <thead>
@@ -58,26 +74,140 @@
     <tr>
       <td><a href="README.html"><code>README.html</code></a></td>
       <td><span class="badge done">done</span></td>
-      <td>本ドキュメント (index + 読む順序)</td>
+      <td>本 index (dir 構造 + 全 file entry + reading guide + SSoT 位置)</td>
     </tr>
     <tr>
       <td><a href="overview.html"><code>overview.html</code></a></td>
       <td><span class="badge done">done</span></td>
-      <td>architecture overview (図 1: 10 role pyramid)、Key Points、新原則 10 条 (第 5 弾 dig で 10 role + vocabulary 追加)</td>
+      <td>architecture overview (図 1: 10 role pyramid)、Key Points、新原則 10 条</td>
     </tr>
     <tr>
-      <td><a href="../research/failure-analysis.html"><code>failure-analysis.html</code></a></td>
+      <td><a href="failure-analysis.html"><code>failure-analysis.html</code></a></td>
       <td><span class="badge done">done</span></td>
-      <td>既存 plugin の失敗 9 件 P0 bug 深掘り + 横断要因 F-1/F-2/F-3 + MUST 15 件</td>
+      <td>既存 plugin の失敗 9 件 P0 bug 深掘り + 横断要因 F-1/F-2/F-3 + MUST 15 件 (新 spec の根拠文書)</td>
     </tr>
   </tbody>
 </table>
 
-<h3>B. 既存資産の継承戦略 (audit 結果)</h3>
+<h3 id="spec-core">core — 新 architecture 詳細 (10 file、実装参照)</h3>
 
 <table>
   <thead>
     <tr><th style="width: 30%">file</th><th style="width: 12%">status</th><th>内容</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="boundary-matrix.html"><code>boundary-matrix.html</code></a></td>
+      <td><span class="badge done">done</span></td>
+      <td>10 role 責務 boundary 行列 (administrator / phaser / workflow / atomic / specialist / tool / reference / script / hook / monitor)</td>
+    </tr>
+    <tr>
+      <td><a href="crash-failure-mode.html"><code>crash-failure-mode.html</code></a></td>
+      <td><span class="badge done">done</span></td>
+      <td>specialist/phaser/administrator crash 検知 + recovery + SLA (図 2)</td>
+    </tr>
+    <tr>
+      <td><a href="atomic-verification.html"><code>atomic-verification.html</code></a></td>
+      <td><span class="badge done">done</span></td>
+      <td>atomic skill 4-phase lifecycle (図 3)、post-verify 規約</td>
+    </tr>
+    <tr>
+      <td><a href="spawn-protocol.html"><code>spawn-protocol.html</code></a></td>
+      <td><span class="badge done">done</span></td>
+      <td>3 階層 spawn (administrator → phaser → workflow/atomic/specialist) + file mailbox 仕様</td>
+    </tr>
+    <tr>
+      <td><a href="gate-hook.html"><code>gate-hook.html</code></a></td>
+      <td><span class="badge done">done</span></td>
+      <td>PreToolUse gate + hook 実装 (公式 verified schema、tier 1+2 階層防御)</td>
+    </tr>
+    <tr>
+      <td><a href="admin-cycle.html"><code>admin-cycle.html</code></a></td>
+      <td><span class="badge done">done</span></td>
+      <td>administrator polling cycle 6-step + 不変条件 I-1〜I-7 + 補足責務 (knowledge externalization)</td>
+    </tr>
+    <tr>
+      <td><a href="tool-architecture.html"><code>tool-architecture.html</code></a></td>
+      <td><span class="badge done">done</span></td>
+      <td>tool-* <strong>3 件</strong> (architect / project / sandbox-runner) の責務 + 自律 verify 2 層 + 軽量 PR cycle + sandbox catalog</td>
+    </tr>
+    <tr>
+      <td><a href="registry-schema.html"><code>registry-schema.html</code></a></td>
+      <td><span class="badge done">done</span></td>
+      <td>registry.yaml 9 section schema + 10 role × concern matrix + vocabulary 6 field schema + Authority/Reference/Derived 階層図 (他 spec file の参照基盤)</td>
+    </tr>
+    <tr>
+      <td><a href="monitor-policy.html"><code>monitor-policy.html</code></a></td>
+      <td><span class="badge done">done</span></td>
+      <td>Monitor primitive 規定 (actor scope = administrator+phaser / mailbox JSON event 一元化 / Inv M-1〜M-4)</td>
+    </tr>
+    <tr>
+      <td><a href="hooks-mcp-policy.html"><code>hooks-mcp-policy.html</code></a></td>
+      <td><span class="badge done">done</span></td>
+      <td>Hooks 14 type + MCP 8 pattern + Inv H-1〜H-3 (hook independence) + PostToolUseFailure 自動学習</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="spec-policy">policy — 既存資産接続 (2 file)</h3>
+
+<table>
+  <thead>
+    <tr><th style="width: 30%">file</th><th style="width: 12%">status</th><th>内容</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="twl-mcp-integration.html"><code>twl-mcp-integration.html</code></a></td>
+      <td><span class="badge done">done</span></td>
+      <td><strong>twl MCP server</strong> (30+ tool、12 audit sections) の継承戦略 + 新 architecture 統合</td>
+    </tr>
+    <tr>
+      <td><a href="ssot-design.html"><code>ssot-design.html</code></a></td>
+      <td><span class="badge done">done</span></td>
+      <td>registry.yaml 統合 SSoT (案 4 確定)、chain.py / step.sh / deps.yaml 三重化解消の歴史 + 案 4 詳細設計</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="spec-auxiliary">補助 — navigation / 用語 / 履歴 (3 file + common.css)</h3>
+
+<table>
+  <thead>
+    <tr><th style="width: 30%">file</th><th style="width: 12%">status</th><th>内容</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="glossary.html"><code>glossary.html</code></a></td>
+      <td><span class="badge done">done</span></td>
+      <td>用語集 (10 role + vocabulary 6 field + 用語廃止 listing)</td>
+    </tr>
+    <tr>
+      <td><a href="changelog.html"><code>changelog.html</code></a></td>
+      <td><span class="badge done">done</span></td>
+      <td>spec file の追加・削除・内容変更 履歴 (実装作業 log は <a href="../archive/changelog-impl.html">archive/changelog-impl.html</a>)</td>
+    </tr>
+    <tr>
+      <td><a href="architecture-graph.html"><code>architecture-graph.html</code></a></td>
+      <td><span class="badge done">done</span></td>
+      <td>5 cluster interactive SVG graph、click navigation + hover hub 強調 (navigation hub)</td>
+    </tr>
+    <tr>
+      <td><code>common.css</code></td>
+      <td><span class="badge done">done</span></td>
+      <td>共通 stylesheet (design token + 4-state status badge + EXP/src link class)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="migration" class="dir-section">migration/ — 旧→新 移行計画</h2>
+
+<div class="dir-purpose"><strong>役割</strong>: 旧 twill plugin から新 architecture への移行計画。fate audit (旧資産の処遇判定) + 実行計画 (削除・rebuild 手順) の 2 sub-category。tool-architect の編集対象外、user manual edit。</div>
+
+<h3 id="migration-fate">fate audit — 旧資産の処遇 (3 file)</h3>
+
+<table>
+  <thead>
+    <tr><th style="width: 36%">file</th><th style="width: 12%">status</th><th>内容</th></tr>
   </thead>
   <tbody>
     <tr>
@@ -98,76 +228,11 @@
   </tbody>
 </table>
 
-<h3>C. 新 architecture 詳細 (実装参照用)</h3>
+<h3 id="migration-plan">実行計画 — 削除・rebuild 手順 (4 file)</h3>
 
 <table>
   <thead>
-    <tr><th style="width: 30%">file</th><th style="width: 12%">status</th><th>内容</th></tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><a href="boundary-matrix.html"><code>boundary-matrix.html</code></a></td>
-      <td><span class="badge done">done</span></td>
-      <td>admin / pilot / worker / tool / phase の責務 boundary 行列</td>
-    </tr>
-    <tr>
-      <td><a href="crash-failure-mode.html"><code>crash-failure-mode.html</code></a></td>
-      <td><span class="badge done">done</span></td>
-      <td>worker/pilot/admin crash 検知 + recovery + SLA (図 2)</td>
-    </tr>
-    <tr>
-      <td><a href="atomic-verification.html"><code>atomic-verification.html</code></a></td>
-      <td><span class="badge done">done</span></td>
-      <td>step verification framework (図 3: lifecycle)、framing 訂正 (post-verify 不在が問題)</td>
-    </tr>
-    <tr>
-      <td><a href="spawn-protocol.html"><code>spawn-protocol.html</code></a></td>
-      <td><span class="badge done">done</span></td>
-      <td>3 階層 spawn + file mailbox 仕様 + 通信 sequence</td>
-    </tr>
-    <tr>
-      <td><a href="gate-hook.html"><code>gate-hook.html</code></a></td>
-      <td><span class="badge done">done</span></td>
-      <td>PreToolUse gate + hook 実装 (公式 verified schema、tier 1+2 階層防御)</td>
-    </tr>
-    <tr>
-      <td><a href="admin-cycle.html"><code>admin-cycle.html</code></a></td>
-      <td><span class="badge done">done</span></td>
-      <td>administrator polling cycle 6-step + 不変条件 I-1〜I-7 + 案 2 先行実装</td>
-    </tr>
-    <tr>
-      <td><a href="tool-architecture.html"><code>tool-architecture.html</code></a></td>
-      <td><span class="badge done">done</span></td>
-      <td>tool-* <strong>3 件</strong> (architect / project / sandbox-runner) の責務 + 自律 verify 2 層 + 軽量 PR cycle + sandbox catalog + co-* migration (第 4 弾 dig 反映)</td>
-    </tr>
-  </tbody>
-</table>
-
-<h3>D. 既存 plugin との接続 </h3>
-
-<table>
-  <thead>
-    <tr><th style="width: 30%">file</th><th style="width: 12%">status</th><th>内容</th></tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><a href="twl-mcp-integration.html"><code>twl-mcp-integration.html</code></a></td>
-      <td><span class="badge done">done</span></td>
-      <td><strong>twl MCP server</strong> (30+ tool、12 audit sections = Section 1-10 既存 + Section 11/12 新規、TWL_AUDIT env) の継承戦略 + 新 architecture 統合</td>
-    </tr>
-    <tr>
-      <td><a href="ssot-design.html"><code>ssot-design.html</code></a></td>
-      <td><span class="badge done">done</span></td>
-      <td><strong>chain SSoT 統一</strong> (chain.py vs deps.yaml vs step.sh)、案 3 (step.sh 単一 SSoT) 詳細設計</td>
-    </tr>
-  </tbody>
-</table>
-
-<h3>E. 削除・移行計画</h3>
-
-<table>
-  <thead>
-    <tr><th style="width: 30%">file</th><th style="width: 12%">status</th><th>内容</th></tr>
+    <tr><th style="width: 36%">file</th><th style="width: 12%">status</th><th>内容</th></tr>
   </thead>
   <tbody>
     <tr>
@@ -178,7 +243,7 @@
     <tr>
       <td><a href="../migration/rebuild-plan.html"><code>rebuild-plan.html</code></a></td>
       <td><span class="badge done">done</span></td>
-      <td>4 phase + <code>Phase 1 PoC</code> (#1660 sanitize 詳細) + 8 verify points</td>
+      <td>4 phase rebuild plan + Phase 1 PoC (#1660 sanitize 詳細) + 8 verify points</td>
     </tr>
     <tr>
       <td><a href="../migration/regression-test-strategy.html"><code>regression-test-strategy.html</code></a></td>
@@ -193,147 +258,150 @@
   </tbody>
 </table>
 
-<h3>F. 補助</h3>
+<h2 id="research" class="dir-section">research/ — 調査・実験</h2>
+
+<div class="dir-purpose"><strong>役割</strong>: 調査レポート + 実験記録。spec の claim を verified/deduced/inferred で裏付ける根拠資料。tool-architect の編集対象外。</div>
 
 <table>
   <thead>
-    <tr><th style="width: 30%">file</th><th style="width: 12%">status</th><th>内容</th></tr>
+    <tr><th style="width: 36%">file</th><th style="width: 12%">status</th><th>内容</th></tr>
   </thead>
   <tbody>
     <tr>
-      <td><a href="glossary.html"><code>glossary.html</code></a></td>
-      <td><span class="badge done">done</span></td>
-      <td>用語集 (administrator / pilot / worker / phase / step / mail 等)</td>
-    </tr>
-    <tr>
-      <td><a href="changelog.html"><code>changelog.html</code></a></td>
-      <td><span class="badge done">done</span></td>
-      <td>本 spec の変更履歴 (draft-v1 → draft-v2 →  HTML 統一)</td>
-    </tr>
-    <tr>
       <td><a href="../research/research-findings.html"><code>research-findings.html</code></a></td>
       <td><span class="badge done">done</span></td>
-      <td>research session bce9c4e4 (120 sources、Critique PASS) + 過去 session WebFetch 計 10 件 verified の集約 (前 session + 第 3 弾)</td>
+      <td>research session bce9c4e4 (120 sources、Critique PASS) + 公式 docs WebFetch verified 計 13 件の集約</td>
     </tr>
     <tr>
       <td><a href="../research/sandbox-experiment.html"><code>sandbox-experiment.html</code></a></td>
       <td><span class="badge done">done</span></td>
-      <td><strong>sandbox experiment architecture</strong> — 4-state verification status + EXP-id 体系 + 既存 sandbox 機能継承 (spec session新規)</td>
+      <td>sandbox experiment architecture — 4-state verification status + EXP-id 体系 + 既存 sandbox 機能継承</td>
     </tr>
     <tr>
       <td><a href="../research/experiment-index.html"><code>experiment-index.html</code></a></td>
       <td><span class="badge done">done</span></td>
-      <td>全 EXP-001〜042 一覧 (第 4 弾 dig +13 件 EXP-019〜031、Phase G +EXP-032〜038、Phase I +EXP-039〜042) + 現 status + 結果集約 hub</td>
-    </tr>
-    <tr>
-      <td><a href="../research/dig-report-ssot-2026-05-13.html"><code>dig-report-ssot-2026-05-13.html</code></a></td>
-      <td><span class="badge archive">archive</span></td>
-      <td>第 5 弾 dig 独立 artifact (registry.yaml 統合 SSoT 設計、10 round + 33+ question + 921 行)</td>
-    </tr>
-    <tr>
-      <td><a href="../research/dig-report-tools-2026-05-13.html"><code>dig-report-tools-2026-05-13.html</code></a></td>
-      <td><span class="badge archive">archive</span></td>
-      <td>第 4 弾 dig 独立 artifact (tool-* 3 件構成 finalization、12 section / ~510 行)</td>
-    </tr>
-    <tr>
-      <td><code>common.css</code></td>
-      <td><span class="badge done">done</span></td>
-      <td>共通 stylesheet (note DESIGN.md 部分採用 token)</td>
-    </tr>
-    <tr>
-      <td><a href="../archive/draft-v1.html"><code>draft-v1.html</code></a></td>
-      <td><span class="badge archive">archive</span></td>
-      <td>前 session の原案 (rollback 用、115 KB、archive/ に move 済)</td>
+      <td>全 EXP-001〜042 一覧 + 現 status + 結果集約 hub</td>
     </tr>
   </tbody>
 </table>
 
-<h3>G. Phase I extension + Phase J navigation (2026-05-15 追加)</h3>
+<h2 id="archive" class="dir-section">archive/ — 旧資産 (rollback 保持)</h2>
+
+<div class="dir-purpose"><strong>役割</strong>: 旧 spec / 過去 ADR / draft / dig artifact 等の rollback 保持。参照のみ、新規追加なし。</div>
 
 <table>
   <thead>
-    <tr><th style="width: 30%">file</th><th style="width: 12%">status</th><th>内容</th></tr>
+    <tr><th style="width: 42%">file / dir</th><th style="width: 12%">status</th><th>内容</th></tr>
   </thead>
   <tbody>
     <tr>
-      <td><a href="monitor-policy.html"><code>monitor-policy.html</code></a></td>
-      <td><span class="badge done">done</span></td>
-      <td>Monitor primitive 規定 (Phase I dig Round 1) — actor scope (administrator + phaser) / mailbox JSON event 一元化 / composite emitter side / monitors.json daemon lifecycle (Inv M-1〜M-4)</td>
+      <td><a href="../archive/draft-v1.html"><code>draft-v1.html</code></a></td>
+      <td><span class="badge archive">archive</span></td>
+      <td>spec の原案 v1 (115 KB、rollback 用)</td>
     </tr>
     <tr>
-      <td><a href="hooks-mcp-policy.html"><code>hooks-mcp-policy.html</code></a></td>
-      <td><span class="badge done">done</span></td>
-      <td>Hooks + MCP 組み合わせ規定 (Phase I dig Round 2) — 公式 14 hook type + MCP 8 pattern + Inv H-1〜3 (hook independence) + Phase 1 PoC PostToolUseFailure + memory_store 自動学習</td>
+      <td><a href="../archive/changelog-impl.html"><code>changelog-impl.html</code></a></td>
+      <td><span class="badge archive">archive</span></td>
+      <td>実装作業 log (Phase F-J / Phase 1 PoC Cluster N 等の歴史保存)</td>
     </tr>
     <tr>
-      <td><a href="architecture-graph.html"><code>architecture-graph.html</code></a></td>
-      <td><span class="badge done">done</span></td>
-      <td>interactive SVG navigation graph (Phase J 新規) — 31 node × 6+1 category 色分け、click でファイル遷移、hover で hub 強調、5 hub file (README / experiment-index / tool-architecture / rebuild-plan / registry-schema) 中心の link 集約 view</td>
+      <td><a href="../archive/research/dig-report-ssot-2026-05-13.html"><code>archive/research/dig-report-ssot-2026-05-13.html</code></a></td>
+      <td><span class="badge archive">archive</span></td>
+      <td>第 5 弾 dig 独立 artifact (registry.yaml 統合 SSoT 設計、調査完了)</td>
+    </tr>
+    <tr>
+      <td><a href="../archive/research/dig-report-tools-2026-05-13.html"><code>archive/research/dig-report-tools-2026-05-13.html</code></a></td>
+      <td><span class="badge archive">archive</span></td>
+      <td>第 4 弾 dig 独立 artifact (tool-* 3 件構成 finalization)</td>
+    </tr>
+    <tr>
+      <td><code>archive/decisions/ADR-0006〜0011a/0011b.md</code></td>
+      <td><span class="badge archive">archive</span></td>
+      <td>旧 ADR 7 件 (fate 議論済、<a href="../migration/adr-fate-table.html">adr-fate-table.html</a> 参照)</td>
+    </tr>
+    <tr>
+      <td><code>archive/contexts/ + archive/domain/ + archive/migrations/ + archive/vision.md</code></td>
+      <td><span class="badge archive">archive</span></td>
+      <td>旧 TWiLL DDD 資産 (context-map / glossary / model / twill-integration / tier-2-caller migration / vision)</td>
     </tr>
   </tbody>
 </table>
 
-<h2>読む順序</h2>
+<h2 id="decisions" class="dir-section">decisions/ — 新 architecture ADR</h2>
 
-<p><strong>📊 全体俯瞰</strong>: <a href="architecture-graph.html"><code>architecture-graph.html</code></a> — 31 file の category 区分と link 関係を一望、click で navigation。</p>
+<div class="dir-purpose"><strong>役割</strong>: 新 architecture decision record (MD 形式)。spec から参照される正典 decisions。tool-architect の編集対象外、ADR template 規約に従う。</div>
+
+<table>
+  <thead>
+    <tr><th style="width: 50%">file</th><th style="width: 12%">status</th><th>内容</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="../decisions/ADR-0012-administrator-rebrand.md"><code>ADR-0012-administrator-rebrand.md</code></a></td>
+      <td><span class="badge proposed">proposed</span></td>
+      <td>su-* → admin-* rebrand (su-observer → administrator / su-compact → admin-compact / 関連 script rename)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="reading-guide">読む順序 (persona 別、dir prefix 表示)</h2>
+
+<p><strong>📊 全体俯瞰</strong>: <a href="architecture-graph.html"><code>architecture-graph.html</code></a> — 5 cluster の dir 構造 + link 関係を一望、click navigation。</p>
 
 <h3>初めて読む人 (全体把握優先)</h3>
-
 <ol>
-  <li><a href="overview.html">overview.html</a> — 全体図 + Key Points + 新原則</li>
-  <li><a href="../research/failure-analysis.html">failure-analysis.html</a> — なぜ rebuild が必要か (失敗の証拠)</li>
-  <li><a href="crash-failure-mode.html">crash-failure-mode.html</a> — 設計の root reliability</li>
-  <li><a href="twl-mcp-integration.html">twl-mcp-integration.html</a> — 既存 MCP 資産との接続戦略</li>
+  <li><code>[spec/]</code> <a href="overview.html">overview.html</a> — 全体図 + Key Points + 新原則</li>
+  <li><code>[spec/]</code> <a href="failure-analysis.html">failure-analysis.html</a> — なぜ rebuild が必要か (失敗の証拠)</li>
+  <li><code>[spec/]</code> <a href="crash-failure-mode.html">crash-failure-mode.html</a> — 設計の root reliability</li>
+  <li><code>[spec/]</code> <a href="twl-mcp-integration.html">twl-mcp-integration.html</a> — 既存 MCP 資産との接続戦略</li>
 </ol>
 
 <h3>既存 plugin を知る人 (継承戦略確認)</h3>
-
 <ol>
-  <li><a href="../migration/adr-fate-table.html">adr-fate-table.html</a> — 既存 ADR 43 件の fate</li>
-  <li><a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> — 既存 invariant の継承 + 新規 5 件</li>
-  <li><a href="twl-mcp-integration.html">twl-mcp-integration.html</a> — MCP / audit / types.yaml の継承</li>
-  <li><a href="ssot-design.html">ssot-design.html</a> — chain SSoT 統一 (案 3 step.sh)</li>
-  <li><a href="../migration/deletion-inventory.html">deletion-inventory.html</a> — 何を消すか</li>
+  <li><code>[migration/]</code> <a href="../migration/adr-fate-table.html">adr-fate-table.html</a> — 既存 ADR 43 件の fate</li>
+  <li><code>[migration/]</code> <a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> — 既存 invariant の継承 + 新規 5 件</li>
+  <li><code>[spec/]</code> <a href="twl-mcp-integration.html">twl-mcp-integration.html</a> — MCP / audit / types.yaml の継承</li>
+  <li><code>[spec/]</code> <a href="ssot-design.html">ssot-design.html</a> — registry.yaml 統合 SSoT (案 4)</li>
+  <li><code>[migration/]</code> <a href="../migration/deletion-inventory.html">deletion-inventory.html</a> — 何を消すか</li>
 </ol>
 
 <h3>実装する人 (実装参照)</h3>
-
 <ol>
-  <li><a href="boundary-matrix.html">boundary-matrix.html</a> — 責務分担</li>
-  <li><a href="atomic-verification.html">atomic-verification.html</a> — step framework + post-verify 規約</li>
-  <li><a href="ssot-design.html">ssot-design.html</a> — step.sh 単一 SSoT 詳細</li>
-  <li><a href="spawn-protocol.html">spawn-protocol.html</a> — spawn / mailbox</li>
-  <li><a href="gate-hook.html">gate-hook.html</a> — gate 仕組み</li>
-  <li><a href="admin-cycle.html">admin-cycle.html</a> — admin polling</li>
-  <li><a href="../migration/rebuild-plan.html">rebuild-plan.html</a> — <code>Phase 1</code>-4 plan + <code>Phase 1 PoC</code> 手順</li>
+  <li><code>[spec/]</code> <a href="boundary-matrix.html">boundary-matrix.html</a> — 10 role 責務分担</li>
+  <li><code>[spec/]</code> <a href="atomic-verification.html">atomic-verification.html</a> — atomic 4-phase lifecycle + post-verify 規約</li>
+  <li><code>[spec/]</code> <a href="ssot-design.html">ssot-design.html</a> — registry.yaml 統合 SSoT 詳細</li>
+  <li><code>[spec/]</code> <a href="spawn-protocol.html">spawn-protocol.html</a> — spawn / mailbox 詳細</li>
+  <li><code>[spec/]</code> <a href="gate-hook.html">gate-hook.html</a> — PreToolUse gate 仕組み</li>
+  <li><code>[spec/]</code> <a href="monitor-policy.html">monitor-policy.html</a> — Monitor primitive 規定</li>
+  <li><code>[spec/]</code> <a href="hooks-mcp-policy.html">hooks-mcp-policy.html</a> — Hooks 14 type + MCP 8 pattern</li>
+  <li><code>[spec/]</code> <a href="admin-cycle.html">admin-cycle.html</a> — administrator polling cycle</li>
+  <li><code>[migration/]</code> <a href="../migration/rebuild-plan.html">rebuild-plan.html</a> — 4 phase plan + Phase 1 PoC 手順</li>
 </ol>
 
-<h2>進捗 status</h2>
+<h2 id="extensibility">拡張性 (新 file 追加 scenario)</h2>
 
-<p>spec dir 内 18 file (17 HTML + common.css) は全 content 化完了 (badge=done)。draft-v1.html (115 KB) は archive/ に移動済 (rollback 用)。詳細な変更履歴は <a href="changelog.html">changelog.html</a>、実装作業 log は <a href="../archive/changelog-impl.html">archive/changelog-impl.html</a> 参照。</p>
-
-<!-- 旧 status table / session 追加 listing / 累積 段落は archive/changelog-impl.html に履歴保存 -->
-
-<h2>関連 (本 spec の外)</h2>
+<p>新 file 追加時は <code>spec-management-rules.md</code> の R-10 decision tree で dir + sub-category が決定される。具体的な 3 scenario:</p>
 
 <ul>
-  <li><code>architecture/archive/decisions/</code> — 旧 ADR (7 件: ADR-0006〜0011a/0011b)、<a href="../migration/adr-fate-table.html">adr-fate-table.html</a> で fate 議論済</li>
-  <li><code>plugins/twl/refs/ref-invariants.md</code> — 既存 invariant SSoT (<a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> で audit、ref-invariants.md 自体の drift 課題あり)</li>
-  <li><code>cli/twl/src/twl/mcp_server/</code> — 既存 twl MCP server (本 spec <a href="twl-mcp-integration.html">twl-mcp-integration.html</a> で継承戦略決定)</li>
-  <li>doobidoo Memory MCP:  lesson 5+ 件保存済 (<code>hash 6ef844e9 / 74b7cdf7 / 7727b59f / 24e80e43 / e61dd3e3</code>)</li>
-  <li><code>architecture/decisions/</code> — 新 architecture ADR の配置先 (<a href="../decisions/ADR-0012-administrator-rebrand.md">ADR-0012 administrator rebrand (Proposed)</a> 起票済、以降の ADR は順次起票)</li>
+  <li><strong>新 ADR (例: ADR-0013)</strong>: <code>decisions/</code> 配下に MD 配置、README の <a href="#decisions">decisions/</a> section table に entry 追加</li>
+  <li><strong>新 spec file (例: phaser-lifecycle.html)</strong>: <code>spec/</code> 配下 (role 責務系なので core sub)、README の <a href="#spec-core">spec/core</a> table に entry + <a href="architecture-graph.html">graph</a> に node 追加 (R-1 + R-2)</li>
+  <li><strong>新 research file (例: dig-report-XXX-YYYY-MM-DD.html)</strong>: <code>research/</code> 配下、README の <a href="#research">research/</a> table に entry 追加</li>
 </ul>
 
-<h2>本 spec の SSoT 位置</h2>
+<h2 id="ssot">SSoT 位置</h2>
 
 <ul>
-  <li>本 spec directory = twill plugin radical rebuild の <strong>設計仕様 SSoT</strong></li>
-  <li>旧 <code>architecture/archive/decisions/</code> の ADR 7 件 (0006〜0011a/0011b) は <a href="../migration/adr-fate-table.html">adr-fate-table.html</a> で fate を議論済 (spec level)</li>
-  <li>旧 <code>plugins/twl/refs/ref-invariants.md</code> の invariant 19 件は <a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> で継承戦略を決定 + drift 訂正</li>
-  <li>旧 <code>cli/twl/src/twl/mcp_server/</code> の MCP server は <a href="twl-mcp-integration.html">twl-mcp-integration.html</a> で継承戦略決定 (削除/置換/継承 inventory)</li>
-  <li>旧 <code>cli/twl/src/twl/autopilot/chain.py</code> + <code>chain-steps.sh</code> + <code>deps.yaml.chains</code> 三重 SSoT は <a href="ssot-design.html">ssot-design.html</a> で 1 つに統一</li>
-  <li>新 architecture の正典 ADR は <code>architecture/decisions/</code> 配下に配置 (ADR-0012 以降、本 spec を supplement として link)</li>
+  <li>本 spec directory (<code>architecture/spec/</code>) = twill plugin の <strong>設計仕様 SSoT</strong></li>
+  <li>旧 ADR (<code>architecture/archive/decisions/ADR-0006〜0011a/0011b</code> 計 7 件) は <a href="../migration/adr-fate-table.html">adr-fate-table.html</a> で fate を議論済 (spec level)</li>
+  <li>旧 invariant (<code>plugins/twl/refs/ref-invariants.md</code>、19 件) は <a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> で継承戦略を決定 + drift 訂正</li>
+  <li>旧 twl MCP server (<code>cli/twl/src/twl/mcp_server/</code>) は <a href="twl-mcp-integration.html">twl-mcp-integration.html</a> で継承戦略決定</li>
+  <li>旧 chain SSoT 三重化 (<code>chain.py</code> + <code>chain-steps.sh</code> + <code>deps.yaml.chains</code>) は <a href="ssot-design.html">ssot-design.html</a> で <strong>案 4 registry.yaml 統合 SSoT</strong> に統一</li>
+  <li>新 architecture の正典 ADR は <code>architecture/decisions/</code> 配下 (ADR-0012〜、本 spec を supplement として link)</li>
 </ul>
+
+<h2 id="management-rules">spec 管理規律</h2>
+
+<p>本 spec の管理は <code>plugins/twl/skills/tool-architect/SKILL.md</code> と <code>plugins/twl/skills/tool-architect/refs/spec-management-rules.md</code> で規定された R-1〜R-9 (+ R-10 decision tree) に従う。CI gate (<code>.github/workflows/spec-link-check.yml</code>) で broken link 0 + orphan 0 を強制。</p>
 
 </body>
 </html>

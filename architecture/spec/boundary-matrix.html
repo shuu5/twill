@@ -12,8 +12,8 @@
 <body>
 
 <header class="doc-header">
-  <h1>boundary-matrix — 10 role 責務 boundary (第 5 弾 dig 反映)</h1>
-  <div class="meta">draft-v3 (2026-05-13、第 5 弾 dig 反映) &middot; 第 4 弾 dig (tool-* 3 件) + 第 5 弾 dig (pilot→phaser、worker→workflow/atomic/specialist 分割、step.sh→atomic SKILL.md inline)</div>
+  <h1>boundary-matrix — 10 role 責務 boundary (過去 dig (2026-05-13) 反映)</h1>
+  <div class="meta">draft-v3 (2026-05-13、過去 dig (2026-05-13) 反映) &middot; 過去 dig (2026-05-13) (tool-* 3 件) + 過去 dig (2026-05-13) (pilot→phaser、worker→workflow/atomic/specialist 分割、step.sh→atomic SKILL.md inline)</div>
 </header>
 
 <div class="info">本 file は <a href="registry-schema.html#s3">registry-schema.html §3 (10 role × concern matrix)</a> の参照下にある。10 role の責務 boundary を行列形式で明示し、各 role が何を行う / 行わない / 委譲する かを clean table で定義。</div>
@@ -139,7 +139,7 @@
   <dt>gate hook</dt><dd><strong>PreToolUse gate 対象</strong> (Inv W)。gate hook handler (旧 phase-gate.sh) (tier 1) + twl_phase_gate_check (tier 2) が <code>phaser</code> invocation 時に発火、前提 status 不一致なら deny + administrator notify</dd>
   <dt>audit 出力</dt><dd><code>.audit/&lt;run-id&gt;/phaser/&lt;name&gt;/</code> 配下に phaser lifecycle 全 event 記録</dd>
   <dt>送信 mail event</dt><dd><code>phase-started</code> / <code>phase-progress</code> / <code>phase-completed</code> / <code>phase-failed</code> / <code>merge-gate-failed</code></dd>
-  <dt>review framework</dt><dd>atomic 出力検証 (post-verify 結果確認、src diff、test count 増加確認)。Inv K (phaser 実装禁止、第 5 弾 dig で phaser に rename) で src diff = phaser のみは FAIL</dd>
+  <dt>review framework</dt><dd>atomic 出力検証 (post-verify 結果確認、src diff、test count 増加確認)。Inv K (phaser 実装禁止、過去 dig (2026-05-13) で phaser に rename) で src diff = phaser のみは FAIL</dd>
   <dt>merge gate</dt><dd><code>phaser-pr</code> のみが PR merge を実行 (Inv C 保全)。他 phaser は merge 禁止</dd>
   <dt>内部 spawn</dt><dd><code>Agent(specialist-*)</code> は可 (公式 verified、subagent context)、subagent からの更なる spawn は禁止</dd>
   <dt>Monitor primitive</dt><dd>atomic spawn 後の <code>.mailbox/&lt;own-phaser-name&gt;/inbox.jsonl</code> tail で進捗監視可 (<a href="monitor-policy.html">monitor-policy.html</a> §2)。<strong>制約</strong>: administrator と同 channel を tail しない (token 二重消費回避)、channel 分離 (admin = phaser 集約 mail / phaser = atomic mail)、phaser invocation 終了時に Monitor task stop</dd>
@@ -162,12 +162,12 @@
   <dt>Monitor primitive</dt><dd><strong>使用不可</strong> (<a href="monitor-policy.html">monitor-policy.html</a> §2)。run-to-completion 型のため Monitor 不要、<code>Skill</code> / <code>Agent</code> の return value または mail emit (atomic のみ) で十分</dd>
 </dl>
 
-<h3>tool-* (3 件、独立) の責務 (第 4 弾 dig)</h3>
+<h3>tool-* (3 件、独立) の責務 (過去 dig (2026-05-13))</h3>
 
-<p>詳細は <a href="tool-architecture.html">tool-architecture.html</a> §2-§5 + <a href="../research/dig-report-tools-2026-05-13.html">dig-report-tools-2026-05-13.md</a> §1-§3 参照。要約:</p>
+<p>詳細は <a href="tool-architecture.html">tool-architecture.html</a> §2-§5 + <a href="../archive/research/dig-report-tools-2026-05-13.html">dig-report-tools-2026-05-13.md</a> §1-§3 参照。要約:</p>
 
 <dl class="inv-row" style="display: grid; grid-template-columns: 160px 1fr; gap: 6px 14px; margin: 12px 0;">
-  <dt>3 tool 構成</dt><dd><code>tool-architect</code> (HTML spec 維持 + 軽量 PR cycle) / <code>tool-project</code> (GitHub Project + template + verify の 3 軽 scope) / <code>tool-sandbox-runner</code> (sandbox × feature matrix + Idea Issue 起票)。<strong>第 4 弾 dig で tool-utility 廃止</strong> (commands は他 3 tool + administrator inline に再分配)</dd>
+  <dt>3 tool 構成</dt><dd><code>tool-architect</code> (HTML spec 維持 + 軽量 PR cycle) / <code>tool-project</code> (GitHub Project + template + verify の 3 軽 scope) / <code>tool-sandbox-runner</code> (sandbox × feature matrix + Idea Issue 起票)。<strong>過去 dig (2026-05-13) で tool-utility 廃止</strong> (commands は他 3 tool + administrator inline に再分配)</dd>
   <dt>spawn 元</dt><dd>user 明示 (slash command <code>/twl:tool-architect &lt;args&gt;</code>) または administrator (tool-architect / tool-sandbox-runner のみ、ADR-040 gate 通過後)</dd>
   <dt>spawn 先</dt><dd>spawn 禁止 (内部 <code>Agent(specialist-*)</code> は可、1 階層)</dd>
   <dt>status 遷移</dt><dd>無関係 (MUST NOT 触れる)</dd>
@@ -207,8 +207,8 @@
   <li><a href="glossary.html">glossary.html</a> §2 (10 role 体系) + §11 (用語廃止リスト)</li>
   <li><a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> (各 entity の不変条件、Inv U は "Atomic skill verification" に rename)</li>
   <li><a href="tool-architecture.html">tool-architecture.html</a> (tool-* <strong>3 件</strong>の詳細)</li>
-  <li><a href="../research/dig-report-tools-2026-05-13.html">dig-report-tools-2026-05-13.md</a> (第 4 弾 dig 独立 artifact、3 tool 構成 + 自律 verify + sandbox catalog の根拠)</li>
-  <li><a href="../research/dig-report-ssot-2026-05-13.html">dig-report-ssot-2026-05-13.md</a> (第 5 弾 dig 独立 artifact、10 role + registry.yaml + vocabulary 6 field schema)</li>
+  <li><a href="../archive/research/dig-report-tools-2026-05-13.html">dig-report-tools-2026-05-13.md</a> (過去 dig (2026-05-13) 独立 artifact、3 tool 構成 + 自律 verify + sandbox catalog の根拠)</li>
+  <li><a href="../archive/research/dig-report-ssot-2026-05-13.html">dig-report-ssot-2026-05-13.md</a> (過去 dig (2026-05-13) 独立 artifact、10 role + registry.yaml + vocabulary 6 field schema)</li>
   <li><a href="admin-cycle.html">admin-cycle.html</a> (administrator polling cycle)</li>
   <li><a href="atomic-verification.html">atomic-verification.html</a> (atomic SKILL.md 4-phase lifecycle、旧 step-verification.html から rename)</li>
   <li><a href="hooks-mcp-policy.html">hooks-mcp-policy.html</a> (Hooks 全体規定 + MCP 組み合わせ + 未活用機能 defer、Phase I 2026-05-15 確定)</li>

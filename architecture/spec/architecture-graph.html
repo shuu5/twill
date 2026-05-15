@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>twill plugin rebuild — architecture-graph (Phase J navigation hub)</title>
+<title>twill plugin rebuild — architecture-graph (navigation hub)</title>
 <link rel="stylesheet" href="common.css">
 <style>
   header.doc-header { border-bottom: 3px solid var(--brand); }
@@ -17,7 +17,7 @@
   }
   svg.graph-svg {
     width: 100%;
-    max-width: 1400px;
+    max-width: 1000px;
     height: auto;
     display: block;
     margin: 0 auto;
@@ -45,17 +45,20 @@
     stroke: var(--gray-400);
     stroke-width: 1;
     fill: none;
-    opacity: 0.45;
+    opacity: 0.4;
   }
-  svg.graph-svg .edge.hub {
+  svg.graph-svg .edge.cross-dir {
     stroke: var(--brand);
     stroke-width: 1.5;
     opacity: 0.7;
   }
-  svg.graph-svg .col-header {
-    font-size: 13px;
+  svg.graph-svg .cluster-bg {
+    opacity: 0.08;
+    stroke-width: 1.5;
+  }
+  svg.graph-svg .cluster-label {
+    font-size: 12px;
     font-weight: 700;
-    fill: var(--gray-700);
     text-anchor: middle;
   }
   svg.graph-svg .legend rect {
@@ -66,397 +69,420 @@
     font-size: 11px;
     fill: var(--gray-900);
   }
-  /* category fill colors (palette: common.css の semantic color から派生) */
-  .cat-a { fill: #d6c8e0; } /* 紫 (A 全体把握) */
-  .cat-b { fill: #c8d6e8; } /* 青 (B 既存資産継承) */
-  .cat-c { fill: #c8e0c8; } /* 緑 (C 新 architecture) */
-  .cat-d { fill: #e8e0c8; } /* 黄 (D 既存接続) */
-  .cat-e { fill: #e8d0b8; } /* 橙 (E 削除移行) */
-  .cat-f { fill: #b8c0c8; } /* 青灰 (F 補助、cat-g との明度差 widening) */
-  .cat-g { fill: #f4a8c0; } /* 桃 (G Phase I/J extension、色覚多様性対応で彩度強化) */
+  /* 5 dir base color + spec/ 4 sub-intensity */
+  .cat-spec-ori { fill: #aedfd9; }     /* brand-light、orientation */
+  .cat-spec-core { fill: #5ac8b8; }    /* brand、core */
+  .cat-spec-pol { fill: #8edcd0; }     /* brand-medium、policy */
+  .cat-spec-aux { fill: #d4f0ed; }     /* brand-lightest、auxiliary */
+  .cat-mig { fill: #a8c0e0; }          /* blue、migration */
+  .cat-res { fill: #d8c888; }          /* yellow、research */
+  .cat-arc { fill: #b0b8c0; }          /* gray、archive */
+  .cat-dec { fill: #c8a888; }          /* gold、decisions */
 </style>
 </head>
 <body>
 
 <header class="doc-header">
   <h1>twill plugin rebuild — architecture-graph (interactive navigation hub)</h1>
-  <div class="meta">Phase J (2026-05-15) &middot; 31 node / 6+1 category &middot; click node → file 遷移、hover で circle 強調</div>
+  <div class="meta">31 node / 5 dir cluster (spec / migration / research / archive / decisions) &middot; click node → file 遷移、hover で circle 強調</div>
 </header>
 
 <nav style="margin: 1em 0;"><a href="README.html">← README に戻る</a></nav>
 
 <div class="info">
-  <strong>目的</strong>: 31 spec file (HTML 28 + MD 2 + 本 file) の category 区分と link 関係を視覚化、navigation hub として機能。<br>
-  <strong>カテゴリ</strong>: 6 base + 1 extension = 7 column (A 全体把握 → G Phase I/J extension)<br>
-  <strong>使い方</strong>: 各 node を click すると対応 spec file へ遷移、edge は category 間の代表 link 関係 (hub: README / experiment-index / tool-architecture / rebuild-plan / registry-schema)。
+  <strong>目的</strong>: 全 architecture file (HTML 29 + MD 1 + 本 file = 31) の dir 構造 + link 関係を視覚化、navigation hub。<br>
+  <strong>クラスタ</strong>: 5 dir (spec/ + migration/ + research/ + archive/ + decisions/)、spec/ は 4 sub-category (orientation / core / policy / auxiliary)<br>
+  <strong>使い方</strong>: 各 node を click すると対応 file へ遷移、cross-dir edge (brand 色) は dir 間の代表 link 関係を示す。
 </div>
 
 <div class="graph-container">
-<svg class="graph-svg" viewBox="0 0 1400 1020" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" aria-labelledby="graph-svg-title graph-svg-desc">
+<svg class="graph-svg" viewBox="0 0 940 880" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" aria-labelledby="graph-svg-title graph-svg-desc">
   <title id="graph-svg-title">twill plugin rebuild architecture graph</title>
-  <desc id="graph-svg-desc">31 spec file を 7 category (A 全体把握 / B 既存資産継承 / C 新 architecture / D 既存接続 / E 削除移行 / F 補助 / G Phase I/J extension) に分類した interactive navigation。各 node を click で対応 spec file へ遷移、hover で circle 強調 + tooltip 表示。</desc>
+  <desc id="graph-svg-desc">31 file を 5 dir cluster (spec / migration / research / archive / decisions) に分類した interactive navigation。spec/ は orientation / core / policy / auxiliary の 4 sub-category。各 node を click で対応 file へ遷移、cross-dir edge は dir 間連携を示す。</desc>
 
-  <!-- column headers -->
-  <text class="col-header" x="100" y="40">A 全体把握</text>
-  <text class="col-header" x="280" y="40">B 既存資産継承</text>
-  <text class="col-header" x="460" y="40">C 新 architecture</text>
-  <text class="col-header" x="700" y="40">D 既存接続</text>
-  <text class="col-header" x="880" y="40">E 削除移行</text>
-  <text class="col-header" x="1100" y="40">F 補助</text>
-  <text class="col-header" x="1300" y="40">G Phase I/J</text>
+  <!-- ===== cluster background rect ===== -->
+  <!-- spec/ cluster (orientation/core/policy/auxiliary を含む) -->
+  <rect class="cluster-bg" x="40" y="60" width="240" height="820" rx="12"
+        fill="#5ac8b8" stroke="#5ac8b8" />
+  <text class="cluster-label" x="160" y="55" fill="#3d9e8f">spec/</text>
 
-  <!-- ===== A 全体把握 (紫、3 node) ===== -->
-  <a xlink:href="README.html"><title>README.html — entry point (本 file 含む 31 ファイルの index)</title>
+  <!-- migration/ cluster -->
+  <rect class="cluster-bg" x="310" y="60" width="100" height="600" rx="12"
+        fill="#7a9cbf" stroke="#7a9cbf" />
+  <text class="cluster-label" x="360" y="55" fill="#5878a0">migration/</text>
+
+  <!-- research/ cluster -->
+  <rect class="cluster-bg" x="440" y="60" width="100" height="260" rx="12"
+        fill="#c0a040" stroke="#c0a040" />
+  <text class="cluster-label" x="490" y="55" fill="#806820">research/</text>
+
+  <!-- archive/ cluster -->
+  <rect class="cluster-bg" x="570" y="60" width="100" height="180" rx="12"
+        fill="#7e8690" stroke="#7e8690" />
+  <text class="cluster-label" x="620" y="55" fill="#5e666e">archive/</text>
+
+  <!-- decisions/ cluster -->
+  <rect class="cluster-bg" x="700" y="60" width="100" height="100" rx="12"
+        fill="#c08a40" stroke="#c08a40" />
+  <text class="cluster-label" x="750" y="55" fill="#806020">decisions/</text>
+
+  <!-- ===== spec/ orientation sub-column (cx=90、3 node、cy=100/180/260) ===== -->
+  <a xlink:href="README.html"><title>README.html — spec index (本 file)</title>
     <g class="node">
-      <circle class="cat-a" cx="100" cy="100" r="26" />
-      <text x="100" y="103">README</text>
+      <circle class="cat-spec-ori" cx="90" cy="100" r="22" />
+      <text x="90" y="103">README</text>
     </g>
   </a>
-  <a xlink:href="overview.html"><title>overview.html — 10 role pyramid + 新原則 10 条</title>
+  <a xlink:href="overview.html"><title>overview.html — 全体図 (10 role pyramid) + 新原則 10 条</title>
     <g class="node">
-      <circle class="cat-a" cx="100" cy="180" r="22" />
-      <text x="100" y="183">overview</text>
+      <circle class="cat-spec-ori" cx="90" cy="180" r="22" />
+      <text x="90" y="183">overview</text>
     </g>
   </a>
-  <a xlink:href="../research/failure-analysis.html"><title>failure-analysis.html — 9 P0 bug + F-1/F-2/F-3 + MUST 15</title>
+  <a xlink:href="failure-analysis.html"><title>failure-analysis.html — 9 件 P0 bug + 横断要因 + MUST 15 件 (なぜ rebuild か)</title>
     <g class="node">
-      <circle class="cat-a" cx="100" cy="260" r="22" />
-      <text x="100" y="263">failure-anls</text>
+      <circle class="cat-spec-ori" cx="90" cy="260" r="22" />
+      <text x="90" y="263">failure-anls</text>
     </g>
   </a>
 
-  <!-- ===== B 既存資産継承 (青、3 node) ===== -->
+  <!-- ===== spec/ policy sub-column (cx=90、2 node、cy=340/420) ===== -->
+  <a xlink:href="twl-mcp-integration.html"><title>twl-mcp-integration.html — twl MCP server (30+ tool) 継承戦略</title>
+    <g class="node">
+      <circle class="cat-spec-pol" cx="90" cy="340" r="22" />
+      <text x="90" y="343">twl-mcp</text>
+    </g>
+  </a>
+  <a xlink:href="ssot-design.html"><title>ssot-design.html — registry.yaml 統合 SSoT (案 4 確定)</title>
+    <g class="node">
+      <circle class="cat-spec-pol" cx="90" cy="420" r="22" />
+      <text x="90" y="423">ssot-design</text>
+    </g>
+  </a>
+
+  <!-- ===== spec/ auxiliary sub-column (cx=90、4 node、cy=500/580/660/740) ===== -->
+  <a xlink:href="glossary.html"><title>glossary.html — 用語集 (10 role + vocabulary 6 field)</title>
+    <g class="node">
+      <circle class="cat-spec-aux" cx="90" cy="500" r="22" />
+      <text x="90" y="503">glossary</text>
+    </g>
+  </a>
+  <a xlink:href="changelog.html"><title>changelog.html — spec 変更履歴 (実装作業 log は archive/changelog-impl.html)</title>
+    <g class="node">
+      <circle class="cat-spec-aux" cx="90" cy="580" r="22" />
+      <text x="90" y="583">changelog</text>
+    </g>
+  </a>
+  <a xlink:href="architecture-graph.html"><title>architecture-graph.html — 本 file (navigation hub)</title>
+    <g class="node">
+      <circle class="cat-spec-aux" cx="90" cy="660" r="22" />
+      <text x="90" y="663">graph (本)</text>
+    </g>
+  </a>
+  <!-- common.css は file ではあるが SVG node としては配置せず (legend で説明) -->
+
+  <!-- ===== spec/ core sub-column (cx=210、10 node、cy=100-820) ===== -->
+  <a xlink:href="boundary-matrix.html"><title>boundary-matrix.html — 10 role 責務 boundary 行列</title>
+    <g class="node">
+      <circle class="cat-spec-core" cx="210" cy="100" r="22" />
+      <text x="210" y="103">boundary</text>
+    </g>
+  </a>
+  <a xlink:href="crash-failure-mode.html"><title>crash-failure-mode.html — specialist/phaser/administrator crash + recovery + SLA</title>
+    <g class="node">
+      <circle class="cat-spec-core" cx="210" cy="180" r="22" />
+      <text x="210" y="183">crash</text>
+    </g>
+  </a>
+  <a xlink:href="atomic-verification.html"><title>atomic-verification.html — atomic skill 4-phase lifecycle + post-verify 規約</title>
+    <g class="node">
+      <circle class="cat-spec-core" cx="210" cy="260" r="22" />
+      <text x="210" y="263">atomic</text>
+    </g>
+  </a>
+  <a xlink:href="spawn-protocol.html"><title>spawn-protocol.html — 3 階層 spawn (admin → phaser → workflow/atomic/specialist) + mailbox</title>
+    <g class="node">
+      <circle class="cat-spec-core" cx="210" cy="340" r="22" />
+      <text x="210" y="343">spawn</text>
+    </g>
+  </a>
+  <a xlink:href="gate-hook.html"><title>gate-hook.html — PreToolUse gate + tier 1+2 階層防御</title>
+    <g class="node">
+      <circle class="cat-spec-core" cx="210" cy="420" r="22" />
+      <text x="210" y="423">gate-hook</text>
+    </g>
+  </a>
+  <a xlink:href="admin-cycle.html"><title>admin-cycle.html — administrator polling 6-step + Inv I-1〜I-7 + knowledge externalization</title>
+    <g class="node">
+      <circle class="cat-spec-core" cx="210" cy="500" r="22" />
+      <text x="210" y="503">admin-cycle</text>
+    </g>
+  </a>
+  <a xlink:href="tool-architecture.html"><title>tool-architecture.html — tool-* 3 件 (architect / project / sandbox-runner) hub</title>
+    <g class="node">
+      <circle class="cat-spec-core" cx="210" cy="580" r="26" />
+      <text x="210" y="583">tool-arch</text>
+    </g>
+  </a>
+  <a xlink:href="registry-schema.html"><title>registry-schema.html — registry.yaml 9 section schema + 10 role × concern matrix (Authority SSoT)</title>
+    <g class="node">
+      <circle class="cat-spec-core" cx="210" cy="660" r="26" />
+      <text x="210" y="663">registry</text>
+    </g>
+  </a>
+  <a xlink:href="monitor-policy.html"><title>monitor-policy.html — Monitor primitive 規定 + Inv M-1〜M-4</title>
+    <g class="node">
+      <circle class="cat-spec-core" cx="210" cy="740" r="22" />
+      <text x="210" y="743">monitor</text>
+    </g>
+  </a>
+  <a xlink:href="hooks-mcp-policy.html"><title>hooks-mcp-policy.html — Hooks 14 type + MCP 8 pattern + Inv H-1〜H-3</title>
+    <g class="node">
+      <circle class="cat-spec-core" cx="210" cy="820" r="22" />
+      <text x="210" y="823">hooks-mcp</text>
+    </g>
+  </a>
+
+  <!-- ===== migration/ cluster (cx=360、7 node、cy=100-580) ===== -->
+  <!-- fate audit (3 node) -->
   <a xlink:href="../migration/adr-fate-table.html"><title>adr-fate-table.html — ADR 43 件 fate audit</title>
     <g class="node">
-      <circle class="cat-b" cx="280" cy="100" r="22" />
-      <text x="280" y="103">adr-fate</text>
+      <circle class="cat-mig" cx="360" cy="100" r="22" />
+      <text x="360" y="103">adr-fate</text>
     </g>
   </a>
-  <a xlink:href="../migration/invariant-fate-table.html"><title>invariant-fate-table.html — Inv A-X 24 件継承戦略</title>
+  <a xlink:href="../migration/invariant-fate-table.html"><title>invariant-fate-table.html — 不変条件 A-X 24 件 継承戦略</title>
     <g class="node">
-      <circle class="cat-b" cx="280" cy="180" r="22" />
-      <text x="280" y="183">inv-fate</text>
+      <circle class="cat-mig" cx="360" cy="180" r="22" />
+      <text x="360" y="183">inv-fate</text>
     </g>
   </a>
-  <a xlink:href="../migration/pitfalls-inheritance.html"><title>pitfalls-inheritance.html — 既存 pitfalls 継承 + 構造的不能化</title>
+  <a xlink:href="../migration/pitfalls-inheritance.html"><title>pitfalls-inheritance.html — pitfalls-catalog 継承戦略 + 構造的不能化 mapping</title>
     <g class="node">
-      <circle class="cat-b" cx="280" cy="260" r="22" />
-      <text x="280" y="263">pitfalls</text>
+      <circle class="cat-mig" cx="360" cy="260" r="22" />
+      <text x="360" y="263">pitfalls</text>
+    </g>
+  </a>
+  <!-- 実行計画 (4 node) -->
+  <a xlink:href="../migration/deletion-inventory.html"><title>deletion-inventory.html — 削除対象 60+ 件 + 新規 helper 5 本</title>
+    <g class="node">
+      <circle class="cat-mig" cx="360" cy="340" r="22" />
+      <text x="360" y="343">deletion</text>
+    </g>
+  </a>
+  <a xlink:href="../migration/rebuild-plan.html"><title>rebuild-plan.html — 4 phase plan + Phase 1 PoC + 8 verify points (hub)</title>
+    <g class="node">
+      <circle class="cat-mig" cx="360" cy="420" r="26" />
+      <text x="360" y="423">rebuild</text>
+    </g>
+  </a>
+  <a xlink:href="../migration/regression-test-strategy.html"><title>regression-test-strategy.html — 既存 bats 90+ 継承 + 新 test 計画</title>
+    <g class="node">
+      <circle class="cat-mig" cx="360" cy="500" r="22" />
+      <text x="360" y="503">regression</text>
+    </g>
+  </a>
+  <a xlink:href="../migration/dual-stack-routing.html"><title>dual-stack-routing.html — su-observer 旧 vs administrator 新 共存ルール</title>
+    <g class="node">
+      <circle class="cat-mig" cx="360" cy="580" r="22" />
+      <text x="360" y="583">dual-stack</text>
     </g>
   </a>
 
-  <!-- ===== C 新 architecture (緑、8 node) ===== -->
-  <a xlink:href="boundary-matrix.html"><title>boundary-matrix.html — 10 role 責務 boundary</title>
+  <!-- ===== research/ cluster (cx=490、3 node、cy=100-260) ===== -->
+  <a xlink:href="../research/research-findings.html"><title>research-findings.html — 公式 docs 計 13 件 verified + research session bce9c4e4</title>
     <g class="node">
-      <circle class="cat-c" cx="460" cy="100" r="22" />
-      <text x="460" y="103">boundary</text>
+      <circle class="cat-res" cx="490" cy="100" r="22" />
+      <text x="490" y="103">research</text>
     </g>
   </a>
-  <a xlink:href="crash-failure-mode.html"><title>crash-failure-mode.html — 3 階層 crash 検知 + SLA</title>
+  <a xlink:href="../research/sandbox-experiment.html"><title>sandbox-experiment.html — sandbox architecture + 4-state verification status + EXP-id 体系</title>
     <g class="node">
-      <circle class="cat-c" cx="460" cy="180" r="22" />
-      <text x="460" y="183">crash-fmode</text>
+      <circle class="cat-res" cx="490" cy="180" r="22" />
+      <text x="490" y="183">sandbox</text>
     </g>
   </a>
-  <a xlink:href="atomic-verification.html"><title>atomic-verification.html — atomic skill 4-phase lifecycle</title>
+  <a xlink:href="../research/experiment-index.html"><title>experiment-index.html — 全 EXP-001〜042 一覧 + status (hub)</title>
     <g class="node">
-      <circle class="cat-c" cx="460" cy="260" r="22" />
-      <text x="460" y="263">atomic-verif</text>
-    </g>
-  </a>
-  <a xlink:href="spawn-protocol.html"><title>spawn-protocol.html — 3 階層 spawn + mailbox</title>
-    <g class="node">
-      <circle class="cat-c" cx="460" cy="340" r="22" />
-      <text x="460" y="343">spawn-proto</text>
-    </g>
-  </a>
-  <a xlink:href="gate-hook.html"><title>gate-hook.html — PreToolUse gate + hook tier 1/2</title>
-    <g class="node">
-      <circle class="cat-c" cx="460" cy="420" r="22" />
-      <text x="460" y="423">gate-hook</text>
-    </g>
-  </a>
-  <a xlink:href="admin-cycle.html"><title>admin-cycle.html — administrator polling cycle 6-step</title>
-    <g class="node">
-      <circle class="cat-c" cx="460" cy="500" r="22" />
-      <text x="460" y="503">admin-cycle</text>
-    </g>
-  </a>
-  <a xlink:href="tool-architecture.html"><title>tool-architecture.html — tool-* 3 件 (architect/project/sandbox-runner)、~52 inbound link hub</title>
-    <g class="node">
-      <circle class="cat-c" cx="460" cy="580" r="26" />
-      <text x="460" y="583">tool-arch</text>
-    </g>
-  </a>
-  <a xlink:href="registry-schema.html"><title>registry-schema.html — registry.yaml 9 section + 10 role × concern matrix + vocabulary schema</title>
-    <g class="node">
-      <circle class="cat-c" cx="460" cy="660" r="22" />
-      <text x="460" y="663">registry</text>
+      <circle class="cat-res" cx="490" cy="260" r="26" />
+      <text x="490" y="263">exp-index</text>
     </g>
   </a>
 
-  <!-- ===== D 既存接続 (黄、2 node) ===== -->
-  <a xlink:href="twl-mcp-integration.html"><title>twl-mcp-integration.html — twl MCP server 30+ tool 継承戦略</title>
+  <!-- ===== archive/ cluster (cx=620、2 node、cy=100-180) ===== -->
+  <a xlink:href="../archive/draft-v1.html"><title>draft-v1.html — spec 原案 v1 (115 KB、rollback 用)</title>
     <g class="node">
-      <circle class="cat-d" cx="700" cy="100" r="22" />
-      <text x="700" y="103">twl-mcp</text>
+      <circle class="cat-arc" cx="620" cy="100" r="20" />
+      <text x="620" y="103">draft-v1</text>
     </g>
   </a>
-  <a xlink:href="ssot-design.html"><title>ssot-design.html — chain SSoT 統一 (案 3 step.sh)</title>
+  <a xlink:href="../archive/changelog-impl.html"><title>changelog-impl.html — 実装作業 log (Phase F-J / Phase 1 PoC Cluster N 等)</title>
     <g class="node">
-      <circle class="cat-d" cx="700" cy="180" r="22" />
-      <text x="700" y="183">ssot</text>
-    </g>
-  </a>
-
-  <!-- ===== E 削除移行 (橙、4 node) ===== -->
-  <a xlink:href="../migration/deletion-inventory.html"><title>deletion-inventory.html — 削除対象 60+ 件 + 新規 helper</title>
-    <g class="node">
-      <circle class="cat-e" cx="880" cy="100" r="22" />
-      <text x="880" y="103">deletion</text>
-    </g>
-  </a>
-  <a xlink:href="../migration/rebuild-plan.html"><title>rebuild-plan.html — Phase 1-4 plan + verify points、~39 inbound link hub</title>
-    <g class="node">
-      <circle class="cat-e" cx="880" cy="180" r="26" />
-      <text x="880" y="183">rebuild-plan</text>
-    </g>
-  </a>
-  <a xlink:href="../migration/regression-test-strategy.html"><title>regression-test-strategy.html — bats 90+ 継承 + 新 test</title>
-    <g class="node">
-      <circle class="cat-e" cx="880" cy="260" r="22" />
-      <text x="880" y="263">regression</text>
-    </g>
-  </a>
-  <a xlink:href="../migration/dual-stack-routing.html"><title>dual-stack-routing.html — su-observer 旧 vs administrator 新 共存</title>
-    <g class="node">
-      <circle class="cat-e" cx="880" cy="340" r="22" />
-      <text x="880" y="343">dual-stack</text>
+      <circle class="cat-arc" cx="620" cy="180" r="20" />
+      <text x="620" y="183">chglog-impl</text>
     </g>
   </a>
 
-  <!-- ===== F 補助 (灰、8 node) ===== -->
-  <a xlink:href="glossary.html"><title>glossary.html — 10 role + vocabulary 6 field + 用語廃止</title>
+  <!-- ===== decisions/ cluster (cx=750、1 node、cy=100) ===== -->
+  <a xlink:href="../decisions/ADR-0012-administrator-rebrand.md"><title>ADR-0012-administrator-rebrand.md — su-* → admin-* rebrand (Proposed)</title>
     <g class="node">
-      <circle class="cat-f" cx="1100" cy="100" r="22" />
-      <text x="1100" y="103">glossary</text>
-    </g>
-  </a>
-  <a xlink:href="changelog.html"><title>changelog.html — spec 変更履歴 (Phase F-J entry)</title>
-    <g class="node">
-      <circle class="cat-f" cx="1100" cy="180" r="22" />
-      <text x="1100" y="183">changelog</text>
-    </g>
-  </a>
-  <a xlink:href="../research/research-findings.html"><title>research-findings.html — research session + WebFetch verified</title>
-    <g class="node">
-      <circle class="cat-f" cx="1100" cy="260" r="22" />
-      <text x="1100" y="263">research</text>
-    </g>
-  </a>
-  <a xlink:href="../research/sandbox-experiment.html"><title>sandbox-experiment.html — 4-state verification + EXP-id 体系</title>
-    <g class="node">
-      <circle class="cat-f" cx="1100" cy="340" r="22" />
-      <text x="1100" y="343">sandbox</text>
-    </g>
-  </a>
-  <a xlink:href="../research/experiment-index.html"><title>experiment-index.html — EXP-001〜042 一覧、~57 inbound link hub</title>
-    <g class="node">
-      <circle class="cat-f" cx="1100" cy="420" r="26" />
-      <text x="1100" y="423">exp-index</text>
-    </g>
-  </a>
-  <a xlink:href="../research/dig-report-ssot-2026-05-13.html"><title>dig-report-ssot-2026-05-13.html — 第 5 弾 dig artifact (SSoT)</title>
-    <g class="node">
-      <circle class="cat-f" cx="1100" cy="500" r="20" />
-      <text x="1100" y="503">dig-ssot</text>
-    </g>
-  </a>
-  <a xlink:href="../research/dig-report-tools-2026-05-13.html"><title>dig-report-tools-2026-05-13.html — 第 4 弾 dig artifact (tools)</title>
-    <g class="node">
-      <circle class="cat-f" cx="1100" cy="580" r="20" />
-      <text x="1100" y="583">dig-tools</text>
-    </g>
-  </a>
-  <a xlink:href="../archive/draft-v1.html"><title>draft-v1.html — archive (rollback 用、115 KB)</title>
-    <g class="node">
-      <circle class="cat-f" cx="1100" cy="660" r="20" />
-      <text x="1100" y="663">draft-v1</text>
-      <text x="1100" y="678" style="font-size: 8px; fill: var(--gray-500);">[archive]</text>
+      <circle class="cat-dec" cx="750" cy="100" r="22" />
+      <text x="750" y="103">ADR-0012</text>
     </g>
   </a>
 
-  <!-- ===== G Phase I/J extension (桃、3 node) ===== -->
-  <a xlink:href="monitor-policy.html"><title>monitor-policy.html — Monitor primitive 規定 (Phase I dig Round 1、2026-05-15)</title>
-    <g class="node">
-      <circle class="cat-g" cx="1300" cy="100" r="22" />
-      <text x="1300" y="103">monitor</text>
-    </g>
-  </a>
-  <a xlink:href="hooks-mcp-policy.html"><title>hooks-mcp-policy.html — Hooks + MCP 規定 (Phase I dig Round 2、2026-05-15)</title>
-    <g class="node">
-      <circle class="cat-g" cx="1300" cy="180" r="22" />
-      <text x="1300" y="183">hooks-mcp</text>
-    </g>
-  </a>
-  <a xlink:href="architecture-graph.html"><title>architecture-graph.html — 本 file (Phase J navigation hub、2026-05-15)</title>
-    <g class="node">
-      <circle class="cat-g" cx="1300" cy="260" r="22" />
-      <text x="1300" y="263">graph (本)</text>
-    </g>
-  </a>
+  <!-- ===== edges (cross-cluster と within-cluster の 2 軸) ===== -->
 
-  <!-- ===== edges (hub-based representative links、~26 edges) ===== -->
-  <!-- README hub from/to all major categories -->
-  <line class="edge hub" x1="100" y1="100" x2="280" y2="100" />
-  <line class="edge hub" x1="100" y1="100" x2="460" y2="580" />
-  <line class="edge hub" x1="100" y1="100" x2="700" y2="100" />
-  <line class="edge hub" x1="100" y1="100" x2="880" y2="180" />
-  <line class="edge hub" x1="100" y1="100" x2="1100" y2="420" />
-  <line class="edge hub" x1="100" y1="100" x2="1300" y2="100" />
-  <line class="edge hub" x1="100" y1="100" x2="1300" y2="180" />
-  <line class="edge hub" x1="100" y1="100" x2="1300" y2="260" />
+  <!-- cross-cluster edges (brand 色、dir 間連携の representative) -->
+  <!-- spec/ orientation → migration/ fate -->
+  <line class="edge cross-dir" x1="90" y1="180" x2="360" y2="100" />  <!-- overview → adr-fate -->
+  <line class="edge cross-dir" x1="90" y1="260" x2="360" y2="420" />  <!-- failure-anls → rebuild-plan -->
 
-  <!-- tool-architecture (C hub) → A/D/E -->
-  <line class="edge hub" x1="460" y1="580" x2="100" y2="180" />
-  <line class="edge hub" x1="460" y1="580" x2="880" y2="180" />
-  <line class="edge hub" x1="460" y1="580" x2="700" y2="180" />
+  <!-- spec/ core → migration/ -->
+  <line class="edge cross-dir" x1="210" y1="580" x2="360" y2="420" />  <!-- tool-arch → rebuild-plan -->
+  <line class="edge cross-dir" x1="210" y1="660" x2="360" y2="100" />  <!-- registry → adr-fate -->
+  <line class="edge cross-dir" x1="210" y1="180" x2="360" y2="180" />  <!-- crash → inv-fate -->
+  <line class="edge cross-dir" x1="210" y1="420" x2="360" y2="180" />  <!-- gate-hook → inv-fate -->
 
-  <!-- experiment-index (F hub) → C/G -->
-  <line class="edge hub" x1="1100" y1="420" x2="460" y2="260" />
-  <line class="edge hub" x1="1100" y1="420" x2="460" y2="100" />
-  <line class="edge hub" x1="1100" y1="420" x2="1300" y2="100" />
-  <line class="edge hub" x1="1100" y1="420" x2="1300" y2="180" />
+  <!-- spec/ core → research/ -->
+  <line class="edge cross-dir" x1="210" y1="340" x2="490" y2="260" />  <!-- spawn → exp-index -->
+  <line class="edge cross-dir" x1="210" y1="260" x2="490" y2="260" />  <!-- atomic → exp-index -->
+  <line class="edge cross-dir" x1="210" y1="740" x2="490" y2="260" />  <!-- monitor → exp-index -->
+  <line class="edge cross-dir" x1="210" y1="820" x2="490" y2="260" />  <!-- hooks-mcp → exp-index -->
 
-  <!-- rebuild-plan (E hub) → C/F -->
-  <line class="edge hub" x1="880" y1="180" x2="460" y2="660" />
-  <line class="edge hub" x1="880" y1="180" x2="460" y2="500" />
-  <line class="edge hub" x1="880" y1="180" x2="1100" y2="420" />
+  <!-- spec/ policy → migration/ -->
+  <line class="edge cross-dir" x1="90" y1="340" x2="360" y2="340" />   <!-- twl-mcp → deletion -->
+  <line class="edge cross-dir" x1="90" y1="420" x2="360" y2="340" />   <!-- ssot-design → deletion -->
 
-  <!-- registry-schema (C hub) → A/B/F -->
-  <line class="edge" x1="460" y1="660" x2="100" y2="180" />
-  <line class="edge" x1="460" y1="660" x2="280" y2="180" />
-  <line class="edge" x1="460" y1="660" x2="1100" y2="100" />
+  <!-- spec/ core → decisions/ -->
+  <line class="edge cross-dir" x1="210" y1="500" x2="750" y2="100" />  <!-- admin-cycle → ADR-0012 -->
+  <line class="edge cross-dir" x1="210" y1="740" x2="750" y2="100" />  <!-- monitor → ADR-0012 -->
 
-  <!-- within-C structural cluster -->
-  <line class="edge" x1="460" y1="100" x2="460" y2="180" />
-  <line class="edge" x1="460" y1="180" x2="460" y2="260" />
-  <line class="edge" x1="460" y1="260" x2="460" y2="340" />
-  <line class="edge" x1="460" y1="340" x2="460" y2="420" />
-  <line class="edge" x1="460" y1="420" x2="460" y2="500" />
+  <!-- migration/ → research/ -->
+  <line class="edge cross-dir" x1="360" y1="420" x2="490" y2="260" />  <!-- rebuild → exp-index -->
 
-  <!-- G extension ↔ C connections (Phase I dig 影響) -->
-  <line class="edge hub" x1="1300" y1="100" x2="460" y2="500" />
-  <line class="edge hub" x1="1300" y1="180" x2="460" y2="420" />
+  <!-- README hub edges (dir 間 navigation) -->
+  <line class="edge cross-dir" x1="90" y1="100" x2="360" y2="420" />   <!-- README → rebuild-plan -->
+  <line class="edge cross-dir" x1="90" y1="100" x2="490" y2="260" />   <!-- README → exp-index -->
+  <line class="edge cross-dir" x1="90" y1="100" x2="620" y2="100" />   <!-- README → draft-v1 -->
 
-  <!-- dig-report edges (Phase 6 R-2 fix: dig-ssot/dig-tools → 主要 source spec) -->
-  <line class="edge" x1="1100" y1="500" x2="700" y2="180" />
-  <line class="edge" x1="1100" y1="500" x2="460" y2="660" />
-  <line class="edge" x1="1100" y1="500" x2="1100" y2="420" />
-  <line class="edge" x1="1100" y1="580" x2="460" y2="580" />
-  <line class="edge" x1="1100" y1="580" x2="460" y2="100" />
-  <line class="edge" x1="1100" y1="580" x2="1100" y2="420" />
+  <!-- within-cluster edges (gray、cluster 内構造) -->
+  <!-- spec/ orientation (vertical chain) -->
+  <line class="edge" x1="90" y1="100" x2="90" y2="180" />
+  <line class="edge" x1="90" y1="180" x2="90" y2="260" />
+
+  <!-- spec/ policy (vertical chain) -->
+  <line class="edge" x1="90" y1="340" x2="90" y2="420" />
+
+  <!-- spec/ auxiliary (vertical chain) -->
+  <line class="edge" x1="90" y1="500" x2="90" y2="580" />
+  <line class="edge" x1="90" y1="580" x2="90" y2="660" />
+
+  <!-- spec/ core (vertical chain) -->
+  <line class="edge" x1="210" y1="100" x2="210" y2="180" />
+  <line class="edge" x1="210" y1="180" x2="210" y2="260" />
+  <line class="edge" x1="210" y1="260" x2="210" y2="340" />
+  <line class="edge" x1="210" y1="340" x2="210" y2="420" />
+  <line class="edge" x1="210" y1="420" x2="210" y2="500" />
+  <line class="edge" x1="210" y1="500" x2="210" y2="580" />
+  <line class="edge" x1="210" y1="580" x2="210" y2="660" />
+  <line class="edge" x1="210" y1="660" x2="210" y2="740" />
+  <line class="edge" x1="210" y1="740" x2="210" y2="820" />
+
+  <!-- migration/ vertical chain -->
+  <line class="edge" x1="360" y1="100" x2="360" y2="180" />
+  <line class="edge" x1="360" y1="180" x2="360" y2="260" />
+  <line class="edge" x1="360" y1="260" x2="360" y2="340" />
+  <line class="edge" x1="360" y1="340" x2="360" y2="420" />
+  <line class="edge" x1="360" y1="420" x2="360" y2="500" />
+  <line class="edge" x1="360" y1="500" x2="360" y2="580" />
+
+  <!-- research/ vertical chain -->
+  <line class="edge" x1="490" y1="100" x2="490" y2="180" />
+  <line class="edge" x1="490" y1="180" x2="490" y2="260" />
+
+  <!-- archive/ vertical chain -->
+  <line class="edge" x1="620" y1="100" x2="620" y2="180" />
 
   <!-- ===== legend ===== -->
-  <g class="legend" transform="translate(1170, 760)">
-    <rect x="0" y="0" width="210" height="220" fill="var(--surface-primary)" stroke="var(--gray-300)" />
-    <text x="105" y="18" style="font-weight: 700; text-anchor: middle;">凡例 (category)</text>
+  <g class="legend" transform="translate(800, 230)">
+    <rect x="0" y="0" width="130" height="320" fill="var(--surface-primary)" rx="6" />
+    <text x="65" y="20" style="font-weight: 700; text-anchor: middle;">凡例</text>
 
-    <rect class="cat-a" x="10" y="30" width="20" height="20" />
-    <text x="38" y="44">A 全体把握 (3)</text>
+    <!-- dir cluster 凡例 -->
+    <text x="6" y="42" style="font-size: 10px; font-weight: 600;">dir cluster:</text>
+    <rect class="cat-spec-core" x="10" y="52" width="14" height="14" />
+    <text x="30" y="63">spec/ core</text>
+    <rect class="cat-spec-ori" x="10" y="72" width="14" height="14" />
+    <text x="30" y="83">spec/ orient</text>
+    <rect class="cat-spec-pol" x="10" y="92" width="14" height="14" />
+    <text x="30" y="103">spec/ policy</text>
+    <rect class="cat-spec-aux" x="10" y="112" width="14" height="14" />
+    <text x="30" y="123">spec/ aux</text>
+    <rect class="cat-mig" x="10" y="132" width="14" height="14" />
+    <text x="30" y="143">migration/</text>
+    <rect class="cat-res" x="10" y="152" width="14" height="14" />
+    <text x="30" y="163">research/</text>
+    <rect class="cat-arc" x="10" y="172" width="14" height="14" />
+    <text x="30" y="183">archive/</text>
+    <rect class="cat-dec" x="10" y="192" width="14" height="14" />
+    <text x="30" y="203">decisions/</text>
 
-    <rect class="cat-b" x="10" y="55" width="20" height="20" />
-    <text x="38" y="69">B 既存資産継承 (3)</text>
+    <!-- edge 凡例 -->
+    <text x="6" y="228" style="font-size: 10px; font-weight: 600;">edge:</text>
+    <line class="edge cross-dir" x1="10" y1="246" x2="40" y2="246" />
+    <text x="46" y="250">cross-dir</text>
+    <line class="edge" x1="10" y1="266" x2="40" y2="266" />
+    <text x="46" y="270">within</text>
 
-    <rect class="cat-c" x="10" y="80" width="20" height="20" />
-    <text x="38" y="94">C 新 architecture (8)</text>
-
-    <rect class="cat-d" x="10" y="105" width="20" height="20" />
-    <text x="38" y="119">D 既存接続 (2)</text>
-
-    <rect class="cat-e" x="10" y="130" width="20" height="20" />
-    <text x="38" y="144">E 削除移行 (4)</text>
-
-    <rect class="cat-f" x="10" y="155" width="20" height="20" />
-    <text x="38" y="169">F 補助 (8)</text>
-
-    <rect class="cat-g" x="10" y="180" width="20" height="20" />
-    <text x="38" y="194">G Phase I/J ext (3)</text>
-
-    <line class="edge hub" x1="10" y1="210" x2="30" y2="210" />
-    <text x="38" y="213" style="font-size: 10px;">hub edge (brand)</text>
+    <!-- node 凡例 -->
+    <text x="6" y="290" style="font-size: 10px; font-weight: 600;">node size:</text>
+    <circle class="cat-spec-core" cx="14" cy="306" r="13" stroke="var(--gray-700)" stroke-width="1" />
+    <text x="32" y="310">hub (r=26)</text>
   </g>
 </svg>
 </div>
 
-<h2 id="s1">§1. category 説明</h2>
+<h2 id="structure">構造解説 (5 dir cluster)</h2>
 
 <dl>
-  <dt><strong style="color: #7e6088;">A 全体把握 (紫、3 file)</strong></dt>
-  <dd>初めて読む人が最初に visit する orientation 系。entry point + 10 role pyramid + なぜ rebuild 必要かの理由。</dd>
+  <dt><strong>spec/</strong> (新 twill 仕様 SSoT、18 node + common.css)</dt>
+  <dd>4 sub-category: <strong>orientation</strong> (最初に読む 3 file) / <strong>core</strong> (新 architecture 詳細 10 file) / <strong>policy</strong> (既存接続 2 file) / <strong>auxiliary</strong> (navigation/用語/履歴 3 file + common.css)</dd>
 
-  <dt><strong style="color: #5a7090;">B 既存資産継承 (青、3 file)</strong></dt>
-  <dd>既存 plugin の ADR 43 件 / 不変条件 19 件 / pitfalls catalog の継承戦略 audit 結果。</dd>
+  <dt><strong>migration/</strong> (旧→新 移行計画、7 node)</dt>
+  <dd>fate audit (旧資産処遇 3 file) + 実行計画 (削除・rebuild 4 file)</dd>
 
-  <dt><strong style="color: #4a8050;">C 新 architecture (緑、8 file)</strong></dt>
-  <dd>新 architecture core 仕様: boundary / crash / atomic / spawn / gate-hook / admin-cycle / tool-* / registry-schema。実装参照用。</dd>
+  <dt><strong>research/</strong> (調査・実験、3 node)</dt>
+  <dd>research-findings (verified 集約) + sandbox-experiment (4-state status + EXP-id) + experiment-index (hub、全 EXP listing)</dd>
 
-  <dt><strong style="color: #8b7f2c;">D 既存接続 (黄、2 file)</strong></dt>
-  <dd>既存 twl MCP server / chain SSoT との接続戦略 (継承 / 削除 / 置換 inventory)。</dd>
+  <dt><strong>archive/</strong> (旧資産 rollback 保持、2 node)</dt>
+  <dd>draft-v1 (spec 原案) + changelog-impl (実装作業 log)。MD 群 (旧 ADR、TWiLL DDD 資産、dig artifact MD/HTML 版) は graph では非表示</dd>
 
-  <dt><strong style="color: #b25f23;">E 削除移行 (橙、4 file)</strong></dt>
-  <dd>削除対象 inventory + rebuild plan + regression test + dual-stack routing。Phase 1-4 の実行計画系。</dd>
-
-  <dt><strong style="color: #5a656b;">F 補助 (灰、8 file)</strong></dt>
-  <dd>glossary / changelog / research-findings / sandbox-experiment / experiment-index (hub) + dig-report 2 件 + draft-v1 archive。supplementary。</dd>
-
-  <dt><strong style="color: #a06070;">G Phase I/J extension (桃、3 file、2026-05-15 追加)</strong></dt>
-  <dd>第 5 弾 dig Round 1-2 の Monitor primitive / Hooks+MCP 組み合わせ規定 + 本 navigation graph。Phase I/J 期間の SSoT 化成果。</dd>
+  <dt><strong>decisions/</strong> (新 architecture ADR、1 node)</dt>
+  <dd>ADR-0012 (administrator rebrand、Proposed)。今後の ADR は順次追加</dd>
 </dl>
 
-<h2 id="s2">§2. hub file (link 集中点)</h2>
-
-<p>category 間 cross-link を媒介する 5 件の hub file。本 graph では太 edge (brand 色) で強調、circle 半径 r=26 (通常 r=22) で視覚的に区別。</p>
-
-<table>
-  <thead><tr><th>file</th><th>inbound link 数 (実測)</th><th>役割</th></tr></thead>
-  <tbody>
-    <tr><td><a href="../research/experiment-index.html"><code>experiment-index.html</code></a></td><td>~57</td><td>EXP-001〜042 一覧 hub、全 EXP 言及 file の集約点</td></tr>
-    <tr><td><a href="tool-architecture.html"><code>tool-architecture.html</code></a></td><td>~52</td><td>tool-* 3 件 詳細、tool-architect が spec 編集の唯一 author</td></tr>
-    <tr><td><a href="README.html"><code>README.html</code></a></td><td>~51</td><td>本 index、各 file の back-link target</td></tr>
-    <tr><td><a href="../migration/rebuild-plan.html"><code>rebuild-plan.html</code></a></td><td>~39</td><td>Phase 1-4 plan + verify points、実行計画 hub</td></tr>
-    <tr><td><a href="registry-schema.html"><code>registry-schema.html</code></a></td><td>~24</td><td>registry.yaml schema、10 role × concern matrix、vocabulary schema (新 spec 参照基盤)</td></tr>
-  </tbody>
-</table>
-
-<h2 id="s3">§3. 使い方</h2>
+<h2 id="hub-files">hub file (大型 r=26 で表示)</h2>
 
 <ul>
-  <li><strong>node click</strong>: 各 circle を click → 対応 spec file へ遷移 (<code>&lt;a xlink:href&gt;</code> による native browser navigation)</li>
-  <li><strong>node hover</strong>: tooltip で file 概要表示 (<code>&lt;title&gt;</code>) + circle stroke 強調 + brightness 上昇 (CSS <code>:hover</code>)</li>
-  <li><strong>category 区分</strong>: 7 column layout (A→G、左から右へ)、color で category 識別</li>
-  <li><strong>edge 種別</strong>: 太線 (brand 色) = hub edge (5 hub file から放射)、細線 (gray) = within-category structural link</li>
-  <li><strong>responsive</strong>: 画面幅 1400px 以下でも auto-scale (max-width: 1400px、aspect-ratio 保持)</li>
+  <li><strong>tool-architecture</strong> (spec/core、52 inbound) — tool-* 3 件構成の中心</li>
+  <li><strong>registry-schema</strong> (spec/core、24+ inbound) — registry.yaml schema、参照基盤</li>
+  <li><strong>rebuild-plan</strong> (migration/、39 inbound) — Phase 1-4 plan + verify points</li>
+  <li><strong>experiment-index</strong> (research/、57+ inbound、EXP-id hyperlink 経由) — 全 EXP listing</li>
 </ul>
 
-<h2 id="s4">§4. 維持方針</h2>
+<h2 id="maintenance">maintenance 規約 (R-2 強制)</h2>
 
-<p>本 graph は <strong>手動更新</strong> (Phase J 時点)。spec file 追加 / 削除時は本 file の SVG block を edit する。将来 (Phase 2 以降) の自動生成 script (<code>scripts/spec-graph-gen.py</code>) は <a href="../migration/rebuild-plan.html">rebuild-plan.html</a> J-5 (optional) で検討。</p>
+<p>新 file 追加時の手順は <code>plugins/twl/skills/tool-architect/refs/spec-management-rules.md</code> R-1 〜 R-10 (decision tree 含む) で規定。本 graph への node + edge 追加は R-2 で MUST、R-9 (手動 maintenance) で運用中。中期で auto-gen 化検討。</p>
 
-<p>各 node の <code>cx</code> / <code>cy</code> coord 規約:</p>
+<p>5 dir cluster の coord 規約:</p>
 <ul>
-  <li><strong>column x</strong>: A=100, B=280, C=460, D=700, E=880, F=1100, G=1300</li>
-  <li><strong>row y</strong>: header 40 + node 100/180/260/340/420/500/580/660 (80px 間隔)</li>
-  <li><strong>radius</strong>: hub file r=26、通常 r=22、archive r=20</li>
-</ul>
-
-<h2 id="s5">§5. 関連 spec ファイル</h2>
-
-<ul>
-  <li><a href="README.html"><code>README.html</code></a> — entry point + G section で本 graph link、進捗 status table 連動</li>
-  <li><a href="../research/experiment-index.html"><code>experiment-index.html</code></a> — EXP hub (本 graph と並ぶ navigation hub)</li>
-  <li><a href="changelog.html"><code>changelog.html</code></a> — Phase J 2026-05-15 entry で本 file 追加履歴</li>
-  <li><a href="monitor-policy.html"><code>monitor-policy.html</code></a> + <a href="hooks-mcp-policy.html"><code>hooks-mcp-policy.html</code></a> — G category 兄弟 file (Phase I dig 成果)</li>
+  <li>spec/ orientation/policy/auxiliary: cx=90、cy=100/180/260/340/420/500/580/660 (8 row 80px 間隔)</li>
+  <li>spec/ core: cx=210、cy=100〜820 (10 row)</li>
+  <li>migration/: cx=360、cy=100〜580 (7 row)</li>
+  <li>research/: cx=490、cy=100〜260 (3 row)</li>
+  <li>archive/: cx=620、cy=100〜180 (2 row)</li>
+  <li>decisions/: cx=750、cy=100〜 (1+ row)</li>
 </ul>
 
 </body>

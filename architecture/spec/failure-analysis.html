@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>twill plugin rebuild — failure analysis</title>
-<link rel="stylesheet" href="../spec/common.css">
+<link rel="stylesheet" href="common.css">
 <style>
   /* file-specific accent: failure analysis は Danger #b22323 で「失敗」を象徴 */
   header.doc-header { border-bottom: 3px solid var(--danger-fg); }
@@ -71,7 +71,7 @@
     <li>N 回再発するバグは「同じ修正を繰り返している」というメタシグナル。<strong>root (upstream 仕様 + deploy 経路欠如) を追わない構造的問題</strong>。</li>
     <li>upstream 仕様の制約は workaround では解決せず、3 経路 (HTTP transport / Plugin Monitors / 諦め + 手動 retry) の段階移行が正解。</li>
   </ul>
-  <p><strong>新 spec での不能化</strong> (4 段階 migration、<a href="research-findings.html">research-findings.html</a> §4 参照):</p>
+  <p><strong>新 spec での不能化</strong> (4 段階 migration、<a href="../research/research-findings.html">research-findings.html</a> §4 参照):</p>
   <ul>
     <li><code>Phase 1</code>: 自前 watchdog 廃止、<code>/mcp</code> 手動 retry を運用ルール化</li>
     <li><code>Phase 2</code>: server 側を「stdin EOF で素直に exit」に修正</li>
@@ -167,7 +167,7 @@
     <tr><td>confidence</td><td><strong>verified</strong></td></tr>
     <tr><td>構造的要因</td><td>「実装した = deploy された」という暗黙の前提 + upstream limitation の認識不足。5 回再発するが毎回 watchdog を改善する修正で、upstream 仕様 (stdio reconnect なし) を見ていなかった。サーバー側 watchdog は orphan 自殺で逆効果のリスクあり。</td></tr>
     <tr><td>lesson (MUST)</td><td>新規 daemon/watchdog 実装は「起動 hook」と「起動確認テスト」をセットで実装・merge しなければ Done と見なさない。N 回再発するバグは「同じ修正を繰り返している」というメタシグナル、upstream + 自前の両 root を追う構造的問題。外部依存 (upstream bug) への workaround は docs 明記 + upstream fix 待ち ticket 作成 (SHOULD)。</td></tr>
-    <tr><td>新 spec で不能化</td><td>4 段階 migration (<a href="research-findings.html">research-findings.html</a> §4 verified): <code>Phase 1</code> = 自前 watchdog 廃止 + <code>/mcp</code> 手動 retry、<code>Phase 2</code> = stdin EOF graceful exit、<code>Phase 3</code> = HTTP transport 移行、<code>Phase 4</code> = Plugin Monitors (v2.1.105+) + <code>CLAUDE_PLUGIN_DATA</code> 統合。</td></tr>
+    <tr><td>新 spec で不能化</td><td>4 段階 migration (<a href="../research/research-findings.html">research-findings.html</a> §4 verified): <code>Phase 1</code> = 自前 watchdog 廃止 + <code>/mcp</code> 手動 retry、<code>Phase 2</code> = stdin EOF graceful exit、<code>Phase 3</code> = HTTP transport 移行、<code>Phase 4</code> = Plugin Monitors (v2.1.105+) + <code>CLAUDE_PLUGIN_DATA</code> 統合。</td></tr>
   </tbody>
 </table>
 
@@ -203,7 +203,7 @@
   </thead>
   <tbody>
     <tr><td><strong>F-1</strong> 並列 Wave 後付け</td><td>#1673, #1674, #1703</td><td>per-specialist file mailbox + Agent isolation (<a href="../migration/invariant-fate-table.html#inv-t">Inv T</a>, <a href="../migration/invariant-fate-table.html#inv-v">Inv V</a>)</td></tr>
-    <tr><td><strong>F-2</strong> env var 限界</td><td>#1660, #1662, #1663, #1684</td><td>PreToolUse hook + GitHub Project Board status SSoT (<a href="../spec/gate-hook.html">gate-hook</a>、<a href="../migration/invariant-fate-table.html#inv-w">Inv W</a>)</td></tr>
+    <tr><td><strong>F-2</strong> env var 限界</td><td>#1660, #1662, #1663, #1684</td><td>PreToolUse hook + GitHub Project Board status SSoT (<a href="gate-hook.html">gate-hook</a>、<a href="../migration/invariant-fate-table.html#inv-w">Inv W</a>)</td></tr>
     <tr><td><strong>F-3</strong> deploy/verify 分離</td><td>#1687</td><td>Claude Code 標準 hook + MCP native management (<a href="../migration/invariant-fate-table.html#inv-x">Inv X</a>)</td></tr>
     <tr><td><strong>横断要因外</strong></td><td>#973 (silent rot)</td><td>step verification framework (post-verify 機械化、<a href="../spec/atomic-verification.html">step-verification</a>)</td></tr>
   </tbody>
@@ -245,12 +245,12 @@
 <h2>関連 spec ファイル</h2>
 
 <ul>
-  <li>各 lesson の構造的不能化の詳細実装: <a href="../spec/atomic-verification.html">atomic-verification.html</a> / <a href="../spec/spawn-protocol.html">spawn-protocol.html</a> (outline) / <a href="../spec/gate-hook.html">gate-hook.html</a> (verified content)</li>
+  <li>各 lesson の構造的不能化の詳細実装: <a href="../spec/atomic-verification.html">atomic-verification.html</a> / <a href="../spec/spawn-protocol.html">spawn-protocol.html</a> (outline) / <a href="gate-hook.html">gate-hook.html</a> (verified content)</li>
   <li>失敗から導かれる crash failure mode 全体: <a href="../spec/crash-failure-mode.html">crash-failure-mode.html</a></li>
   <li>ADR 全件継承戦略: <a href="../migration/adr-fate-table.html">adr-fate-table.html</a> (ADR-025 Known Gap 4 解消含む)</li>
   <li>不変条件継承戦略: <a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> (不変条件 K/L/R/S 強化)</li>
   <li>twl MCP 継承戦略: <a href="../spec/twl-mcp-integration.html">twl-mcp-integration.html</a> (Phase 5 )</li>
-  <li><strong>verified 根拠 (research session)</strong>: <a href="research-findings.html">research-findings.html</a> §1 KP-3 (stdio MCP auto-reconnect) + §1 KP-4 (watchdog orphan 自殺)</li>
+  <li><strong>verified 根拠 (research session)</strong>: <a href="../research/research-findings.html">research-findings.html</a> §1 KP-3 (stdio MCP auto-reconnect) + §1 KP-4 (watchdog orphan 自殺)</li>
 </ul>
 
 <h2>audit source</h2>

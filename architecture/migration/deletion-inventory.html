@@ -40,7 +40,7 @@
   <li>制御系 4 語 (orchestrator/controller/supervisor) — <code>administrator</code> に統一、他 3 語は spec から液化 (backtick 引用のみ例外)</li>
   <li>用語多重化 (~2000+ occurrence): pilot/phase/controller 5 重 → <code>phaser</code> 1 語、worker 5 重 → <code>workflow</code>+<code>specialist</code> 2 分割、step 5 重 → <code>atomic</code> 統一、state 2 重 → <code>status</code>、mail/message 3 重 → 4 階層 entity</li>
 </ul>
-詳細: <a href="../research/dig-report-ssot-2026-05-13.html">dig-report-ssot-2026-05-13.md</a> §7 (隠れ重複処理) + §9 (派生する spec 反映影響)</div>
+詳細: <a href="../archive/research/dig-report-ssot-2026-05-13.html">dig-report-ssot-2026-05-13.md</a> §7 (隠れ重複処理) + §9 (派生する spec 反映影響)</div>
 
 <h2>§1. 削除対象 bash orchestration (~5,000 行、実測)</h2>
 
@@ -52,7 +52,7 @@
     <tr>
       <td><code>plugins/twl/scripts/chain-runner.sh</code></td>
       <td>1714</td>
-      <td>chain SSoT 三重化解消、step.sh 単一 SSoT</td>
+      <td>chain SSoT 三重化解消、registry.yaml 統合 SSoT</td>
       <td><a href="../spec/ssot-design.html">ssot-design.html</a> step.sh framework (~80 行)</td>
     </tr>
     <tr>
@@ -404,7 +404,7 @@ mv hooks.json.bak hooks.json
 <h2>§9. 関連 spec</h2>
 
 <ul>
-  <li><a href="../spec/ssot-design.html">ssot-design.html</a> chain SSoT 統一 (案 3 step.sh)</li>
+  <li><a href="../spec/ssot-design.html">ssot-design.html</a> chain SSoT 統一 (案 4 registry.yaml)</li>
   <li><a href="../spec/twl-mcp-integration.html">twl-mcp-integration.html</a> MCP tool inventory</li>
   <li><a href="../spec/spawn-protocol.html">spawn-protocol.html</a> 新規 helper 詳細</li>
   <li><a href="rebuild-plan.html">rebuild-plan.html</a> <code>Phase 1</code>-4 削除順序</li>

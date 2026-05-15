@@ -18,12 +18,12 @@
 <body>
 
 <header class="doc-header">
-  <h1>registry.yaml 統合 SSoT design — 案 4 確定 (第 5 弾 dig)</h1>
+  <h1>registry.yaml 統合 SSoT design — 案 4 確定 (過去 dig (2026-05-13))</h1>
   <div class="meta">draft-v3 (2026-05-13) &middot; 案 3 (step.sh) → 案 4 (registry.yaml) 進化、atomic skill composition + vocabulary table 統合</div>
 </header>
 
 <div class="info">
-  <strong>目的</strong>: 既存 twill plugin の chain 定義 SSoT が <code>chain.py</code> / <code>chain-steps.sh</code> / <code>deps.yaml.chains</code> の三重化状態にあり (ADR-022 で正式定義)、Issue #853 で integrity 違反が顕在化。さらに <code>cli/twl/types.yaml</code> (component 型 + token 閾値 SSoT) と命名 vocabulary SSoT 不在の課題も第 5 弾 dig で確定。本設計で 1 つの統合 SSoT に絞る。<br>
+  <strong>目的</strong>: 既存 twill plugin の chain 定義 SSoT が <code>chain.py</code> / <code>chain-steps.sh</code> / <code>deps.yaml.chains</code> の三重化状態にあり (ADR-022 で正式定義)、Issue #853 で integrity 違反が顕在化。さらに <code>cli/twl/types.yaml</code> (component 型 + token 閾値 SSoT) と命名 vocabulary SSoT 不在の課題も過去 dig (2026-05-13) で確定。本設計で 1 つの統合 SSoT に絞る。<br>
   <br>
   <strong>結論先出し</strong>: <strong>案 4 (registry.yaml 統合 SSoT) を採用</strong>。<code>plugins/twl/registry.yaml</code> 1 file が以下 5 section の Authority SSoT を保有:
   <ol>
@@ -33,7 +33,7 @@
     <li><code>hooks</code> + <code>monitors</code> — entry config (hooks.json + monitors.json の SSoT)</li>
     <li><code>integrity_rules</code> — audit ルール定義</li>
   </ol>
-  旧 <code>chain.py</code> + <code>chain-steps.sh</code> + <code>chain-runner.sh</code> + <code>cli/twl/types.yaml</code> + 第 3 弾 dig <code>step.sh framework</code> を全廃。<br>
+  旧 <code>chain.py</code> + <code>chain-steps.sh</code> + <code>chain-runner.sh</code> + <code>cli/twl/types.yaml</code> + 過去 dig <code>step.sh framework</code> を全廃。<br>
   <br>
   <strong>source</strong>: spec session dig (10 round × 平均 4 question)、公式 docs 4 件再 WebFetch verify、ADR-022 Context、code-explorer agent C 深掘り。
 </div>
@@ -74,7 +74,7 @@
 
 <ul>
   <li><code>chain-runner.sh</code> L1864-1910 の case 文に <strong>chain.py <code>CHAIN_STEPS</code> 外の atomic が大量に登録</strong>: <code>worktree-create</code>, <code>cwd-guard</code>, <code>board-status-update</code> (alias), <code>board-archive</code>, <code>next-step</code>, <code>dispatch-info</code>, <code>llm-delegate</code>, <code>llm-complete</code>, <code>chain-status</code>, <code>post-fix-verify</code>, <code>auto-merge</code>, <code>pr-comment-*</code>, <code>autopilot-detect</code>, <code>resolve-issue-num</code>, <code>resolve-project-root</code>, <code>record-pr</code></li>
-  <li>これが <a href="../research/failure-analysis.html">failure-analysis.html</a> 横断要因と並ぶ「設計と運用の乖離」の根</li>
+  <li>これが <a href="failure-analysis.html">failure-analysis.html</a> 横断要因と並ぶ「設計と運用の乖離」の根</li>
 </ul>
 
 <h3>1.3 chain_integrity audit の現実 (verified)</h3>
@@ -97,9 +97,9 @@
   </tbody>
 </table>
 
-<h2>§2. 第 5 弾 dig での再認識 (vocabulary SSoT 不在も判明)</h2>
+<h2>§2. 過去 dig (2026-05-13) での再認識 (vocabulary SSoT 不在も判明)</h2>
 
-<p>第 5 弾 dig (2026-05-13、10 round × 33+ question) で <strong>chain SSoT 三重化に加えて以下の SSoT 多重化が判明</strong>:</p>
+<p>過去 dig (2026-05-13) (2026-05-13、10 round × 33+ question) で <strong>chain SSoT 三重化に加えて以下の SSoT 多重化が判明</strong>:</p>
 
 <ul>
   <li><strong>types.yaml 矛盾</strong>: <code>cli/twl/types.yaml</code> が component 型 + token 閾値 SSoT として記述されているが、plugin component 構成では旧 type 名 (controller / co-autopilot 等) が残存。新 type 名 (administrator / phase-* / worker-*) との整合性が drift</li>
@@ -108,9 +108,9 @@
   <li><strong>制御系 4 語多重</strong>: administrator / orchestrator / controller / supervisor の 4 語が同概念に対し並存</li>
 </ul>
 
-<h2>§3. 旧 3 案 trade-off (第 3 弾 dig、歴史的記録)</h2>
+<h2>§3. 旧 3 案 trade-off (過去 dig、歴史的記録)</h2>
 
-<div class="caution">第 3 弾 dig (2026-05-12) で検討された 3 案を歴史的記録として保全。第 5 弾 dig で「案 4 registry.yaml 統合 SSoT」に進化したため、いずれの旧案も廃案だが、判断経緯として残す。</div>
+<div class="caution">過去 dig (2026-05-12) で検討された 3 案を歴史的記録として保全。過去 dig (2026-05-13) で「案 4 registry.yaml 統合 SSoT」に進化したため、いずれの旧案も廃案だが、判断経緯として残す。</div>
 
 <h3>案 1 (廃案): <code>deps.yaml</code> SSoT (chain.py + chain-steps.sh 全廃、deps.yaml から生成)</h3>
 <div class="pros">YAML editing は人間にとって直感的、yamllint integration、コメント sup</div>
@@ -120,11 +120,11 @@
 <div class="pros">既存 chain.py に dispatch / metadata / export が集約、Python type hint で integrity を強化可</div>
 <div class="cons">bash 側 (chain-runner.sh) から chain.py 直接呼び出し不可、引き続き chain-steps.sh 経由 export 必要、本質は「dispatch + metadata の 2 重 SSoT」のままで mitigation</div>
 
-<h3>案 3 (廃案、第 3 弾 dig 採用 → 第 5 弾 dig で廃案化): <code>step.sh</code> 単一 SSoT</h3>
+<h3>案 3 (廃案、過去 dig 採用 → 過去 dig (2026-05-13) で廃案化): <code>step.sh</code> 単一 SSoT</h3>
 <div class="pros">1 step = 1 <code>steps/&lt;name&gt;.sh</code> file = SSoT、 <code>_verify_&lt;name&gt;</code> 関数で post-verify rule 同 file 内に、最も「分散 SSoT」原則に忠実</div>
-<div class="cons"><strong>第 5 弾 dig 発覚問題</strong>: (1) step は forbidden 一般語、atomic が canonical、(2) <code>step.sh framework</code> の <code>step::run</code> bash 呼び出しは公式 skill 機構 (Skill tool + atomic SKILL.md) と二重 framework になる、(3) vocabulary / types.yaml と独立した別 SSoT を作るため SSoT 多重化解消にならない</div>
+<div class="cons"><strong>過去 dig (2026-05-13) 発覚問題</strong>: (1) step は forbidden 一般語、atomic が canonical、(2) <code>step.sh framework</code> の <code>step::run</code> bash 呼び出しは公式 skill 機構 (Skill tool + atomic SKILL.md) と二重 framework になる、(3) vocabulary / types.yaml と独立した別 SSoT を作るため SSoT 多重化解消にならない</div>
 
-<h2>§4. 案 4 registry.yaml 統合 SSoT (第 5 弾 dig 確定)</h2>
+<h2>§4. 案 4 registry.yaml 統合 SSoT (過去 dig (2026-05-13) 確定)</h2>
 
 <div class="info">本節の詳細 schema: <a href="registry-schema.html">registry-schema.html §2 (registry.yaml 全体 schema と 5 section)</a></div>
 
@@ -141,8 +141,8 @@
     <tr><td class="deprecated"><code>plugins/twl/deps.yaml</code></td><td>component depends + chains + types</td><td><code>components</code> section (depends/next) + <code>chains</code> section</td></tr>
     <tr><td class="deprecated"><code>cli/twl/src/twl/autopilot/chain.py</code> <code>CHAIN_STEPS</code></td><td>chain 18 atomic の SSoT</td><td><code>chains</code> section (workflow → atomic sequence)</td></tr>
     <tr><td class="deprecated"><code>plugins/twl/scripts/chain-steps.sh</code></td><td>chain.py の bash mirror</td><td>(全廃、registry.yaml から必要時 generate)</td></tr>
-    <tr><td>(なし、第 5 弾 dig 新規)</td><td>vocabulary table (用語集 + canonical/forbidden)</td><td><code>glossary</code> section (新規)</td></tr>
-    <tr><td>(なし、第 5 弾 dig 新規)</td><td>命名衝突 audit ルール</td><td><code>integrity_rules</code> section (vocabulary_forbidden_use rule)</td></tr>
+    <tr><td>(なし、過去 dig (2026-05-13) 新規)</td><td>vocabulary table (用語集 + canonical/forbidden)</td><td><code>glossary</code> section (新規)</td></tr>
+    <tr><td>(なし、過去 dig (2026-05-13) 新規)</td><td>命名衝突 audit ルール</td><td><code>integrity_rules</code> section (vocabulary_forbidden_use rule)</td></tr>
     <tr><td><code>plugins/twl/hooks/hooks.json</code></td><td>hook entry config</td><td><code>hooks</code> section (registry.yaml が SSoT、hooks.json は derived)</td></tr>
     <tr><td><code>plugins/twl/monitors/monitors.json</code></td><td>monitor entry config</td><td><code>monitors</code> section (registry.yaml が SSoT、monitors.json は derived)</td></tr>
   </tbody>
@@ -163,7 +163,7 @@
   </tbody>
 </table>
 
-<h2>§5. atomic skill composition pattern (第 5 弾 dig Round 6 確定)</h2>
+<h2>§5. atomic skill composition pattern (過去 dig (2026-05-13) Round 6 確定)</h2>
 
 <div class="info">詳細仕様: <a href="atomic-verification.html">atomic-verification.html</a> (atomic skill 4-phase lifecycle specification、旧 step-verification.html から rename)</div>
 
@@ -234,7 +234,7 @@ allowed-tools: [Bash, Read, Edit, Agent]
     <tr><td class="deprecated"><code>plugins/twl/deps.yaml</code></td><td>chain section + types section の二重 SSoT</td><td><code>registry.yaml#components</code> + <code>#chains</code></td></tr>
     <tr><td class="deprecated"><code>cli/twl/types.yaml</code></td><td>component 型 SSoT、新型との drift</td><td><code>registry.yaml#components</code> + <code>#integrity_rules</code></td></tr>
     <tr><td class="deprecated"><code>cli/twl/src/twl/chain/integrity.py</code> <code>check_deps_integrity</code></td><td>chain.py / chain-steps.sh / deps.yaml の整合検証、本廃止により不要</td><td><code>twl audit --registry</code> (新規) で registry.yaml integrity_rules 適用</td></tr>
-    <tr><td class="deprecated">第 3 弾 dig <code>step.sh framework</code> (案 3、未実装)</td><td>step は forbidden、公式 skill 機構と二重</td><td>atomic SKILL.md 本文 inline 4-phase lifecycle</td></tr>
+    <tr><td class="deprecated">過去 dig <code>step.sh framework</code> (案 3、未実装)</td><td>step は forbidden、公式 skill 機構と二重</td><td>atomic SKILL.md 本文 inline 4-phase lifecycle</td></tr>
   </tbody>
 </table>
 
@@ -275,17 +275,17 @@ allowed-tools: [Bash, Read, Edit, Agent]
 <h2>§9. 関連 spec</h2>
 
 <ul>
-  <li><a href="registry-schema.html">registry-schema.html</a> (registry.yaml 全体 schema + 10 role × concern matrix + vocabulary 6 field schema + 階層図、本 file の core 詳細、第 5 弾 dig 新規)</li>
+  <li><a href="registry-schema.html">registry-schema.html</a> (registry.yaml 全体 schema + 10 role × concern matrix + vocabulary 6 field schema + 階層図、本 file の core 詳細、過去 dig (2026-05-13) 新規)</li>
   <li><a href="glossary.html">glossary.html</a> (10 role 正規定義 + vocabulary 6 field schema 説明 + Authority/Reference/Derived 用語)</li>
   <li><a href="atomic-verification.html">atomic-verification.html</a> (atomic skill 4-phase lifecycle、旧 step-verification.html から rename)</li>
   <li><a href="../migration/deletion-inventory.html">deletion-inventory.html</a> (削除対象 file + 移行先 mapping)</li>
   <li><a href="../migration/rebuild-plan.html">rebuild-plan.html</a> (Strangler Fig 4 phase migration スケジュール)</li>
-  <li><a href="../research/experiment-index.html">experiment-index.html</a> (EXP-001〜038、第 5 弾 dig で EXP-032〜038 追加)</li>
-  <li><a href="../research/failure-analysis.html">failure-analysis.html</a> (9 P0 bug + 横断要因 F-1〜F-4 (F-4 用語 SSoT 不在は第 5 弾 dig 追加))</li>
+  <li><a href="../research/experiment-index.html">experiment-index.html</a> (EXP-001〜038、過去 dig (2026-05-13) で EXP-032〜038 追加)</li>
+  <li><a href="failure-analysis.html">failure-analysis.html</a> (9 P0 bug + 横断要因 F-1〜F-4 (F-4 用語 SSoT 不在は過去 dig (2026-05-13) 追加))</li>
   <li><a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> (Inv U "Atomic skill verification" 旧 "Step verification framework" から rename)</li>
   <li><a href="../migration/adr-fate-table.html">adr-fate-table.html</a> (ADR-022 = chain SSoT 三重化定義、本 ADR-043 で Superseded)</li>
   <li><a href="../research/research-findings.html">research-findings.html</a> (公式 verified 根拠、120 sources + 過去 session 16 件 WebFetch 追加)</li>
-  <li><a href="../research/dig-report-ssot-2026-05-13.html">dig-report-ssot-2026-05-13.md</a> (第 5 弾 dig 独立 artifact、10 round + 33+ question + 921 行)</li>
+  <li><a href="../archive/research/dig-report-ssot-2026-05-13.html">dig-report-ssot-2026-05-13.md</a> (過去 dig (2026-05-13) 独立 artifact、10 round + 33+ question + 921 行)</li>
 </ul>
 
 </body>

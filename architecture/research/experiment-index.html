@@ -136,7 +136,7 @@
     <dt>分類</dt><dd>smoke (Claude session 必須、<code>experiments/EXP-005-stdio-mcp-no-autoreconnect.smoke.sh</code>)</dd>
     <dt>期待結果</dt><dd>SIGTERM 後 5 attempts retry なし、`/mcp` で復活</dd>
     <dt>代替策</dt><dd>HTTP transport 移行 (<code>Phase 3</code>) or Plugin Monitor で監視 (<code>Phase 4</code>)</dd>
-    <dt>関連 spec</dt><dd><a href="failure-analysis.html">failure-analysis.html</a> Bug #1687、<a href="research-findings.html">research-findings.html</a> §1 KP-3</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/failure-analysis.html">failure-analysis.html</a> Bug #1687、<a href="research-findings.html">research-findings.html</a> §1 KP-3</dd>
   </dl>
 </div>
 
@@ -190,7 +190,7 @@
     <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/plugins">code.claude.com/docs/en/plugins</a></dd>
     <dt>分類</dt><dd>smoke (Claude + plugin 起動必須)</dd>
     <dt>期待結果</dt><dd>各 stdout line が session 内 notification</dd>
-    <dt>関連 spec</dt><dd><a href="failure-analysis.html">failure-analysis.html</a> F-3、<a href="../spec/twl-mcp-integration.html">twl-mcp-integration.html</a> (mcp-watchdog 廃止代替)</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/failure-analysis.html">failure-analysis.html</a> F-3、<a href="../spec/twl-mcp-integration.html">twl-mcp-integration.html</a> (mcp-watchdog 廃止代替)</dd>
   </dl>
 </div>
 
@@ -239,7 +239,7 @@
     <dt>verify 対象</dt><dd>2 worker 並列実行で各々が <code>.mailbox/&lt;worker&gt;/inbox.jsonl</code> に書き込み、共通 path 不在、cross-pollution なし</dd>
     <dt>分類</dt><dd>bats unit (mock 可、RED until Phase 1 PoC)、<code>test-fixtures/experiments/atomic/EXP-013-per-specialist-mailbox-scope.bats</code></dd>
     <dt>期待結果</dt><dd>2 mailbox 独立、内容 cross なし、Bug #1703 構造的不能化確認</dd>
-    <dt>関連 spec</dt><dd><a href="../migration/invariant-fate-table.html#inv-v">不変条件 V</a>、<a href="failure-analysis.html">failure-analysis.html</a> Bug #1703</dd>
+    <dt>関連 spec</dt><dd><a href="../migration/invariant-fate-table.html#inv-v">不変条件 V</a>、<a href="../spec/failure-analysis.html">failure-analysis.html</a> Bug #1703</dd>
   </dl>
 </div>
 

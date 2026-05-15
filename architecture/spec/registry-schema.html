@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>registry.yaml schema — 第 5 弾 dig 新規 SSoT 基盤</title>
+<title>registry.yaml schema — 過去 dig (2026-05-13) 新規 SSoT 基盤</title>
 <link rel="stylesheet" href="common.css">
 <style>
   header.doc-header { border-bottom: 3px solid var(--focus); }
@@ -16,11 +16,11 @@
 
 <header class="doc-header">
   <h1>registry.yaml schema — twill plugin 統合 Authority SSoT</h1>
-  <div class="meta">draft-v1 (2026-05-13、第 5 弾 dig 新規) &middot; 10 role × concern matrix + vocabulary 6 field schema + Authority/Reference/Derived 階層図 &middot; 他 spec file の参照基盤</div>
+  <div class="meta">draft-v1 (2026-05-13、過去 dig (2026-05-13) 新規) &middot; 10 role × concern matrix + vocabulary 6 field schema + Authority/Reference/Derived 階層図 &middot; 他 spec file の参照基盤</div>
 </header>
 
 <div class="info">
-  <strong>本 file は他 spec file の参照基盤として機能する。</strong> 第 5 弾 dig (Round 1-10、<a href="../research/dig-report-ssot-2026-05-13.html">dig-report-ssot-2026-05-13.md</a>) で確定した「registry.yaml 統合 SSoT」「10 role 体系」「vocabulary 6 field schema」「Authority / Reference / Derived 階層」を一元化。spec edit 時は本 file の各節を参照することで「1 entity = 1 name」ルールが担保される。
+  <strong>本 file は他 spec file の参照基盤として機能する。</strong> 過去 dig (2026-05-13) (Round 1-10、<a href="../archive/research/dig-report-ssot-2026-05-13.html">dig-report-ssot-2026-05-13.md</a>) で確定した「registry.yaml 統合 SSoT」「10 role 体系」「vocabulary 6 field schema」「Authority / Reference / Derived 階層」を一元化。spec edit 時は本 file の各節を参照することで「1 entity = 1 name」ルールが担保される。
 </div>
 
 <h2 id="s1">§1. 本ファイルの役割と参照基盤 contract</h2>
@@ -58,7 +58,7 @@
       <td><code>registry.yaml</code></td>
       <td><code>plugins/twl/registry.yaml</code></td>
       <td>vocabulary + components + chains + hooks/monitors + integrity_rules + token_thresholds の 6 section 統合</td>
-      <td><span class="vs inferred">未作成 (本 dig で schema 確定、Phase 1 PoC で実体作成)</span></td>
+      <td><span class="vs inferred">未作成 (過去 dig で schema 確定、Phase 1 PoC で実体作成)</span></td>
       <td>13 / 27</td>
       <td>types.py fallback、README/CLAUDE.md listing が Derived として参照</td>
     </tr>
@@ -88,8 +88,8 @@
     </tr>
     <tr>
       <td>ADR-043</td>
-      <td><code>plugins/twl/architecture/decisions/ADR-043-twill-radical-rebuild.md</code></td>
-      <td>radical rebuild 設計の正典 (10 role + registry.yaml + 命名 policy)</td>
+      <td><code>architecture/decisions/</code> 配下 (新 ADR 群)</td>
+      <td>新 architecture 設計の正典 (10 role + registry.yaml + 命名 policy)</td>
       <td><span class="vs verified">Proposed</span></td>
       <td>13 / 27</td>
       <td>本 spec directory 全体を supplement として参照</td>
@@ -123,7 +123,7 @@
       <td><code>experiment-index.html</code></td>
       <td>architecture/spec/</td>
       <td>EXP-001〜038 結果集約 + status badge + 関連 spec link</td>
-      <td><span class="vs verified">第 5 弾 dig 反映完了 (EXP-032〜038 追加)</span></td>
+      <td><span class="vs verified">過去 dig (2026-05-13) 反映完了 (EXP-032〜038 追加)</span></td>
     </tr>
     <tr>
       <td><code>ref-pitfalls-catalog.md</code></td>
@@ -188,7 +188,7 @@
 
 <p style="margin-top: 0.5em; font-size: 0.9em;"><em>※ <strong>Derived 3 件</strong> (active 2 + 廃止予告 1)。<code>chain-steps.sh</code> は <code>Phase 3 cutover</code> で削除確定、SSoT カウントには廃止予告 mark で含める (temporal clarity 維持)。</em></p>
 
-<h3>1.5.4 SSoT 間の重複/矛盾 audit (本 dig 検出時点)</h3>
+<h3>1.5.4 SSoT 間の重複/矛盾 audit (過去 dig 検出時点)</h3>
 
 <table>
   <thead>
@@ -925,14 +925,14 @@ glossary:
   </thead>
   <tbody>
     <tr><td>canonical name</td><td>英語 hyphen-kebab、lowercase letters + numbers + hyphens のみ、<code>_</code> 不可</td><td>公式 skill name 制約 <span class="vs verified">verified</span> (skills docs verbatim「Lowercase letters, numbers, and hyphens only」)</td></tr>
-    <tr><td>description / 説明文</td><td>日本語可、ただし entity 参照時は backtick + 英語 canonical</td><td>第 5 弾 dig Round 7 合意</td></tr>
+    <tr><td>description / 説明文</td><td>日本語可、ただし entity 参照時は backtick + 英語 canonical</td><td>過去 dig (2026-05-13) Round 7 合意</td></tr>
     <tr><td>既存日本語表記 (「不変条件」「遷移」)</td><td>spec 説明文として OK、registry.yaml canonical は英語 (<code>invariant</code> / <code>status-transition</code>)</td><td>同上</td></tr>
   </tbody>
 </table>
 
 <h3>8.3 role 1 語化</h3>
 
-<p>false positive audit リスクを下げるため、複合 role 名 (<code>pilot-phase</code> 試案) ではなく <strong>1 語 role 体系</strong> で uniform: <code>phaser</code> / <code>administrator</code> / <code>tool</code> / <code>workflow</code> / <code>atomic</code> / <code>specialist</code> / <code>reference</code> / <code>script</code> / <code>hook</code> / <code>monitor</code>。第 5 弾 dig Round 9 確定。</p>
+<p>false positive audit リスクを下げるため、複合 role 名 (<code>pilot-phase</code> 試案) ではなく <strong>1 語 role 体系</strong> で uniform: <code>phaser</code> / <code>administrator</code> / <code>tool</code> / <code>workflow</code> / <code>atomic</code> / <code>specialist</code> / <code>reference</code> / <code>script</code> / <code>hook</code> / <code>monitor</code>。過去 dig (2026-05-13) Round 9 確定。</p>
 
 <h3>8.4 隠れ重複 SSoT の系統的解消</h3>
 
@@ -1004,7 +1004,7 @@ glossary:
 
 <h3>9.5 命名 policy ADR (ADR-045) — Accepted (2026-05-14)</h3>
 
-<p>本 file の Round 7-10 結果を formal ADR 化。第 5 弾 dig での「1 entity = 1 name + vocabulary 6 field schema + 10 role 体系 + 公式名衝突回避」を ADR-045 として正式化、Step 2 完遂 (registry.yaml glossary 22 entity [Phase F で verify-status 追加] + ref-invariants.md A-X 24 件 + Step 3 audit Section 11/12) で前提充足し Accepted 化。</p>
+<p>本 file の Round 7-10 結果を formal ADR 化。過去 dig (2026-05-13) での「1 entity = 1 name + vocabulary 6 field schema + 10 role 体系 + 公式名衝突回避」を ADR-045 として正式化、Step 2 完遂 (registry.yaml glossary 22 entity [Phase F で verify-status 追加] + ref-invariants.md A-X 24 件 + Step 3 audit Section 11/12) で前提充足し Accepted 化。</p>
 
 <h2 id="s10">§10. verify status defining criteria (4-state lattice)</h2>
 
@@ -1100,7 +1100,7 @@ glossary:
 <h2>§11. 関連 spec / EXP</h2>
 
 <ul>
-  <li><a href="../research/dig-report-ssot-2026-05-13.html">dig-report-ssot-2026-05-13.md</a> (第 5 弾 dig 独立 artifact、10 round + 33+ question + 921 行、本 file の origin)</li>
+  <li><a href="../archive/research/dig-report-ssot-2026-05-13.html">dig-report-ssot-2026-05-13.md</a> (過去 dig (2026-05-13) 独立 artifact、10 round + 33+ question + 921 行、本 file の origin)</li>
   <li><a href="glossary.html">glossary.html</a> (本 file §4 を 6 field schema として実装する用語集)</li>
   <li><a href="ssot-design.html">ssot-design.html</a> (案 4 registry.yaml 統合 SSoT 設計、本 file §2 と §5 を core 仕様化)</li>
   <li><a href="tool-architecture.html">tool-architecture.html</a> (tool-* 3 件 + 10 role 適用、本 file §3 を参照)</li>
@@ -1109,7 +1109,7 @@ glossary:
   <li><a href="../migration/deletion-inventory.html">deletion-inventory.html</a> (types.yaml + deps.yaml + step.sh framework 全廃の根拠)</li>
   <li><a href="../research/experiment-index.html">experiment-index.html</a> (EXP-032〜038、本 file §6 と §2 を実機検証)</li>
   <li><a href="../migration/rebuild-plan.html">rebuild-plan.html</a> (Strangler Fig 4 phase migration、本 file §9.1 vocabulary 拡張 schedule と整合)</li>
-  <li>plugins/twl/architecture/decisions/ADR-043-twill-radical-rebuild.md (Decision §8 命名 policy + §5 registry.yaml 統合 SSoT)</li>
+  <li>architecture/decisions/ 配下 ADR 群 (命名 policy + registry.yaml 統合 SSoT)</li>
   <li>plugins/twl/architecture/decisions/ADR-045-naming-policy.md (Accepted 2026-05-14、本 file の formal ADR 化)</li>
 </ul>
 
