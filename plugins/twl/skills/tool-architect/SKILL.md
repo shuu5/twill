@@ -6,7 +6,7 @@ description: |
   spec edit boundary hook で caller を機械的に enforce。
   spec 編集前に `export TWL_TOOL_CONTEXT=tool-architect` MUST。
 
-  Use when user: needs to edit architecture/spec/ HTML files (dig, refactor, content update, new file addition).
+  Use when user: needs to edit architecture/spec/ HTML files (content update, refactor, new file addition).
 type: tool
 effort: medium
 allowed-tools: [Bash, Read, Edit, Write, Skill, Agent]
@@ -19,24 +19,32 @@ spawnable_by:
 
 architecture/spec/ HTML 編集の唯一 author。twill plugin の新仕様 (architecture spec) を管理する。
 
+## 重要 note (transient、本 doc 作成時点で dir 構造移行中)
+
+本 SKILL.md および [`refs/spec-management-rules.md`](refs/spec-management-rules.md) は、**新 dir 構造 (`architecture/spec/` を spec SSoT として flat 化)** を前提として記述している。本 doc 作成時点では旧 sub-dir 構造 (`architecture/spec/twill-plugin-rebuild/`) が active であり、後続作業で flat 化される。
+
+flat 化完了まで、本 doc の `architecture/spec/<file>.html` という path 記述は実体的に `architecture/spec/twill-plugin-rebuild/<file>.html` を指す。spec-write-boundary hook は `*architecture/spec/*` で sub-dir 全 nest を包含するため、移行期間中も R-7 (caller marker) は正しく enforce される。本 note は flat 化完了時点で削除される。
+
 ## architecture/ ディレクトリ構造 (SSoT)
 
 ```
 architecture/
-├── spec/              ← 新 twill 仕様 SSoT (純粋 architecture spec、HTML のみ)
-├── migration/         ← 旧→新 移行計画 (rebuild-plan / fate-table / pitfalls-inheritance 等)
-├── research/          ← 調査レポート (dig-report / research-findings / sandbox-experiment / experiment-index 等)
-├── archive/           ← 旧資産 + draft + rollback 保持 (contexts/ / domain/ / migrations/ / vision.md / draft-v1.html 等)
-└── decisions/         ← ADR (新規 ADR-0012 以降。ADR-0006〜0011 は archive/decisions/)
+├── spec/              ← 新 twill 仕様 SSoT (純粋 architecture spec、HTML のみ + common.css)
+├── migration/         ← 旧→新 移行計画
+├── research/          ← 調査レポート / 実験記録
+├── archive/           ← 旧資産 (deprecated 仕様、rollback 保持、過去 ADR 等)
+└── decisions/         ← 新 architecture ADR (旧 ADR は archive/decisions/ に保持)
 ```
 
-**tool-architect の編集対象は `architecture/spec/` のみ**。他 dir (migration / research / archive / decisions) は user manual edit、または別 tool が編集する。
+**tool-architect の編集対象は `architecture/spec/` 配下 (sub-dir 全 nest 含む) のみ**。他 dir (migration / research / archive / decisions) は本 SKILL の責務外。
 
 ## caller marker (前提 MUST)
 
 - 編集前: `export TWL_TOOL_CONTEXT=tool-architect`
-- 編集後: `unset TWL_TOOL_CONTEXT` (leak 防止、他 caller への影響回避)
-- hook (`plugins/twl/scripts/hooks/pre-tool-use-spec-write-boundary.sh`) で機械的 enforce、未 set / 他 caller で `architecture/spec/` 配下を Edit/Write/NotebookEdit しようとすると JSON `permissionDecision: deny` を返す
+- 編集後: `unset TWL_TOOL_CONTEXT` (MUST、leak 防止)
+  - 同 shell で後続 spawn される他 caller (phaser-* / admin / 等) が `tool-architect` 扱いで spec を誤編集する事故を防ぐ
+  - sub-process は env を継承するため、unset しないと sub-shell 経由でも leak する
+- hook (`plugins/twl/scripts/hooks/pre-tool-use-spec-write-boundary.sh`) で機械的 enforce、未 set / 他 caller で `architecture/spec/` 配下 (sub-dir 全 nest 含む) を Edit/Write/NotebookEdit しようとすると JSON `permissionDecision: deny` を返す
 
 ## 管理ルール (R-1〜R-9)
 
@@ -44,17 +52,17 @@ architecture/
 
 ### サマリ
 
-| # | ルール | 強制方法 |
+| # | ルール | 強制方法 (現状) |
 |---|---|---|
-| R-1 | 新 file 追加時に `architecture/spec/README.html` index table に entry 追加 MUST | PR review (将来 CI check) |
-| R-2 | 新 file 追加時に `architecture/spec/architecture-graph.html` の node + edge 追加 MUST | PR review (将来 CI check) |
-| R-3 | 新 file は ≥1 inbound link 必須 (orphan 禁止、README は entry point 例外) | `spec-anchor-link-check.py --check-orphan` |
-| R-4 | file 削除/rename 時に inbound/outbound link 全更新 MUST | `spec-anchor-link-check.py` (broken 0) |
+| R-1 | 新 file 追加時に `architecture/spec/README.html` index table に entry 追加 MUST | PR review |
+| R-2 | 新 file 追加時に `architecture/spec/architecture-graph.html` の node + edge 追加 MUST | PR review |
+| R-3 | 新 file は ≥1 inbound link 必須 (orphan 禁止、README は entry point 例外) | `spec-anchor-link-check.py --check-orphan` (CI) |
+| R-4 | file 削除/rename 時に inbound/outbound link 全更新 MUST | `spec-anchor-link-check.py` (CI、broken 0) |
 | R-5 | badge=outline で merge 禁止 (content 化完了後 merge) | PR review |
-| R-6 | HTML 以外は `research/` or `archive/` 限定、`spec/` 直下に置かない (common.css 例外) | PR review (将来 CI check) |
+| R-6 | HTML 以外は `research/` or `archive/` 限定、`spec/` 配下に置かない (common.css 例外) | PR review |
 | R-7 | spec 編集前 `TWL_TOOL_CONTEXT=tool-architect` env set MUST | `pre-tool-use-spec-write-boundary.sh` hook |
 | R-8 | PR 内で broken link 0 + orphan 0 必須 | `.github/workflows/spec-link-check.yml` CI gate |
-| R-9 | architecture-graph.html は手動 maintenance (中期で auto-gen script 化を検討) | tool-architect 配下 helper (将来) |
+| R-9 | architecture-graph.html は手動 maintenance | tool-architect 規律 (PR review) |
 
 ## 標準ワークフロー
 
@@ -64,17 +72,17 @@ export TWL_TOOL_CONTEXT=tool-architect
 
 # 2. spec 編集 (Edit/Write)
 #    - 新 file 追加: refs/spec-management-rules.md の HTML template から起こす
-#    - 編集後 R-1〜R-9 checklist を walkthrough
+#    - 編集後 R-1〜R-9 checklist を walkthrough (refs/spec-management-rules.md)
 
 # 3. 機械検証
 python3 scripts/spec-anchor-link-check.py --check-orphan --output text
 # → "broken: 0" + "orphan: 0" 両方確認、exit 0 必須
 
-# 4. caller marker unset
+# 4. caller marker unset (MUST、leak 防止)
 unset TWL_TOOL_CONTEXT
 
-# 5. commit + push (host で実施)
-git add architecture/spec/ && git commit -m "..." && git push
+# 5. commit + push (host で実施、message prefix は project convention に従う)
+git add architecture/spec/ && git commit -m "spec(<file>): <change summary>" && git push
 ```
 
 ## file 操作の checklist (refs/spec-management-rules.md 参照)
@@ -90,7 +98,7 @@ git add architecture/spec/ && git commit -m "..." && git push
 ## 関連 spec / file
 
 - `architecture/spec/architecture-graph.html` — link 図 hub (R-2 強制 target)
-- `architecture/spec/README.html` — index hub (R-1 強制 target)
+- `architecture/spec/README.html` — index hub (R-1 強制 target、entry point)
 - `architecture/spec/registry-schema.html` — registry.yaml schema 定義
 - `scripts/spec-anchor-link-check.py` — link integrity 機械検証 tool
 - `.github/workflows/spec-link-check.yml` — CI gate (R-8 強制)

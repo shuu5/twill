@@ -13,8 +13,8 @@
                                              [--entry-points LIST]
 
 終了コード:
-  0 = clean (broken link 0 件 + orphan 0 件)
-  1 = broken link あり または orphan あり
+  0 = clean (broken link 0 件、--check-orphan 指定時は orphan 0 件も要求)
+  1 = broken link あり (--check-orphan 指定時は orphan あり も含む)
   2 = wrapper-level error (spec_dir not found 等)
 """
 
@@ -98,7 +98,9 @@ class _HrefExtractor(HTMLParser):
         if tag not in ("a", "link"):
             return
         attr_dict = dict(attrs)
-        href = attr_dict.get("href") or attr_dict.get("HREF") or attr_dict.get("xlink:href")
+        # Python html.parser は attr name を lowercase 化するため "HREF" check は不要
+        # xlink:href (SVG <a>) は colon を保持しつつ lowercase 化されるため "xlink:href" key で取得
+        href = attr_dict.get("href") or attr_dict.get("xlink:href")
         if href and href.strip():
             line, _ = self.getpos()
             self.hrefs.append((href.strip(), line))
@@ -159,7 +161,22 @@ def classify_href(href: str) -> dict:
     if h.endswith(".css"):
         return {"kind": "stylesheet", "file": h, "fragment": None}
 
-    if h.startswith("../") or h.startswith("./"):
+    # ./ prefix は same-dir relative path、拡張子で cross_file 分類に振り直し (R-3 機械検証の正確性向上)
+    if h.startswith("./"):
+        fragment = None
+        if "#" in h:
+            file_part, fragment = h.rsplit("#", 1)
+        else:
+            file_part = h
+        ext = Path(file_part).suffix.lower()
+        if ext in (".html", ".htm"):
+            return {"kind": "cross_file_html", "file": file_part, "fragment": fragment}
+        elif ext == ".md":
+            return {"kind": "cross_file_md", "file": file_part, "fragment": fragment}
+        return {"kind": "external_relative", "file": file_part, "fragment": fragment}
+
+    # ../ は上位 dir、依然として external_relative
+    if h.startswith("../"):
         fragment = None
         if "#" in h:
             h, fragment = h.rsplit("#", 1)
