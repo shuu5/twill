@@ -1,0 +1,13 @@
+{
+  "_comment_": "Phase 1 PoC C2 (2026-05-15): Monitor daemon SSoT (monitor-policy.html §5.1)。admin-inbox-tail のみ minimal scope、phaser-mailbox-tail は Cluster 5 で admin-cycle 本格実装時に追加予定。Plugin loader が plugin load 時に background process を自動起動 + cleanup。",
+  "monitors": [
+    {
+      "id": "admin-inbox-tail",
+      "description": "administrator mailbox event stream (Phase 1 PoC C2 配置、C5 で active 化)",
+      "command": "mkdir -p .mailbox/administrator .supervisor && touch .mailbox/administrator/inbox.jsonl && tail -F .mailbox/administrator/inbox.jsonl | jq -rc --unbuffered 'select(.event != null) | \"[\\(.event)] from=\\(.from) ts=\\(.ts) detail=\\(.detail // {} | tojson)\"'",
+      "timeout_sec": 3600,
+      "stderr_sink": ".supervisor/monitor-stderr-admin-inbox.log",
+      "auto_restart": true
+    }
+  ]
+}

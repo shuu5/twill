@@ -15,6 +15,71 @@
   <div class="meta">本 spec の変更履歴</div>
 </header>
 
+<h2>2026-05-15 Phase 1 PoC Cluster 2 — helper 4 + monitors.json + Phase 6 review 9 件 fix (bats 102/102 PASS hard gate 達成)</h2>
+
+<h3>核心成果</h3>
+
+<ol>
+  <li><strong>hard gate 達成 (Phase 1 PoC go-judgment 条件 1)</strong>: bats 102 tests PASS 維持 (Cluster 1 + Cluster 2 後)、Plan 旧記述 "9/9" は実態 17 file × 102 tests で大幅超過。Phase 1 PoC 着手判定 critical milestone 通過</li>
+  <li><strong>新規 helper 3 + admin-cycle stub + monitors.json (~270 行)</strong>:
+    <ul>
+      <li><code>lib/mailbox.sh</code> (~85 行、4 API: emit/read/drain/archive、flock -x atomic、callback 存在確認、空 archive skip): spawn-protocol.html §5 準拠、Inv T (mailbox atomic write) 機械化</li>
+      <li><code>lib/spawn-tmux.sh</code> (~125 行、3 階層 tmux spawn helper): TWL_PHASER_NAME env 注入 (Phase I 確定)、_wait_session_ready 3 条件 AND、tmux 3.x version check、jq-based JSON 構築 (injection 回避)</li>
+      <li><code>admin-cycle.sh</code> (minimal stub ~50 行): Cluster 5 で 8-step 本格実装予定 (Step 0 monitor health-check + Step 1-7 admin-cycle.html §2)</li>
+      <li><code>monitors/monitors.json</code> (admin-inbox-tail entry): monitor-policy.html §5.1 準拠、parent dir 自動作成 prefix で file 不在時 loop 回避</li>
+    </ul>
+  </li>
+  <li><strong>scope re-interpretation (user 指摘で実施)</strong>: Plan の "bats 9/9 hard gate" は old description、実態 17 bats file × 102 tests で既に超過。Plan の "minimal 3 hook" 縮退と同じく古い記述、Cluster 2 で focus は **新規 helper 4 + monitors.json** に絞る (既存 bats 102 PASS 維持で hard gate 達成)</li>
+  <li><strong>Cluster 2 スコープ</strong>:
+    <ul>
+      <li>Plan の helper 5 件のうち <code>verify-coverage.sh</code> は既存 (Phase F-G で実装済)、新規は 4 件のみ</li>
+      <li>Plan の <code>lib/phase-gate.sh ~80 行</code> は Cluster 1 hook script (<code>scripts/hooks/pre-tool-use-phase-gate.sh</code>) で sufficient と判断、本 cluster 不要</li>
+      <li>monitors.json は admin-inbox-tail のみ minimal (Cluster 5 で phaser-mailbox-tail 追加)</li>
+    </ul>
+  </li>
+</ol>
+
+<h3>Phase 6 review (cross-AI bias 低減、3 並列 sonnet code-reviewer)</h3>
+
+<ul>
+  <li><strong>Agent 1 (bash script quality + flock atomicity + DRY)</strong>: CRITICAL 3 (mailbox_read shared lock race / mailbox_read offset subshell propagation / _emit_admin JSON injection) + WARN 4 + INFO 2</li>
+  <li><strong>Agent 2 (spec compliance + drift detection + Inv 整合)</strong>: CRITICAL 4 (tmux new-window 引数分割 / _emit_admin signature drift / mailbox_read shared lock / _wait_session_ready -S -N) + WARN 4 + INFO 3</li>
+  <li><strong>Agent 3 (integration + edge cases + Cluster 5 future-proofing)</strong>: CRITICAL 3 (mailbox_read shared lock / mailbox_read subshell race / tmux -e version) + WARN 5 + INFO 3</li>
+</ul>
+
+<p>CRITICAL 5 件 (重複統合後) + WARN 主要 5 件 = 9 件を本 commit で全 fix:</p>
+<ul>
+  <li><strong>mailbox_read shared lock race</strong>: flock -s → -x 変更、offset 取得 + tail + 行数 count + offset 更新を atomic exclusive lock 内に統合 (Inv T 違反 fix、3 agent 共通指摘の最重要)</li>
+  <li><strong>JSON injection 回避</strong>: spawn-tmux.sh の <code>_emit_admin</code> を文字列 interpolation から jq -nc --arg key=value pair 構築に変更 (window_name/skill の特殊文字対応)</li>
+  <li><strong>tmux 3.x version check</strong>: spawn-tmux.sh 起動時 <code>_check_tmux_version</code> で tmux 1.x/2.x reject (<code>new-window -e</code> flag は tmux 3.0 以降必須、fail-fast)</li>
+  <li><strong>mailbox_drain callback 存在確認</strong>: <code>declare -f</code> で未定義 callback を reject (silent skip 回避、Cluster 5 で _handle_event 未定義時 protection)</li>
+  <li><strong>mailbox_archive 空 inbox skip</strong>: <code>-s</code> size check で empty file の archive 回避 (noise 削減、retention cleanup 容易化)</li>
+  <li><strong>monitors.json command</strong>: <code>mkdir -p .mailbox/administrator .supervisor && touch inbox.jsonl &&</code> prefix で file 不在時の tail -F 無限 loop 回避 + auto_restart noise 削減</li>
+  <li><strong>monitors.json detail format</strong>: <code>from=\(.from) ts=\(.ts) detail=\(.detail // {})</code> に統一 (monitor-policy.html §3.1 canonical pattern と一致、診断性向上)</li>
+  <li><strong>admin-cycle stub comment</strong>: Step 3 (tmux 列挙) + Step 7 (cleanup) を追加 (admin-cycle.html §2 6-step + Step 0 health-check + Step 7 cleanup の完全 spec 伝達、Cluster 5 実装者見落とし回避)</li>
+</ul>
+
+<p>残 WARN/INFO (spec drift _emit_admin signature / archive path 命名 / heartbeat_ts 未対応 / EXP-006 直接 test 不在等) は INFO level、Phase 2 dig or Cluster 5 wire 時に individual 対応。</p>
+
+<h3>編集 / 新規 file (Phase 1 PoC C2、計 5 file)</h3>
+
+<ul>
+  <li><strong>new</strong> (4): <code>plugins/twl/scripts/lib/mailbox.sh</code> / <code>plugins/twl/scripts/lib/spawn-tmux.sh</code> / <code>plugins/twl/scripts/admin-cycle.sh</code> / <code>plugins/twl/monitors/monitors.json</code></li>
+  <li><strong>modified</strong> (1): <code>architecture/spec/twill-plugin-rebuild/changelog.html</code> (本 entry)</li>
+</ul>
+
+<h3>Phase 1 PoC C2 完遂判定 + Cluster 3 (registry + plugin scaffold) 着手 ready</h3>
+
+<p>本 commit で C2 完遂判定:</p>
+<ul>
+  <li>bash -n syntax check + JSON valid (4 file 全 OK)</li>
+  <li>functional test 4 件 PASS (mailbox emit/read flock -x / drain 未定義 callback reject / archive 空 skip / admin-cycle stub output)</li>
+  <li><strong>bats baseline 102 tests PASS 維持 (hard gate 達成)</strong></li>
+  <li>Phase 6 review CRITICAL 5 + WARN 5 = 9 件全 fix 統合済</li>
+</ul>
+
+<p>次 cluster (<strong>C3 registry + plugin scaffold、~4h</strong>): <code>plugins/twl/.claude-plugin/plugin.json</code> 完備、<code>plugins/twl/registry.yaml</code> minimal components section 追加、<code>.mcp.json</code> に GitHub 公式 MCP 追加、<code>registry-audit.sh</code> 新規。VP-mapping: VP-17 (registry audit) / VP-19 (disable-model-invocation) / VP-20 (vocabulary 命名衝突)。</p>
+
 <h2>2026-05-15 Phase 1 PoC Cluster 1 — hook foundation (keep 5 + new 3 hook) + Stage 戦略確定 + EXP-043 + Phase 6 review 10 件 fix</h2>
 
 <h3>核心成果</h3>
