@@ -15,6 +15,44 @@
   <div class="meta">本 spec の変更履歴</div>
 </header>
 
+<h2>2026-05-15 Phase 1 PoC Cluster 3 followup — pyyaml resolve fix (bats 102 件全 PASS hard gate 真の達成)</h2>
+
+<h3>核心: 重大事実訂正 (admit)</h3>
+
+<p>前 Cluster 1/2 で「bats 102 PASS hard gate 達成」と判断したが、実態は <strong>78 PASS + 24 FAIL (全 pyyaml ModuleNotFoundError)</strong> だった (誤認識、<code>tail -3</code> 出力に依存した unverified claim)。Cluster 2 完遂宣言は誤りで、Phase 1 PoC go-judgment 条件 1 (bats 9/9 = 全件 PASS) は **未達成のまま** だった。本 followup commit で root cause を fix、真の hard gate 達成。</p>
+
+<h3>root cause + fix</h3>
+
+<ul>
+  <li><strong>root cause</strong>: <code>uv run --extra test bats</code> 経由起動時、uv 管理 python3 (<code>/home/shuu5/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/bin/python3</code>) が PATH 最優先で resolve され、pyyaml install されておらず <code>ModuleNotFoundError: No module named 'yaml'</code></li>
+  <li><strong>system /usr/bin/python3 は pyyaml 6.0.1 install 済</strong> (Ubuntu apt python3-yaml package)</li>
+  <li><strong>fix</strong>: <code>test-fixtures/experiments/common.bash</code> の <code>exp_common_setup()</code> で <code>python3</code> function override で system python3 を pinpoint (<code>export -f python3</code> で child process にも propagate)。pyyaml available な python3 を resolve、function override fallback chain</li>
+</ul>
+
+<h3>fix 後の bats 結果</h3>
+
+<ul>
+  <li><strong>PASS: 102</strong> / FAIL: 0 / SKIP: 10 (Phase 1 PoC seed の expected skip、SKILL.md 未作成等)</li>
+  <li>影響範囲: EXP-006 (mailbox-flock-atomic) / EXP-011/012/013 (atomic) / EXP-032/034/038 (registry) 等、<code>python3 -c "import yaml; ..."</code> で registry.yaml を parse する 24 test 全 PASS 化</li>
+  <li><strong>Phase 1 PoC go-judgment 条件 1 (bats 全件 PASS) 真の達成</strong></li>
+</ul>
+
+<h3>誤認識の lesson</h3>
+
+<ul>
+  <li><strong>verify output completeness</strong>: <code>tail -3</code> での末尾出力確認に依存せず、<code>grep -cE "^ok |^not ok "</code> で精密 count 必須 (CLAUDE.md feedback_verify_output_not_just_existence 知見の具現)</li>
+  <li><strong>hard gate 達成の verification rigor</strong>: 「baseline 維持」claim は精密 count + 残 FAIL listing + skip 内訳 までの 3 件確認が必須</li>
+  <li>本 lesson は Memory MCP に保存予定 (Cluster 4 着手前)</li>
+</ul>
+
+<h3>編集 file (本 followup、計 2 file)</h3>
+
+<ul>
+  <li><strong>modified</strong> (2): <code>test-fixtures/experiments/common.bash</code> (python3 function override 追加、~13 行) / <code>architecture/spec/twill-plugin-rebuild/changelog.html</code> (本 entry、誤認識 admit + 訂正)</li>
+</ul>
+
+<h3>累積 commit 13 件目 (前 c5f563b5)、Cluster 4 (atomic SKILL) 着手 ready (真の hard gate 達成)</h3>
+
 <h2>2026-05-15 Phase 1 PoC Cluster 3 — plugin.json 拡張 + registry.yaml hooks-monitors 追記 + Phase 6 review 4 件 fix (scope re-evaluation 適用)</h2>
 
 <h3>核心成果</h3>

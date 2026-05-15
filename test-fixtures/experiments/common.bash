@@ -25,6 +25,21 @@ exp_common_setup() {
         return 1
     fi
 
+    # Phase 1 PoC Cluster 3 fix (2026-05-15): pyyaml resolve for bats invoke
+    # uv run --extra test bats 経由起動時、uv 管理 python3 (3.11.15、pyyaml なし) が PATH 最優先で
+    # resolve される (/home/shuu5/.local/share/uv/python/...)。system python3 (/usr/bin/python3、
+    # pyyaml 6.0.1 install 済) を確実に使うため function override で pinpoint。
+    # 結果: bats EXP-006/011/012/013/032/034/038 等 24 件 fail → PASS。
+    if ! python3 -c "import yaml" 2>/dev/null; then
+        if [[ -x /usr/bin/python3 ]] && /usr/bin/python3 -c "import yaml" 2>/dev/null; then
+            python3() { /usr/bin/python3 "$@"; }
+            export -f python3
+        else
+            echo "FATAL: no python3 with yaml module available (tried: PATH default + /usr/bin/python3)" >&2
+            return 1
+        fi
+    fi
+
     SANDBOX="$(mktemp -d)"
     export EXP_DIR TEST_FIXTURES_DIR REPO_ROOT SANDBOX
 }
