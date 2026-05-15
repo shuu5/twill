@@ -19,7 +19,7 @@
 
 <header class="doc-header">
   <h1>失敗 analysis — 既存 twill plugin の 9 件 P0 bug 深掘り</h1>
-  <div class="meta">draft-v2 (2026-05-12) &middot; verified root cause + 横断要因 F-1/F-2/F-3 + MUST 15 件抽出</div>
+  <div class="meta">status: <span class="badge done">done</span> &middot; draft-v3 (2026-05-15、F-4 追記 + Q3 整合化反映) &middot; verified root cause + 横断要因 F-1/F-2/F-3/F-4 + MUST 15 件抽出</div>
 </header>
 
 <div class="info">
@@ -52,6 +52,18 @@
     <li>同一 invariant を複数 env var で表現しない (例: 「autopilot mode」と「正しい worktree」は別 invariant)。</li>
   </ul>
   <p><strong>新 spec での不能化</strong>: PreToolUse hook + GitHub Project Board status SSoT で gate を機械化、env var 経由の caller authz は全廃。</p>
+</div>
+
+<div class="factor-block">
+  <h3>F-4: 用語 SSoT 不在による drift (2026-05-13 追加)</h3>
+  <p><strong>症状</strong>: 同一 entity を別語で参照する drift が多重に発生。旧 plugin では <code>pilot</code>/<code>phase</code>/<code>controller</code> の 5 重多義、<code>worker</code> の 5 重多義 (workflow/atomic/specialist と統合)、<code>step</code> の 5 重多義、<code>state</code>/<code>status</code> の 2 重、<code>mail</code>/<code>message</code> の 3 重等。role 名混乱で audit 不能、命名衝突で公式 Claude Code 名 (<code>Tool</code>/<code>Skill</code>) と区別困難。</p>
+  <p><strong>lesson (MUST)</strong>:</p>
+  <ul>
+    <li><strong>1 entity = 1 canonical name</strong> ルールを vocabulary table (<code>registry.yaml#glossary</code>) で機械的に enforce。</li>
+    <li>forbidden synonym を明示し、<code>twl audit --vocabulary</code> で word boundary 厳密検出 (severity: warning)。</li>
+    <li>公式 Claude Code 名と内部 entity の命名衝突回避 (公式は大文字始まり + backtick、twl 内部は小文字 + role-prefix)。</li>
+  </ul>
+  <p><strong>新 spec での不能化</strong>: <code>registry.yaml#glossary</code> vocabulary table (6 field schema: canonical/aliases/forbidden/context/description/examples)、<a href="glossary.html">glossary.html</a> (10 role 体系) + <a href="registry-schema.html">registry-schema.html</a> で SSoT 化、<code>twl audit --vocabulary</code> で機械検証。</p>
 </div>
 
 <div class="factor-block">
@@ -239,7 +251,7 @@
   <li><code>--project-dir</code> 未指定かつ並列 Wave 検出時は degrade をデフォルト</li>
   <li>外部依存 (upstream bug) への workaround は docs 明記 + upstream fix ticket</li>
   <li>Known Gap は実装 block を PR に含めるか、明確な Ship 条件を定義</li>
-  <li>AC 完備性は co-issue refine 段階で worker-spec-review 通過必須</li>
+  <li>AC 完備性は co-issue refine 段階で specialist-spec-review 通過必須</li>
 </ol>
 
 <h2>関連 spec ファイル</h2>

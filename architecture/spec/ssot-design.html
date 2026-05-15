@@ -102,7 +102,7 @@
 <p>(2026-05-13) (2026-05-13、10 round × 33+ question) で <strong>chain SSoT 三重化に加えて以下の SSoT 多重化が判明</strong>:</p>
 
 <ul>
-  <li><strong>types.yaml 矛盾</strong>: <code>cli/twl/types.yaml</code> が component 型 + token 閾値 SSoT として記述されているが、plugin component 構成では旧 type 名 (controller / co-autopilot 等) が残存。新 type 名 (administrator / phase-* / worker-*) との整合性が drift</li>
+  <li><strong>types.yaml 矛盾</strong>: <code>cli/twl/types.yaml</code> が component 型 + token 閾値 SSoT として記述されているが、plugin component 構成では旧 type 名 (controller / co-autopilot 等) が残存。新 type 名 (administrator / phaser-* / workflow-* / atomic-* / specialist-*) との整合性が drift。<strong>(2026-05-13) で types.yaml 自体が廃止確定</strong>、registry.yaml 統合 SSoT に移行</li>
   <li><strong>vocabulary SSoT 不在</strong>: pilot/phase/controller の 5 重、worker の 5 重、step の 5 重等の用語多重化が「1 entity = 1 name」違反、SSoT として機能不全</li>
   <li><strong>役割名 (role) の階層分類不在</strong>: tool / pilot / worker / specialist 等の役割が 11 種以上に膨らんでいたが、階層関係 (L0/L1/L2/independent) や concern 分離が暗黙</li>
   <li><strong>制御系 4 語多重</strong>: administrator / orchestrator / controller / supervisor の 4 語が同概念に対し並存</li>

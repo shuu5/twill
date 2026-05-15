@@ -97,7 +97,7 @@
     <tr><td><code>--window-name &lt;name&gt;</code></td><td>tmux window 名 (50 文字上限)</td><td>必須</td></tr>
     <tr><td><code>--skill &lt;namespaced-name&gt;</code></td><td>起動 slash command (例: <code>twl:phaser-impl</code>)</td><td>必須</td></tr>
     <tr><td><code>--args &lt;string&gt;</code></td><td>slash command に渡す引数 (例: Issue 番号)</td><td>任意</td></tr>
-    <tr><td><code>--cwd &lt;path&gt;</code></td><td>worker 用 worktree path</td><td>worker 時必須</td></tr>
+    <tr><td><code>--cwd &lt;path&gt;</code></td><td>L2-3 (atomic/specialist instance) 用 worktree path</td><td>phaser 時必須 (Inv B、worktree 作成は phaser 専任)</td></tr>
     <tr><td><code>--mailbox-from &lt;name&gt;</code></td><td>mail 送信者識別 (sender field)</td><td>必須</td></tr>
   </tbody>
 </table>
@@ -309,9 +309,9 @@ mailbox_read {
 <ul>
   <li><strong>spawn 系</strong>: <code>spawn-completed</code>, <code>spawn-failed</code>, <code>spawn-skip</code></li>
   <li><strong>phase 系</strong>: <code>phase-started</code>, <code>phase-progress</code>, <code>phase-completed</code>, <code>phase-failed</code></li>
-  <li><strong>step 系</strong> (worker→pilot): <code>step-started</code>, <code>step-completed</code>, <code>step-precheck-failed</code>, <code>step-postverify-failed</code></li>
+  <li><strong>step 系</strong> (atomic→phaser): <code>step-started</code>, <code>step-completed</code>, <code>step-precheck-failed</code>, <code>step-postverify-failed</code> (mail event 名の <code>step-*</code> prefix は canonical event 名として継続、role prefix とは独立)</li>
   <li><strong>gate 系</strong>: <code>phase-gate-denied</code></li>
-  <li><strong>tool 系</strong>: <code>tool-completed</code> (tool-self-improve のみ admin に送る)</li>
+  <li><strong>tool 系</strong>: <code>tool-completed</code> (tool-sandbox-runner のみ administrator に送る、旧 tool-self-improve rename)</li>
   <li><strong>escalate 系</strong>: <code>escalate-human-gate</code>, <code>budget-pause</code></li>
 </ul>
 
@@ -371,9 +371,9 @@ mailbox_emit \
 <div class="warning">
 <strong>公式制約 (verified)</strong>: Claude Code subagent は <strong>1 階層内側のみ</strong> spawn 可能、子 subagent の更なる spawn は禁止。
 <ul>
-  <li>worker (L2) は内部で codex CLI 等の subagent を 1 階層内に持てる</li>
-  <li>worker 内 subagent が更に subagent spawn は <strong>禁止</strong></li>
-  <li>これが <strong>tmux で別 main session を spawn する根拠</strong>: 3 階層 (admin / pilot / worker) は全て別 main session、subagent 入れ子では実現不可</li>
+  <li>L2-3 (workflow / atomic / specialist) は内部で codex CLI 等の subagent を 1 階層内に持てる</li>
+  <li>L2-3 内 subagent が更に subagent spawn は <strong>禁止</strong></li>
+  <li>これが <strong>tmux で別 main session を spawn する根拠</strong>: 3 層 (administrator / phaser / L2-3) は全て別 main session、subagent 入れ子では実現不可</li>
 </ul>
 verified source: Claude Code 公式 docs (code.claude.com/docs/en/sub-agents.md L60/L348/L737)
 </div>
@@ -383,7 +383,7 @@ verified source: Claude Code 公式 docs (code.claude.com/docs/en/sub-agents.md 
 <ul>
   <li><strong>Inv T (file mailbox atomic write)</strong>: 全 mailbox write は flock 取得した atomic write <a class="exp-link" href="../research/experiment-index.html#EXP-006">EXP-006</a></li>
   <li><strong>Inv V (per-specialist checkpoint)</strong>: <code>.mailbox/&lt;session-name&gt;/</code> は per-session、共通 path 禁止 <a class="exp-link" href="../research/experiment-index.html#EXP-013">EXP-013</a></li>
-  <li><strong>Inv I-4 (admin は pilot mail のみ受信)</strong>: pyramid 集約、worker から admin 直接 mail 禁止</li>
+  <li><strong>Inv I-4 (administrator は phaser mail のみ受信)</strong>: pyramid 集約、L2-3 (workflow/atomic/specialist) から administrator 直接 mail 禁止</li>
   <li><strong>Inv I-7 (tmux send-keys 使用禁止)</strong>: ただし spawn-tmux.sh の <strong>spawn 直後 1 回のみ</strong>例外として inject 許可 (skill 起動 trigger)。それ以外の通信は mailbox 経由</li>
 </ul>
 
@@ -401,7 +401,7 @@ verified source: Claude Code 公式 docs (code.claude.com/docs/en/sub-agents.md 
   <li><a href="overview.html">overview.html</a> §3 (3 階層 architecture 全体図)</li>
   <li><a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> Inv T (mailbox atomic) + V (per-specialist scope)</li>
   <li><a href="crash-failure-mode.html">crash-failure-mode.html</a> §3 (heartbeat 検知 + mail loss)</li>
-  <li><a href="admin-cycle.html">admin-cycle.html</a> §3 (pilot mail 集約)</li>
+  <li><a href="admin-cycle.html">admin-cycle.html</a> §3 (phaser mail 集約)</li>
   <li><a href="../research/sandbox-experiment.html">sandbox-experiment.html</a> §3 (EXP-006 mailbox flock + EXP-010 plugin spawn)</li>
   <li><a href="../research/research-findings.html">research-findings.html</a> §7 (tmux / Plugin 公式 verified)</li>
   <li>既存 verified pattern source:

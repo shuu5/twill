@@ -106,7 +106,7 @@
 
   <rect x="40" y="260" width="180" height="60" rx="8" fill="#fdf3f3" stroke="#b22323" stroke-width="2"/>
   <text x="130" y="284" text-anchor="middle" font-size="12" font-weight="700" fill="#b22323">4. spawn 判断</text>
-  <text x="130" y="302" text-anchor="middle" font-size="10" fill="#555">spawn-tmux.sh pilot</text>
+  <text x="130" y="302" text-anchor="middle" font-size="10" fill="#555">spawn-tmux.sh phaser-*</text>
 
   <rect x="240" y="260" width="180" height="60" rx="8" fill="#fdf3f3" stroke="#b22323" stroke-width="2"/>
   <text x="330" y="284" text-anchor="middle" font-size="12" font-weight="700" fill="#b22323">5. escalate</text>
@@ -137,7 +137,7 @@
 
 <h3>3.1 step 1: <code>.mailbox/administrator/inbox.jsonl</code> 読込</h3>
 
-<p>各 pilot が emit した mail を読み、未読 line を line 番号で track。flock 共有 lock で read。format:</p>
+<p>各 phaser が emit した mail を読み、未読 line を line 番号で track。flock 共有 lock で read。format:</p>
 
 <pre><code>{"from":"phaser-impl-1660","ts":"2026-05-12T22:00:00+09:00","event":"phase-completed","detail":{"issue":1660,"status":"Implementing"}}
 {"from":"phaser-pr-1660","ts":"2026-05-12T22:15:00+09:00","event":"merge-gate-failed","detail":{"issue":1660,"reason":"specialist FAIL"}}
@@ -172,12 +172,12 @@
   IF unread_phaser_mail_for_issue:
     PROCESS_MAIL_FIRST  # Inv I-3 mail check prerequisite
 
-  spawn_tmux pilot-{next_phase}-{issue_num}</code></pre>
+  spawn_tmux phaser-{next_phase}-{issue_num}</code></pre>
 
 <h3>3.5 step 5: failure / escalate</h3>
 
 <ul>
-  <li>pilot failure mail (phase-gate-denied / phase-failed / specialist-FAIL) を集約</li>
+  <li>phaser failure mail (phase-gate-denied / phase-failed / specialist-FAIL) を集約 (mail event 名の <code>phase-*</code> prefix は spawn-protocol §6.1 で定義された canonical event 名、role prefix とは独立)</li>
   <li>3 回連続 failure → ★HUMAN GATE escalate (user mail or AskUserQuestion)</li>
   <li>budget exhaustion mail (Inv Q) → pause + recovery (CronCreate を <code>YYm+5min</code> 後に reschedule)</li>
 </ul>
@@ -185,7 +185,7 @@
 <h3>3.6 step 6: cleanup</h3>
 
 <ul>
-  <li>completed pilot window (status=PR Reviewed / Merged) は <code>tmux kill-window -t &lt;name&gt;</code></li>
+  <li>completed phaser window (status=PR Reviewed / Merged) は <code>tmux kill-window -t &lt;name&gt;</code></li>
   <li><code>.mailbox/&lt;completed&gt;/inbox.jsonl</code> を <code>.mailbox/archive/inbox-&lt;ts&gt;.jsonl</code> に archive</li>
   <li>7 日以上 stale の archive を削除 (disk pressure 緩和)</li>
 </ul>
@@ -325,8 +325,8 @@ fi</code></pre>
   <tbody>
     <tr><td>idempotent 二重 spawn</td><td>step 4 pre-check で tmux 確認 (Inv I-1)</td></tr>
     <tr><td>parallelism 上限超過</td><td>step 4 で defer、次 cycle に持ち越し (Inv I-2)</td></tr>
-    <tr><td>stale pilot (heartbeat 古い)</td><td><a href="crash-failure-mode.html">crash-failure-mode.html</a> §3 で検知 → escalate (Inv G)</td></tr>
-    <tr><td>mail race (pilot が同 ts で 2 mail)</td><td>mailbox.sh flock atomic で順序保証 (Inv T)</td></tr>
+    <tr><td>stale phaser (heartbeat 古い)</td><td><a href="crash-failure-mode.html">crash-failure-mode.html</a> §3 で検知 → escalate (Inv G)</td></tr>
+    <tr><td>mail race (phaser が同 ts で 2 mail)</td><td>mailbox.sh flock atomic で順序保証 (Inv T)</td></tr>
     <tr><td>mail loss (disk 故障)</td><td>file 永続のため通常 loss しない、loss 時は user に escalate</td></tr>
     <tr><td>cron skip (admin busy)</td><td>公式仕様で skip 後の catch-up なし、次 cycle で reconcile</td></tr>
     <tr><td>cron jitter</td><td>up to half-interval ずれ前提で 25 min default (実 fire は 12-37 min 範囲)</td></tr>
