@@ -4,6 +4,10 @@ on:
   pull_request:
     paths:
       - 'architecture/spec/**'
+      - 'architecture/changes/**'
+      - 'architecture/archive/**'
+      - 'architecture/steering/**'
+      - 'architecture/decisions/**'
       - 'scripts/spec-anchor-link-check.py'
       - '.github/workflows/spec-link-check.yml'
 

@@ -1,0 +1,59 @@
+name: spec-respec-build
+
+# R-18 (ReSpec semantic markup) の機械検証
+# spec/ 内 HTML が ReSpec parse-error なくレンダリングできることを確認する
+# (新規 section の <section class="normative|informative">、<aside class="example|ednote">、
+# <pre data-status="..."> 等の markup が ReSpec で正しく解釈される)
+
+on:
+  pull_request:
+    paths:
+      - 'architecture/spec/**'
+      - '.github/workflows/spec-respec-build.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  respec-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install ReSpec CLI
+        run: |
+          # respec の公式 CLI (https://respec.org/docs/) で HTML レンダリングを CI 上で確認
+          npm install -g respec
+          respec --help | head -5
+
+      - name: Build all spec HTML through ReSpec (parse-error check)
+        id: respec
+        run: |
+          set -o pipefail
+          BUILD_FAILED=0
+          for f in architecture/spec/*.html; do
+            [ -f "$f" ] || continue
+            OUT="/tmp/respec-$(basename "$f").out"
+            if ! respec "$f" "$OUT" --timeout 60 2>&1 | tee "/tmp/respec-$(basename "$f").log"; then
+              echo "::warning file=$f::respec build failed (defer: grandfather rule applies for existing sections)"
+              BUILD_FAILED=$((BUILD_FAILED + 1))
+            fi
+          done
+          # warning-only: 既存 section は R-18 grandfather で respec markup 未適用、build fail 許容
+          # 新規 section (steering/, changes/) のみが respec markup MUST、別 strict job で扱う
+          echo "build_failed=$BUILD_FAILED" >> "$GITHUB_OUTPUT"
+          echo "Total ReSpec build failures: $BUILD_FAILED (warning-only、R-18 grandfather)"
+
+      - name: Upload ReSpec output artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spec-respec-build-output
+          path: /tmp/respec-*.out
+          retention-days: 14

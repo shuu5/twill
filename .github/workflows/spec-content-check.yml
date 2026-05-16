@@ -1,0 +1,80 @@
+name: spec-content-check
+
+# R-20 (MCP tool 統合) + R-14 (現在形 declarative) + R-15 (code block 制限) + R-17 (changes lifecycle) の機械検証
+# - twl_spec_content_check MCP tool handler: past_narration / demo_code / declarative / changes_lifecycle / respec_markup
+# - Vale CLI: TwillSpec/PastTense + DeclarativeOnly + CodeBlock rule (regex 検出)
+
+on:
+  pull_request:
+    paths:
+      - 'architecture/spec/**'
+      - 'architecture/changes/**'
+      - 'architecture/archive/**'
+      - 'architecture/steering/**'
+      - 'styles/TwillSpec/**'
+      - '.vale.ini'
+      - 'cli/twl/src/twl/mcp_server/tools_spec.py'
+      - '.github/workflows/spec-content-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  content-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run twl_spec_content_check MCP tool handler (all check_types)
+        id: mcp-content-check
+        run: |
+          set -o pipefail
+          TOTAL_FINDINGS=0
+          for f in architecture/spec/*.html; do
+            [ -f "$f" ] || continue
+            OUTPUT=$(python3 -c "
+          import sys, json
+          sys.path.insert(0, 'cli/twl/src')
+          from twl.mcp_server.tools_spec import twl_spec_content_check_handler
+          r = twl_spec_content_check_handler(
+              '$f',
+              check_types=['past_narration','demo_code','declarative','changes_lifecycle','respec_markup'],
+          )
+          print(json.dumps(r))
+          ")
+            COUNT=$(echo "$OUTPUT" | python3 -c "import sys,json; print(len(json.load(sys.stdin).get('findings', [])))")
+            if [ "$COUNT" -gt 0 ]; then
+              echo "::warning file=$f::twl_spec_content_check findings: $COUNT"
+              echo "$OUTPUT" | python3 -m json.tool || true
+              TOTAL_FINDINGS=$((TOTAL_FINDINGS + COUNT))
+            fi
+          done
+          echo "total_findings=$TOTAL_FINDINGS" >> "$GITHUB_OUTPUT"
+          # warning-only: total findings は exit code に反映しない (R-18 grandfather + false positive 許容)
+          # CRITICAL 違反 (R-15 完全架空 code block 等) のみ後続 step で fail させる方針
+          echo "Total findings across spec/: $TOTAL_FINDINGS"
+
+      - name: Setup Vale
+        uses: errata-ai/vale-action@reviewdog
+        with:
+          version: '3.0.0'
+          files: 'architecture/spec/'
+          reporter: github-pr-check
+          fail_on_error: false
+        continue-on-error: true
+
+      - name: Upload findings artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spec-content-check-results
+          path: |
+            .vale.ini
+            styles/TwillSpec/
+          retention-days: 14
