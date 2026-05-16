@@ -597,6 +597,109 @@ stateDiagram-v2
 - GitHub Spec Kit `.specify/specs/NNN-feature/` 構造 (verified URL: https://github.com/github/spec-kit)
 - AWS Kiro requirements/design/tasks 3 文書分離 (verified URL: https://kiro.dev/docs/specs/)
 
+## R-18: ReSpec semantic markup 必須 (新規 section、2026-05-16 追加、change 001-spec-purify)
+
+`architecture/spec/*.html` に新規 section を追加する場合、ReSpec semantic markup を付与 MUST:
+
+- `<section class="normative">` または `<section class="informative">`
+- `<aside class="example">` for example code (illustrative、informative 扱い)
+- `<aside class="ednote">` for editor notes
+- `<pre data-status="verified|deduced|inferred|experiment-verified">` for code blocks
+- `<pre data-experiment="experiment-index.html#exp-NNN">` for experiment-verified code
+
+**Grandfather**: 既存 section の遡及適用なし、新規追加 section のみ MUST (PR scope 肥大化回避、漸進改善)。
+
+### rationale
+- W3C/ReSpec 標準慣行に準拠、normative vs informative の機械的識別
+- HTML semantic validator + ReSpec CLI build check で structural correctness 保証
+- 既存 18 file の遡及適用は別 task として後続 Wave に defer (本 task は新規 section のみ)
+
+### 違反例
+- 新規 section に `<section>` (class なし) → R-18 違反
+- example code を `<pre>` 直書き、`<aside class="example">` なし → R-18 違反
+- experiment-verified code に `data-experiment` 属性なし → R-18 違反 (EXP 参照欠落で SSoT trace 不可)
+
+### 機械検証
+- L2 bats: 新規 section markup grep (`tests/bats/skills/tool-architect-temporal.bats`、`<section class="normative\|informative">` パターン)
+- L3 MCP tool: `twl_spec_content_check` の `respec_markup` check
+- L5 CI: `.github/workflows/spec-respec-build.yml` で ReSpec CLI build success
+
+### 業界 BP 参照
+- ReSpec docs (verified URL: https://respec.org/docs/)
+- W3C Manual of Style (verified URL: https://w3c.github.io/manual-of-style/、updated Nov 2024)
+- Bikeshed `informativeClasses` config pattern (CSS WG / WHATWG 採用)
+
+## R-19: 多層 hook chain (L1-L5) 義務 (2026-05-16 追加、change 001-spec-purify)
+
+tool-architect による spec/ 編集は L1 (skill) → L2 (bats) → L3 (hook+MCP) → L4 (pre-commit) → L5 (CI) の全層を通過 MUST。
+
+| Layer | 実装 | 検出 timing |
+|---|---|---|
+| L1 skill | SKILL.md + spec-management-rules.md (本 file) | LLM 編集中 (セルフチェック) |
+| L2 bats | `tests/bats/skills/tool-architect-*.bats` 等 | local test run |
+| L3 hook + MCP | `pre-tool-use-spec-write-boundary.sh` + `twl_spec_content_check` | AI write 前 |
+| L4 pre-commit | Vale + textlint via `.pre-commit-config.yaml` | git commit 前 |
+| L5 CI | `.github/workflows/spec-{link,content,respec-build}-check.yml` | PR merge 前 |
+
+### rationale
+- defense-in-depth: 単層 enforce は必ず穴がある (LLM 教育は無視可、Vale はバイパス可、hook は手動編集で迂回可)
+- 多層で冗長性確保、いずれか 1 層の無効化は他層でカバー
+
+### Emergency override
+
+L3/L4 を `--no-verify` 等で bypass する場合は `architecture/changes/active/intervention-log.md` に記録 MUST:
+- 日時 (UTC ISO 8601)
+- bypass 理由 (1 行)
+- commit SHA (post-commit で update)
+- resolve plan (次 commit までに修正の予定)
+
+bypass は **architectural decision** であり、tool-architect の autonomy 範囲外。user 確認 MUST。
+
+### 違反例
+- spec/ 編集後 bats 実行せず commit → R-19 違反 (L2 skip)
+- `git commit --no-verify` を intervention-log 記録なしで実行 → R-19 違反 (audit trail missing)
+- L5 CI が warning mode で skip 容認状態のまま放置 → R-19 違反 (CI gate 形骸化)
+
+### 機械検証
+- Phase G Summary で各層 pass/fail を changelog.html entry に記録 (本 change package C16 で実施例)
+- 将来 CI: intervention-log.md の entry と各 commit の bypass flag (`--no-verify`) を相関 audit (Phase 3 roadmap)
+
+### 業界 BP 参照
+- Brian Douglas "pre-commit hooks are back thanks to AI" (verified URL: https://briandouglas.me/posts/2025/08/27/pre-commit-hooks-are-back-thanks-to-ai/)
+- Endor Labs "Agent Governance with Hooks" (verified URL: https://www.endorlabs.com/learn/introducing-agent-governance-using-hooks-to-bring-visibility-to-ai-coding-agents)
+
+## R-20: twl_spec_content_check MCP tool 統合 MUST (2026-05-16 追加、change 001-spec-purify)
+
+tool-architect Phase E (Implementation) 機械検証 step に `twl_spec_content_check` MCP tool 実行を追加 MUST。出力 JSON で CRITICAL/WARNING 検出時は Phase F 開始前に修正。
+
+### Tool 仕様
+
+- Tool name: `twl_spec_content_check`
+- Handler: `cli/twl/src/twl/mcp_server/tools_spec.py` (Python、`html.parser` 標準ライブラリ + regex)
+- Input: `{"file_path": str, "check_types": list[str]}`
+- check_types enum: `past_narration` / `demo_code` / `declarative` / `changes_lifecycle` / `respec_markup`
+- Output: `{"ok": bool, "findings": [{"severity": "CRITICAL|WARNING|INFO", "line": int, "message": str, "category": "spec-temporal"}], "exit_code": 0|1}`
+
+### rationale
+- regex hook より深い HTML 構造解析 (semantic 判定可能、例: `<pre>` 内 vs 散文の区別)
+- false-positive 削減 (`<aside class="ednote">` 内の historical 記述は除外、HTML parse で context 把握)
+- Phase F specialist の事前 audit として機能、Phase F 入力 quality 向上 (Phase E で潰せる drift は Phase F に持ち込まない)
+
+### 違反例
+- Phase E で `twl_spec_content_check` skip し Phase F へ直行 → R-20 違反
+- check_types を全 enum 並列実行 (Phase E では選択的実行が想定) → R-20 不適切使用 (過剰 audit)
+- Phase E で CRITICAL 検出を無視し Phase F 起動 → R-20 違反 (修正後再 audit MUST)
+
+### 機械検証
+- L5 CI: `.github/workflows/spec-content-check.yml` で PR trigger 実行 (新規 workflow、C15)
+- L2 bats: `tests/bats/scripts/twl-spec-content-check.bats` (handler 単体テスト + 統合テスト、C10)
+- SKILL.md Phase E section に invoke 記述 grep (`tool-architect-7phase.bats` 内、C10)
+
+### 業界 BP 参照
+- Claude Code Hooks + MCP tool 統合 (Endor Labs、verified URL 上記)
+- Zenflow committee approach: 複数 LLM 相互検証 (verified URL: https://zencoder.ai/zenflow)
+- MCP protocol (Anthropic、tools as agent capability extension)
+
 ## CI gate 一覧
 
 ### 実装済み CI gate (機械的強制)
@@ -608,7 +711,19 @@ stateDiagram-v2
 | caller marker enforce | `pre-tool-use-spec-write-boundary.sh` (PreToolUse hook) | R-7 |
 | agent file 配置検証 | `tests/bats/structure/registry-yaml-specialists.bats` + `tests/bats/integration/tool-architect-deployment.bats` (bats) | R-11 |
 | 7-phase section 存在 | `tests/bats/skills/tool-architect-7phase.bats` (bats、Phase A-G grep) | R-12 |
-| Phase F opus 固定 | `tests/bats/agents/specialist-spec-review-{vocabulary,structure,ssot}.bats` (bats、model=opus grep) | R-13 |
+| Phase F opus 固定 | `tests/bats/agents/specialist-spec-review-{vocabulary,structure,ssot,temporal}.bats` (bats、model=opus grep) | R-13 |
+
+### 実装中 / 予定 CI gate (本 change 001-spec-purify で実装)
+
+| CI gate | tool | 強制 R | 実装 commit |
+|---|---|---|---|
+| past_narration 検出 | Vale `Twill.PastTense` (L4) + `twl_spec_content_check` (L3 MCP, L5 CI) | R-14 | C8, C9, C15 |
+| code block 種別検証 | Vale `Twill.CodeBlock` + `twl_spec_content_check` `demo_code` | R-15 | C8, C9, C15 |
+| migration/ 旧 path 残存検証 | bats grep (`tool-architect-temporal.bats`) | R-16 | C10, C14 |
+| changes/ lifecycle 検証 | `twl_spec_content_check` `changes_lifecycle` + `changes-dir-structure.bats` | R-17 | C9, C10 |
+| ReSpec markup 検証 | `tests/bats/skills/tool-architect-temporal.bats` + `twl_spec_content_check` `respec_markup` + ReSpec CLI build (L5) | R-18 | C9, C10, C15 |
+| 多層 hook chain pass/fail 記録 | Phase G Summary で changelog 記録 | R-19 | C16 (G1) |
+| twl_spec_content_check 統合検証 | `spec-content-check.yml` workflow (CI) | R-20 | C15 |
 
 ### PR review 依存 (機械化されていない、reviewer 目視)
 
@@ -620,6 +735,7 @@ stateDiagram-v2
 | HTML/MD 配置 boundary | R-6 | reviewer 目視 |
 | dir + sub-category 整合 (R-10) | R-10 | reviewer 目視 + decision tree 適用確認 |
 | Phase C/F 実行証跡 | R-12 | reviewer 目視 (changelog entry の Phase F findings 記載確認、将来 CI 機械化) |
+| Emergency override 記録 | R-19 | reviewer 目視 (intervention-log.md 確認) |
 
 ## CI automation roadmap (将来 task、別 phase)
 
