@@ -111,7 +111,7 @@
   <li>tool 内部の主要 step (PR 作成 / spec 生成 / Board 設定 / sandbox 実行) は <code>audit_snapshot</code> で snapshot</li>
   <li>tool 別の出力内容:
     <ul>
-      <li>tool-architect: spec directory snapshot + specialist-spec-review findings JSON</li>
+      <li>tool-architect: spec directory snapshot + specialist-spec-review-* 3 並列 findings JSON (category=spec-vocabulary/spec-structure/spec-ssot)</li>
       <li>tool-project: Board 操作 log + verify result JSON</li>
       <li>tool-sandbox-runner: sandbox run-id / sandbox log / LLM 分析 result / Idea Issue 起票 list</li>
     </ul>
@@ -175,7 +175,7 @@
   <li><code>git diff HEAD -- spec/*.html</code> で new section に <code>&lt;a class="exp-link"&gt;</code> 不在を warn</li>
   <li><code>changelog.html</code> を git diff と突合、本日 entry 不在を warn</li>
 </ol>
-<p><strong>振る舞い</strong>: warn のみ (block せず)、PR review で specialist-spec-review が評価して fix 要求。</p>
+<p><strong>振る舞い</strong>: warn のみ (block せず)、PR review で specialist-spec-review-* 3 並列が評価して fix 要求 (§3.7.3 参照)。</p>
 </div>
 
 <p><strong>2 層必須の根拠</strong> (dig core lesson §5): LLM だけ (層 1) では Step 0 漏れで verify gap、hook だけ (層 2) では context 欠如で false positive。両層併用で漏れと過剰検出の両方を抑制。</p>
@@ -187,7 +187,7 @@
 </div>
 
 <div class="warning">
-<strong>実装状況</strong>: 本 §3.3 の design は <span class="vs inferred">inferred</span>。新 agent file 3 種 (<code>specialist-spec-explorer.md</code> / <code>specialist-spec-architect.md</code> / <code>specialist-spec-review.md</code>) は <strong>未作成</strong>、Phase 1 PoC で作成 + EXP-029 smoke 検証予定 (<a href="#s3-7">§3.7 agent 仕様</a> + <a href="#s3-8">§3.8 fix loop SLA</a> 参照)。本 spec で設計を固定し、実装は別 phase に委譲。
+<strong>実装状況</strong>: 本 §3.3 の design は <span class="vs inferred">inferred</span>。新 agent file 5 種 (<code>specialist-spec-explorer.md</code> / <code>specialist-spec-architect.md</code> / <code>specialist-spec-review-{vocabulary,structure,ssot}.md</code>) は <strong>未作成</strong>、Phase 1 PoC で作成 + EXP-029 smoke 検証予定 (<a href="#s3-7">§3.7 agent 仕様</a> + <a href="#s3-8">§3.8 fix loop SLA</a> 参照)。本 spec で設計を固定し、実装は別 phase に委譲。
 </div>
 
 <table>
@@ -200,7 +200,7 @@
     <tr><td><strong>C</strong></td><td>Clarifying Questions</td><td>(なし、<code>AskUserQuestion</code>)</td><td>—</td><td><strong>MUST NOT SKIP</strong>。曖昧点・設計分岐・scope boundary を user 確認。"whatever you think is best" 回答時は推奨明示 + approve 取得</td></tr>
     <tr><td><strong>D</strong></td><td>Spec Design</td><td><code>specialist-spec-architect</code></td><td><strong>2-3 並列</strong> (structural change 必要時のみ)</td><td>minimal (smallest change) / clean (clean redesign) / pragmatic (balance) 3 案を並列設計、user 案選択。Q3 dig 案 4 案選択 実績の継続</td></tr>
     <tr><td><strong>E</strong></td><td>Implementation</td><td>(現行継承)</td><td>—</td><td>env <code>TWL_TOOL_CONTEXT=tool-architect</code> set → R-1〜R-10 適用 → Edit/Write → env unset → 機械検証 (broken/orphan 0)</td></tr>
-    <tr><td><strong>F</strong></td><td>Quality Review</td><td><code>specialist-spec-review</code></td><td><strong>3 並列固定</strong></td><td>spec edit 特有 3 軸 (用語整合性 / 構造整合性 / SSoT 整合性、<a href="#s3-7-3">§3.7.3</a>)。各 agent 独立 context window で深掘り、scope-based fix loop (<a href="#s3-8">§3.8</a>)</td></tr>
+    <tr><td><strong>F</strong></td><td>Quality Review</td><td><code>specialist-spec-review-{vocabulary,structure,ssot}</code></td><td><strong>3 並列固定</strong></td><td>spec edit 特有 3 軸 = 3 file 別 (用語整合性 / 構造整合性 / SSoT 整合性、<a href="#s3-7-3">§3.7.3</a>)。各 file が独立 context window + axis 専任、scope-based fix loop (<a href="#s3-8">§3.8</a>)</td></tr>
     <tr><td><strong>G</strong></td><td>Summary</td><td>(なし)</td><td>—</td><td>changelog.html entry 追加、累積 commit list、defer task listing</td></tr>
   </tbody>
 </table>
@@ -317,31 +317,88 @@
   <dd>sonnet (feature-dev:code-architect と揃える)</dd>
 </dl>
 
-<h4 id="s3-7-3">3.7.3 <code>specialist-spec-review</code> (Phase F)</h4>
+<h3 id="s3-7-3">3.7.3 <code>specialist-spec-review-*</code> 3 file (Phase F、3 並列固定)</h3>
 
+<div class="info">
+Phase F は 1 file ではなく <strong>3 軸 = 3 file 別</strong>で実装する (2026-05-16 確定、案 B clean 採用)。各 agent は独立 context window + <code>model: opus</code> で異なる軸を担当し、同時並列 invoke する。3 file 別の根拠: file 自体が axis-specific、prompt body も axis-specific、context window 完全分離 (1 file + axis arg では prompt swap overhead と axis 混入 risk)。
+</div>
+
+<table>
+  <thead>
+    <tr><th>file</th><th>軸</th><th>主要 input</th><th>category</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>specialist-spec-review-vocabulary.md</code></td>
+      <td>用語整合性</td>
+      <td>git diff + glossary.html §11 + registry.yaml vocabulary</td>
+      <td><code>spec-vocabulary</code></td>
+    </tr>
+    <tr>
+      <td><code>specialist-spec-review-structure.md</code></td>
+      <td>構造整合性</td>
+      <td>git diff + boundary-matrix.html + R-1/R-2 checklist</td>
+      <td><code>spec-structure</code></td>
+    </tr>
+    <tr>
+      <td><code>specialist-spec-review-ssot.md</code></td>
+      <td>SSoT 整合性</td>
+      <td>git diff + adr-fate-table.html + invariant-fate-table.html + experiment-index.html</td>
+      <td><code>spec-ssot</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<h4 id="s3-7-3-1">3.7.3.1 <code>specialist-spec-review-vocabulary</code> (Phase F 軸 1)</h4>
 <dl>
   <dt>file path</dt>
-  <dd><code>plugins/twl/agents/specialist-spec-review.md</code> <span class="vs inferred">inferred</span> (未作成、旧版設計 ~100 行)</dd>
+  <dd><code>plugins/twl/agents/specialist-spec-review-vocabulary.md</code> <span class="vs inferred">inferred</span> (未作成)</dd>
   <dt>役割</dt>
-  <dd>spec edit 後の Quality Review。3 並列で 3 軸 (用語整合性 / 構造整合性 / SSoT 整合性) を独立 audit</dd>
-  <dt>並列数</dt>
-  <dd><strong>3 並列固定</strong> (各 agent 1 軸担当、context window 完全分離)</dd>
-  <dt>3 軸の責務</dt>
-  <dd>
-    <ul>
-      <li><strong>用語整合性 agent</strong>: vocabulary table (<a href="registry-schema.html">registry-schema.html</a> §4) forbidden synonym detection (旧 <code>pilot</code>/<code>worker</code>/<code>phase-*</code>/<code>worker-*</code> 残存)、<a href="glossary.html">glossary.html</a> §11 deprecated entries 整合、<code>twl audit --vocabulary</code> 想定の word boundary 検出 (legitimate context は exclusion)</li>
-      <li><strong>構造整合性 agent</strong>: cross-ref (file 間 link / <a href="boundary-matrix.html">boundary-matrix.html</a> table / R-10 dir 配置) / id anchor / table column width / changelog timeline 反映 / R-1/R-2 (README + graph entry) 適用確認</li>
-      <li><strong>SSoT 整合性 agent</strong>: ADR (<code>architecture/decisions/</code> + <a href="../migration/adr-fate-table.html">adr-fate-table.html</a>) の反映 / 不変条件 (<a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> A-X) の反映 / EXP (<a href="../research/experiment-index.html">experiment-index.html</a>) の status 反映 / registry-schema との整合</li>
-    </ul>
-  </dd>
-  <dt>input</dt>
-  <dd>PR diff (<code>git diff</code>) + 該当 spec file path 群 + 編集前後の state + axis assignment</dd>
-  <dt>output</dt>
-  <dd>per-axis findings (CRITICAL / WARN / NOTICE 分類) + 推奨 fix + <strong>confidence score (≥80 のみ報告)</strong> (<code>feature-dev:code-reviewer</code> の confidence-based filtering pattern を継承)</dd>
+  <dd>vocabulary table (<a href="registry-schema.html">registry-schema.html</a> §4) forbidden synonym detection (旧 <code>pilot</code>/<code>worker</code>/<code>phase-*</code>/<code>worker-*</code> 残存)、<a href="glossary.html">glossary.html</a> §11 deprecated entries 整合、<code>twl audit --vocabulary</code> 想定の word boundary 検出 (legitimate context は exclusion)</dd>
   <dt>allowed-tools</dt>
-  <dd><code>Read, Grep, Glob, LS, TodoWrite</code> (Edit/Write 禁止、review 専任)</dd>
+  <dd><code>Read, Grep, Glob, LS, TodoWrite</code> (Edit/Write 禁止)</dd>
   <dt>model</dt>
-  <dd><strong>opus</strong> (Q3 Phase 6 で 3 並列 opus reviewer が CRITICAL 14 件検出した実績から、深部 drift 検出には opus 必須。sonnet では見落とすレベル)</dd>
+  <dd><strong>opus</strong> (R-13: sonnet downgrade 禁止)</dd>
+  <dt>output category</dt>
+  <dd><code>spec-vocabulary</code> (per-axis findings + confidence ≥80 filter)</dd>
+</dl>
+
+<h4 id="s3-7-3-2">3.7.3.2 <code>specialist-spec-review-structure</code> (Phase F 軸 2)</h4>
+<dl>
+  <dt>file path</dt>
+  <dd><code>plugins/twl/agents/specialist-spec-review-structure.md</code> <span class="vs inferred">inferred</span> (未作成)</dd>
+  <dt>役割</dt>
+  <dd>cross-ref (file 間 link / <a href="boundary-matrix.html">boundary-matrix.html</a> table / R-10 dir 配置) / id anchor / table column width / changelog timeline 反映 / R-1/R-2 (README + graph entry) 適用確認</dd>
+  <dt>allowed-tools</dt>
+  <dd><code>Read, Grep, Glob, LS, TodoWrite</code> (Edit/Write 禁止)</dd>
+  <dt>model</dt>
+  <dd><strong>opus</strong> (R-13)</dd>
+  <dt>output category</dt>
+  <dd><code>spec-structure</code> (per-axis findings + confidence ≥80 filter)</dd>
+</dl>
+
+<h4 id="s3-7-3-3">3.7.3.3 <code>specialist-spec-review-ssot</code> (Phase F 軸 3)</h4>
+<dl>
+  <dt>file path</dt>
+  <dd><code>plugins/twl/agents/specialist-spec-review-ssot.md</code> <span class="vs inferred">inferred</span> (未作成)</dd>
+  <dt>役割</dt>
+  <dd>ADR (<code>architecture/decisions/</code> + <a href="../migration/adr-fate-table.html">adr-fate-table.html</a>) の反映 / 不変条件 (<a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> A-X) の反映 / EXP (<a href="../research/experiment-index.html">experiment-index.html</a>) の status 反映 / registry-schema との整合</dd>
+  <dt>allowed-tools</dt>
+  <dd><code>Read, Grep, Glob, LS, TodoWrite</code> (Edit/Write 禁止)</dd>
+  <dt>model</dt>
+  <dd><strong>opus</strong> (R-13)</dd>
+  <dt>output category</dt>
+  <dd><code>spec-ssot</code> (per-axis findings + confidence ≥80 filter)</dd>
+</dl>
+
+<h4 id="s3-7-3-common">3.7.3 共通 input/output</h4>
+<dl>
+  <dt>input (3 軸共通)</dt>
+  <dd>PR diff (<code>git diff origin/main</code>) + 該当 spec file path 群 + axis assignment (file 自体が axis specific のため不要だが confirm 用)</dd>
+  <dt>output (3 軸共通 schema)</dt>
+  <dd>per-axis findings (CRITICAL / WARNING / INFO 分類) + 推奨 fix + <strong>confidence score (≥80 のみ報告)</strong> (<code>feature-dev:code-reviewer</code> の confidence-based filtering pattern を継承)。出力 schema は <code>plugins/twl/refs/ref-specialist-output-schema.md</code> JSON 形式 (category=spec-vocabulary/spec-structure/spec-ssot)</dd>
+  <dt>model 根拠 (3 軸共通、opus 固定)</dt>
+  <dd>Q3 Phase 6 で 3 並列 opus reviewer が CRITICAL 14 件検出した実績から、深部 drift 検出には opus 必須。sonnet では見落とすレベル。R-13 (Phase F = opus 固定、sonnet downgrade 禁止) で規律化</dd>
 </dl>
 
 <h3 id="s3-8">3.8 scope-based fix loop SLA</h3>
@@ -697,7 +754,7 @@ spawn_tmux \
   <tbody>
     <tr><td><code>plugins/twl/scripts/lib/verify-coverage.sh</code></td><td>tool-architect verify hook (層 2、PostToolUse)</td><td>~50 行</td></tr>
     <tr><td><code>plugins/twl/scripts/hooks/pre-tool-use-spec-write-boundary.sh</code></td><td>spec edit 所有権 enforce (PreToolUse deny pattern)</td><td>~30 行</td></tr>
-    <tr><td><code>plugins/twl/agents/specialist-spec-review.md</code></td><td>tool-architect PR cycle review agent (1 agent 軽量 review)</td><td>~100 行 (SKILL.md)</td></tr>
+    <tr><td><code>plugins/twl/agents/specialist-spec-review-{vocabulary,structure,ssot}.md</code></td><td>tool-architect 7-phase PR cycle Phase F の 3 並列 review agent (3 file 別、軸専任、opus 固定)</td><td>~150-180 行 × 3 = ~480 行</td></tr>
     <tr><td><code>plugins/twl/sandboxes/_shared/problem-patterns.yaml</code></td><td>LLM 分析 pattern catalog (6 件)</td><td>~50 行</td></tr>
     <tr><td><code>plugins/twl/sandboxes/&lt;name&gt;/sandbox.yaml</code></td><td>sandbox manifest (per sandbox)</td><td>~30 行 × N</td></tr>
     <tr><td><code>plugins/twl/sandboxes/&lt;name&gt;/setup.sh</code></td><td>sandbox setup (per sandbox)</td><td>~50 行 × N</td></tr>
@@ -712,7 +769,7 @@ spawn_tmux \
 <div class="pending">
 <h4>詳細実装レベル</h4>
 <ul>
-  <li><code>specialist-spec-review</code> agent の正確な prompt (findings 出力形式の JSON schema)</li>
+  <li><code>specialist-spec-review-*</code> 3 agent の正確な prompt (Phase 1 PoC で作成、findings JSON schema は <code>plugins/twl/refs/ref-specialist-output-schema.md</code> 準拠、category=spec-vocabulary/spec-structure/spec-ssot)</li>
   <li><s><code>verify-coverage.sh</code> の正確な grep regex + warn message format</s> (Phase C 2026-05-14 で minimum viable 実装確定: <code>plugins/twl/scripts/lib/verify-coverage.sh</code>、EXP-027 で検証)</li>
   <li><s><code>pre-tool-use-spec-write-boundary.sh</code> の caller 識別ロジック (env 変数経由?)</s> (Phase C 2026-05-14 で確定: <code>TWL_TOOL_CONTEXT</code> env var canonical、§3.4 参照、EXP-028 で検証)</li>
   <li><code>problem-patterns.yaml</code> の各 pattern severity threshold 値</li>
@@ -733,7 +790,7 @@ spawn_tmux \
 <h4>tool-architect 追加検討</h4>
 <ul>
   <li>recursive PR の review 委譲先 (user only? 他 tool? user/admin/他 tool の優先順位)</li>
-  <li>spec file 削除 / file rename の handling (specialist-spec-review で catch?)</li>
+  <li>spec file 削除 / file rename の handling (specialist-spec-review-structure で catch、R-4 適用確認)</li>
 </ul>
 </div>
 
@@ -793,7 +850,7 @@ spawn_tmux \
   <li><a href="../archive/research/dig-report-tools-2026-05-13.html">dig-report-tools-2026-05-13.html</a> (過去 dig の独立 artifact、20 question 詳細)</li>
   <li><a href="../decisions/ADR-0012-administrator-rebrand.md">ADR-0012-administrator-rebrand.md</a> (administrator rebrand 確定、2026-05-15 Proposed)</li>
   <li><code>plugins/twl/skills/tool-architect/SKILL.md</code> + <code>refs/spec-management-rules.md</code> (tool-architect 実 invoke 規律詳細、R-1〜R-10)</li>
-  <li><code>plugins/twl/agents/specialist-spec-explorer.md</code> + <code>specialist-spec-architect.md</code> + <code>specialist-spec-review.md</code> (7-phase PR cycle 用 3 agent、<span class="vs inferred">inferred</span>、Phase 1 PoC で実装予定、<a href="#s3-7">§3.7</a> 参照)</li>
+  <li><code>plugins/twl/agents/specialist-spec-explorer.md</code> + <code>specialist-spec-architect.md</code> + <code>specialist-spec-review-{vocabulary,structure,ssot}.md</code> (7-phase PR cycle 用 5 agent、<span class="vs inferred">inferred</span>、Phase 1 PoC で実装予定、<a href="#s3-7">§3.7</a> 参照)</li>
   <li>feature-dev (claude-plugins-official): <code>~/.claude/plugins/marketplaces/claude-plugins-official/plugins/feature-dev/</code> (transposition 元 reference、<code>commands/feature-dev.md</code> + <code>agents/code-{explorer,architect,reviewer}.md</code>)</li>
 </ul>
 
@@ -814,7 +871,7 @@ spawn_tmux \
     <tr><td><a class="exp-link" href="../research/experiment-index.html#EXP-026">EXP-026</a></td><td>template idempotent (2 回 apply で同一 state)</td><td>tool-project</td></tr>
     <tr><td><a class="exp-link" href="../research/experiment-index.html#EXP-027">EXP-027</a></td><td><code>verify-coverage.sh</code> の 4-state grep が正しく未 verified を catch</td><td>tool-architect</td></tr>
     <tr><td><a class="exp-link" href="../research/experiment-index.html#EXP-028">EXP-028</a></td><td><code>pre-tool-use-spec-write-boundary.sh</code> が tool-architect / user 以外を deny</td><td>tool-architect</td></tr>
-    <tr><td><a class="exp-link" href="../research/experiment-index.html#EXP-029">EXP-029</a></td><td><code>specialist-spec-review</code> agent が 3 回 fix loop で収束 or escalate</td><td>tool-architect</td></tr>
+    <tr><td><a class="exp-link" href="../research/experiment-index.html#EXP-029">EXP-029</a></td><td><code>specialist-spec-review-*</code> 3 並列 agent が scope-based fix loop で収束 or escalate (§3.8)</td><td>tool-architect</td></tr>
     <tr><td><a class="exp-link" href="../research/experiment-index.html#EXP-030">EXP-030</a></td><td>sandbox-runner で twill-self sandbox の 1 cycle 動作 + log 収集</td><td>tool-sandbox-runner</td></tr>
     <tr><td><a class="exp-link" href="../research/experiment-index.html#EXP-031">EXP-031</a></td><td>doobidoo 重複 check (similarity &gt; 0.75) の false positive/negative 率</td><td>tool-sandbox-runner</td></tr>
   </tbody>
