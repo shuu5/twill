@@ -13,10 +13,10 @@
 
 <header class="doc-header">
   <h1>twill plugin rebuild — atomic skill verification</h1>
-  <div class="meta">draft-v3 (2026-05-13、(2026-05-13) 反映) &middot; 旧 step-verification.html から rename &middot; LLM 責務 + 機械検証 の clean 分離 &middot; 不変条件 U の根拠</div>
+  <div class="meta">status: <span class="badge done">done</span> &middot; LLM 責務 + 機械検証 の clean 分離 &middot; 不変条件 U の根拠</div>
 </header>
 
-<div class="info">本 file は <a href="registry-schema.html">registry-schema.html</a> の参照下にある。(2026-05-13) (Round 9) で <code>step</code> 概念液化が決定し、本 file は旧 <code>step-verification.html</code> から rename された。<code>step.sh framework</code> 外部 bash 呼び出しを廃止し、atomic SKILL.md 本文に 4-phase lifecycle を <strong>inline 実装</strong> する specification を提供する。</div>
+<div class="info">本 file は <a href="registry-schema.html">registry-schema.html</a> の参照下にある。<code>step</code> 概念は液化され、外部 bash 呼び出し (<code>step.sh framework</code>) は採用しない。atomic SKILL.md 本文に 4-phase lifecycle (<strong>pre-check / exec / post-verify / report</strong>) を <strong>inline 実装</strong> する specification を提供する。</div>
 
 <h2>§1. 目的</h2>
 
@@ -82,7 +82,7 @@
 
 <p>旧 <code>step.sh framework</code> の外部 bash 呼び出しを廃止し、atomic SKILL.md 本文に <code>Step 0</code>〜<code>Step 3</code> として 4-phase を inline 実装。公式仕様 (<code>disable-model-invocation: true</code> + <code>allowed-tools: [Bash, Read, Edit, Agent]</code>) に準拠する。</p>
 
-<div class="info"><strong>§3.0 LLM 生成 vs hardcode 境界 (Phase I dig Q1 確定 2026-05-15)</strong>: atomic SKILL.md の各 Step は以下の分離原則に従う。
+<div class="info"><strong>§3.0 LLM 生成 vs hardcode 境界</strong>: atomic SKILL.md の各 Step は以下の分離原則に従う。
 <ul>
   <li><strong>Step 0 (pre-check)</strong>: SKILL.md に <strong>hardcode</strong>。固定 bash コマンド (test count snapshot / status verify / preconditions) で deterministic、LLM 介入なし</li>
   <li><strong>Step 1 (exec)</strong>: LLM <strong>自由生成</strong>。AC file を Read し、AC 内容に従って RED test or GREEN 実装を生成 (Edit/Write)。本 Step のみ non-deterministic を許容</li>
@@ -92,15 +92,15 @@
 <strong>判断根拠</strong>: deterministic な検証・送信は LLM の non-determinism を排除して experiment-verified しやすくする。Step 1 のみ LLM 自由 = 「LLM は判断のために使う、機械的にできることは機械に任せる」原則 (CLAUDE.md global) と整合。
 </div>
 
-<div class="info"><strong>§3.1 mailbox identifier 注入 (Phase I dig Q2 確定 2026-05-15)</strong>: atomic SKILL.md の Step 3 が emit する mailbox path の <code>&lt;phaser-name&gt;</code> 解決は <code>$TWL_PHASER_NAME</code> env 変数を経由する。
+<div class="info"><strong>§3.1 mailbox identifier 注入</strong>: atomic SKILL.md の Step 3 が emit する mailbox path の <code>&lt;phaser-name&gt;</code> 解決は <code>$TWL_PHASER_NAME</code> env 変数を経由する。
 <ul>
   <li><strong>spawn-tmux.sh 責務</strong>: phaser tmux window 起動時に <code>export TWL_PHASER_NAME=&lt;phaser-name&gt;</code> を set (詳細: <a href="spawn-protocol.html#s3">spawn-protocol.html §3</a>)</li>
-  <li><strong>atomic SKILL.md 参照</strong>: Step 3 の bash コマンドは <code>.mailbox/$TWL_PHASER_NAME/inbox.jsonl</code> を参照 (旧 <code>$ARGUMENTS[session]</code> 表記から rename)</li>
+  <li><strong>atomic SKILL.md 参照</strong>: Step 3 の bash コマンドは <code>.mailbox/$TWL_PHASER_NAME/inbox.jsonl</code> を参照</li>
   <li><strong>不在時の挙動</strong>: <code>TWL_PHASER_NAME</code> 未設定なら Step 0 で exit 1 (pre-check fail として早期 abort)</li>
 </ul>
 </div>
 
-<div class="info"><strong>§3.2 Step 2 post-verify verdict policy (Phase I dig Q4 確定 2026-05-15)</strong>: Step 2 の post-verify が判定する verdict は <strong>"PASS" 以外は全て exit 1 として phaser に fail 通知</strong> (厳格)。
+<div class="info"><strong>§3.2 Step 2 post-verify verdict policy</strong>: Step 2 の post-verify が判定する verdict は <strong>"PASS" 以外は全て exit 1 として phaser に fail 通知</strong> (厳格 binary)。
 <ul>
   <li>specialist が <code>Agent</code> return value で "PASS" 以外 (FAIL / WARNING / unknown / 空文字 等) を返した場合は全て fail 扱い</li>
   <li>bash 機械検証で grep / exit code が non-zero なら exit 1</li>
@@ -132,7 +132,7 @@ allowed-tools: [Bash, Read, Edit, Agent]
 - !`cat /tmp/pre_src_diff | grep -q '^0$'` # src/ 変更 0 確認
 
 `Step 3` lifecycle phase: report
-- !`jq -nc '{from:"atomic-test-scaffold",ts:"'"$(date -u +%FT%TZ)"'",event:"step-completed",detail:{red_count:N}}' &gt;&gt; .mailbox/$TWL_PHASER_NAME/inbox.jsonl` # §3.1 env 変数経由 (Phase I 2026-05-15)
+- !`jq -nc '{from:"atomic-test-scaffold",ts:"'"$(date -u +%FT%TZ)"'",event:"step-completed",detail:{red_count:N}}' &gt;&gt; .mailbox/$TWL_PHASER_NAME/inbox.jsonl` # §3.1 env 変数経由
 </code></pre>
 
 <p><strong><code>disable-model-invocation: true</code> + <code>allowed-tools</code> の rationale</strong> (<span class="vs verified">verified</span> skills docs):</p>
@@ -142,9 +142,9 @@ allowed-tools: [Bash, Read, Edit, Agent]
   <li><code>allowed-tools: [Bash, Read, Edit, Agent]</code> — post-verify phase に <code>!</code> prefix の Bash call が必須。<code>Agent</code> は specialist 呼び出し時のみ (EXP-036 で検証)</li>
 </ul>
 
-<h2>§4. atomic verify rule table (旧 §5 から rename)</h2>
+<h2>§4. atomic verify rule table</h2>
 
-<p>chain で呼ばれる atomic skill の verify rule 一覧。旧 <code>step::run</code> + <code>_verify_*</code> bash 関数の依存を廃し、atomic SKILL.md 本文に inline 実装する。</p>
+<p>chain で呼ばれる atomic skill の verify rule 一覧。外部 bash 関数 (<code>step::run</code> + <code>_verify_*</code>) には依存せず、atomic SKILL.md 本文に inline 実装する。</p>
 
 <table>
   <thead>
@@ -156,41 +156,41 @@ allowed-tools: [Bash, Read, Edit, Agent]
     <tr><td><code>atomic-check</code></td><td>lint state</td><td>(fix or no-op)</td><td>linter / type-checker exit 0</td><td><code>{lint_clean: true}</code></td></tr>
     <tr><td><code>atomic-pr-test</code></td><td>bats state</td><td>(pre-existing)</td><td>bats 全 PASS、新 RED なし</td><td><code>{test_pass_count: N}</code></td></tr>
     <tr><td><code>atomic-ac-verify</code></td><td>Issue AC checkbox 数</td><td>AC checkbox flip</td><td>未 check AC = 0</td><td><code>{ac_complete_count: N}</code></td></tr>
-    <tr><td><code>atomic-phase-review</code></td><td>review file 不在</td><td><code>Agent(specialist-code-reviewer)</code> 実行</td><td>Agent return value verdict = "PASS" のみ通過、"PASS" 以外 (FAIL/WARNING/unknown/空) は全て exit 1 (§3.2 厳格 binary、Phase I)</td><td><code>{findings_count: N}</code></td></tr>
+    <tr><td><code>atomic-phase-review</code></td><td>review file 不在</td><td><code>Agent(specialist-code-reviewer)</code> 実行</td><td>Agent return value verdict = "PASS" のみ通過、"PASS" 以外 (FAIL/WARNING/unknown/空) は全て exit 1 (§3.2 厳格 binary)</td><td><code>{findings_count: N}</code></td></tr>
     <tr><td><code>atomic-pr-cycle-report</code></td><td>PR comment 不在</td><td>summary 生成</td><td>PR comment posted</td><td><code>{comment_url: "..."}</code></td></tr>
   </tbody>
 </table>
 
-<h2>§5. EXP-011 / 012 の atomic lifecycle 検証 (repurpose 設計)</h2>
+<h2>§5. EXP-011 / 012 の atomic lifecycle 検証</h2>
 
-<div class="info">旧 EXP-011/012 は <code>step.sh framework</code> 前提だったが、(2026-05-13) で atomic skill lifecycle 検証に repurpose。詳細: <a href="../research/experiment-index.html">experiment-index.html</a> カテゴリ G (旧 "step.sh framework" → 新 "atomic skill lifecycle")</div>
+<div class="info">EXP-011/012 は atomic skill lifecycle 検証を担う (詳細: <a href="../research/experiment-index.html">experiment-index.html</a> カテゴリ G "atomic skill lifecycle")。</div>
 
 <table>
   <thead>
-    <tr><th>EXP-id</th><th>verify 対象 (旧)</th><th>verify 対象 (新、(2026-05-13) repurpose)</th></tr>
+    <tr><th>EXP-id</th><th>verify 対象</th></tr>
   </thead>
   <tbody>
-    <tr><td>EXP-011</td><td>旧: <code>step::run</code> 4 phase lifecycle (bats、<code>step.sh</code> 依存)</td><td>新: atomic SKILL.md の <code>Step 0</code>〜<code>Step 3</code> が順序通り実行、各 phase で mailbox event 発行</td></tr>
-    <tr><td>EXP-012</td><td>旧: post-verify FAIL で <code>step abort</code> + phaser escalate mail emit</td><td>新: atomic-test-scaffold の <code>Step 2</code> でテスト数増加 0 → exit 1 → <code>.mailbox/${session}/inbox.jsonl</code> に <code>step-postverify-failed</code> mail emit</td></tr>
+    <tr><td>EXP-011</td><td>atomic SKILL.md の <code>Step 0</code>〜<code>Step 3</code> が順序通り実行、各 phase で mailbox event 発行</td></tr>
+    <tr><td>EXP-012</td><td>atomic-test-scaffold の <code>Step 2</code> でテスト数増加 0 → exit 1 → <code>.mailbox/${session}/inbox.jsonl</code> に <code>step-postverify-failed</code> mail emit</td></tr>
   </tbody>
 </table>
 
 <h2>§6. 不変条件 U (Atomic skill verification) との binding</h2>
 
-<p>本 file は不変条件 U の core specification である。Inv U の text は(2026-05-13) (Round 9) で以下に rename + 改訂された:</p>
+<p>本 file は不変条件 U の core specification である。Inv U specification:</p>
 
 <table>
   <thead>
-    <tr><th>項目</th><th>旧 (draft-v2)</th><th>新 (draft-v3、(2026-05-13))</th></tr>
+    <tr><th>項目</th><th>specification</th></tr>
   </thead>
   <tbody>
-    <tr><td>title</td><td class="deprecated">Step verification framework</td><td><strong>Atomic skill verification</strong></td></tr>
-    <tr><td>specification</td><td class="deprecated">全 chain step は pre-check → exec → post-verify → report の 4 phase lifecycle を MUST。<code>step.sh framework</code> による post-verify 機械検証を必須化</td><td>全 atomic skill 呼び出しは 4-phase lifecycle (pre-check → exec → post-verify → report) を <strong>atomic SKILL.md 本文に inline 実装</strong> すること。post-verify で機械検証を必須化、self-report-only を禁止</td></tr>
-    <tr><td>verify 方法</td><td class="deprecated">bats <code>step-verification-post-verify.bats</code></td><td>bats <code>atomic-verification-post-verify.bats</code> (rename)</td></tr>
+    <tr><td>title</td><td><strong>Atomic skill verification</strong></td></tr>
+    <tr><td>specification</td><td>全 atomic skill 呼び出しは 4-phase lifecycle (pre-check → exec → post-verify → report) を <strong>atomic SKILL.md 本文に inline 実装</strong> すること。post-verify で機械検証を必須化、self-report-only を禁止</td></tr>
+    <tr><td>verify 方法</td><td>bats <code>atomic-verification-post-verify.bats</code></td></tr>
   </tbody>
 </table>
 
-<p><code>ref-invariants.md</code> に Inv U が追加される時点 (<code>Phase 4 cleanup</code>) で上記新 text を採用。それまで <a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> 内の Inv U section の title + bats file 名を最小変更 (rename) する。</p>
+<p>Inv U の継承戦略および採用 timing は <a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> 内の Inv U section を参照。</p>
 
 <h2>§7. 関連 spec</h2>
 
@@ -201,10 +201,10 @@ allowed-tools: [Bash, Read, Edit, Agent]
   <li><a href="overview.html">overview.html</a> §6 (構造的欠陥 4 種、本 file は欠陥 1 「自己申告 step」の不能化機構)</li>
   <li><a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> (Inv U "Atomic skill verification" 旧 "Step verification framework")</li>
   <li><a href="../research/experiment-index.html">experiment-index.html</a> (EXP-011/012 atomic lifecycle repurpose、EXP-033 atomic composition、EXP-035 disable-model-invocation 効果)</li>
-  <li><a href="../migration/rebuild-plan.html">rebuild-plan.html</a> (<code>Phase 1 PoC</code> での atomic SKILL.md 初期実装)</li>
-  <li><a href="../migration/regression-test-strategy.html">regression-test-strategy.html</a> (bats <code>atomic-verification-post-verify.bats</code> 計画)</li>
+  <li><a href="../migration/rebuild-plan.html">rebuild-plan.html</a> (atomic SKILL.md 実装の rebuild scope)</li>
+  <li><a href="../migration/regression-test-strategy.html">regression-test-strategy.html</a> (bats <code>atomic-verification-post-verify.bats</code> の test scope)</li>
   <li><a href="failure-analysis.html">failure-analysis.html</a> §自己申告 step (本 file が解決策)</li>
-  <li>plugins/twl/refs/ref-invariants.md (Inv U "Atomic skill verification" 追加、<code>Phase 4 cleanup</code> 時)</li>
+  <li>plugins/twl/refs/ref-invariants.md (Inv U "Atomic skill verification" 採用は <a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> Inv U の継承戦略に従う)</li>
 </ul>
 
 </body>
