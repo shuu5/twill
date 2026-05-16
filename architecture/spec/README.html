@@ -9,7 +9,7 @@
   header.doc-header { border-bottom: 3px solid var(--brand); }
   .dir-section { margin-top: 32px; padding-top: 16px; border-top: 2px solid var(--gray-200); }
   .dir-purpose { background: var(--gray-50); padding: 12px 16px; border-left: 3px solid var(--brand); margin: 8px 0 16px 0; font-size: 14px; }
-  /* machine-readable index: AI parse 用 semantic structure (2026-05-15 Q1 追加) */
+  /* machine-readable index (mri): AI parse 用 semantic structure */
   dl.mri { font-family: var(--font-mono); font-size: 12.5px; line-height: 1.45; margin: 16px 0; padding: 12px 16px; background: var(--gray-50); border-left: 3px solid var(--gray-400); border-radius: var(--radius-md); }
   dl.mri dt { font-weight: 700; color: var(--brand-dark, #3d9e8f); margin-top: 6px; }
   dl.mri dd { color: var(--gray-800); margin-left: 14px; margin-bottom: 2px; }
@@ -20,7 +20,7 @@
 
 <header class="doc-header">
   <h1>twill plugin rebuild — spec index</h1>
-  <div class="meta">status: <span class="badge done">done</span> &middot; 5 dir cluster (spec / migration / research / archive / decisions) &middot; <a href="architecture-graph.html"><strong>architecture-graph で全体俯瞰</strong></a></div>
+  <div class="meta">status: <span class="badge done">done</span> &middot; 7 dir cluster (spec / steering / changes / migration / research / archive / decisions) &middot; <a href="architecture-graph.html"><strong>architecture-graph で全体俯瞰</strong></a></div>
 </header>
 
 <div class="info">
@@ -43,6 +43,16 @@
       <td><strong>新 twill 仕様 SSoT</strong> (orientation / core / policy / auxiliary)</td>
     </tr>
     <tr>
+      <td><a href="#steering"><code>steering/</code></a></td>
+      <td>3 MD</td>
+      <td>project-wide 規律 (product vision / tech constraint / structure rule、GitHub Spec Kit 方式)</td>
+    </tr>
+    <tr>
+      <td><a href="#changes"><code>changes/</code></a></td>
+      <td>active change package</td>
+      <td>進行中の変更提案 (OpenSpec lifecycle: proposal → design → tasks → spec-delta)</td>
+    </tr>
+    <tr>
       <td><a href="#migration"><code>migration/</code></a></td>
       <td>7 HTML</td>
       <td>旧→新 移行計画 (fate audit / 実行計画)</td>
@@ -59,7 +69,7 @@
     </tr>
     <tr>
       <td><a href="#decisions"><code>decisions/</code></a></td>
-      <td>1 MD</td>
+      <td>2 MD</td>
       <td>新 architecture ADR (ADR-0012 以降)</td>
     </tr>
   </tbody>
@@ -169,7 +179,7 @@
     <tr>
       <td><a href="ssot-design.html"><code>ssot-design.html</code></a></td>
       <td><span class="badge done">done</span></td>
-      <td>registry.yaml 統合 SSoT (案 4 確定)、chain.py / step.sh / deps.yaml 三重化解消の歴史 + 案 4 詳細設計</td>
+      <td>registry.yaml 統合 SSoT、chain.py / step.sh / deps.yaml 三重化解消設計</td>
     </tr>
   </tbody>
 </table>
@@ -203,6 +213,61 @@
     </tr>
   </tbody>
 </table>
+
+<section class="normative">
+<h2 id="steering" class="dir-section">steering/ — project-wide 規律 (Spec Kit 方式)</h2>
+
+<div class="dir-purpose"><strong>役割</strong>: project 全体に適用される横断的規律 (product vision / tech constraint / structure rule)。spec/ は機能仕様、steering/ は規律 SSoT。tool-architect 編集対象外 (user manual edit)、ただし新 entry 追加時は本 README の <a href="#steering">steering/</a> table に entry 追加 MUST (R-1)。</div>
+
+<table>
+  <thead>
+    <tr><th style="width: 30%">file</th><th style="width: 12%">status</th><th>内容</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="../steering/product.md"><code>product.md</code></a></td>
+      <td><span class="badge done">done</span></td>
+      <td>TWiLL plugin product vision + audience + goals + non-goals (project の "なぜ" を宣言)</td>
+    </tr>
+    <tr>
+      <td><a href="../steering/tech.md"><code>tech.md</code></a></td>
+      <td><span class="badge done">done</span></td>
+      <td>技術選択・言語・tool constraint (Python / Bash / HTML / Markdown / ReSpec / Vale 等の採用根拠)</td>
+    </tr>
+    <tr>
+      <td><a href="../steering/structure.md"><code>structure.md</code></a></td>
+      <td><span class="badge done">done</span></td>
+      <td>spec/ dir 構造・R-1〜R-20 適用範囲 cheatsheet・contributor guide (新規 file 追加 decision tree)</td>
+    </tr>
+  </tbody>
+</table>
+</section>
+
+<section class="normative">
+<h2 id="changes" class="dir-section">changes/ — 進行中の変更提案 (OpenSpec lifecycle)</h2>
+
+<div class="dir-purpose"><strong>役割</strong>: 進行中の spec 変更提案 (proposal / design / tasks / spec-delta)。各 change package は <code>NNN-slug/</code> dir で隔離 (R-17)。merge 後 <code>archive/changes/YYYY-MM-DD-NNN-slug/</code> へ移動。tool-architect 編集対象外 (user manual edit + co-architect spawn)、運用 guide は <a href="../changes/README.md"><code>changes/README.md</code></a> 参照。</div>
+
+<aside class="ednote">R-17 lifecycle: <code>changes/</code> 配下は active proposal のみ。merge 完了時は <code>archive/changes/YYYY-MM-DD-NNN-slug/</code> へ <code>git mv</code>。本 README の <a href="#changes">changes/</a> table から entry 削除し、<a href="#archive">archive/</a> table に集約 listing 追加 (R-1 例外: archive 集約)。</aside>
+
+<table>
+  <thead>
+    <tr><th style="width: 42%">change package</th><th style="width: 12%">status</th><th>内容</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="../changes/README.md"><code>changes/README.md</code></a></td>
+      <td><span class="badge done">done</span></td>
+      <td>changes/ 運用 guide (lifecycle / file 構成 / spec-delta semantics)</td>
+    </tr>
+    <tr>
+      <td><a href="../changes/001-spec-purify/proposal.md"><code>001-spec-purify/</code></a></td>
+      <td><span class="badge proposed">in-flight</span></td>
+      <td>spec clean architecture 導入 (R-14〜R-20 + steering/ + changes/ + ReSpec markup + Vale + MCP tool、ADR-0013 参照)。<code>{proposal,design,tasks}.md</code> + <code>spec-delta/{ADDED,MODIFIED}.md</code></td>
+    </tr>
+  </tbody>
+</table>
+</section>
 
 <h2 id="migration" class="dir-section">migration/ — 旧→新 移行計画</h2>
 
@@ -312,12 +377,12 @@
     <tr>
       <td><a href="../archive/research/dig-report-ssot-2026-05-13.html"><code>dig-report-ssot-2026-05-13.html</code></a></td>
       <td><span class="badge archive">archive</span></td>
-      <td>registry.yaml 統合 SSoT 設計 dig 独立 artifact (2026-05-13、調査完了)</td>
+      <td>registry.yaml 統合 SSoT 設計 dig 独立 artifact (調査済、ssot-design.html に成果統合済)</td>
     </tr>
     <tr>
       <td><a href="../archive/research/dig-report-tools-2026-05-13.html"><code>dig-report-tools-2026-05-13.html</code></a></td>
       <td><span class="badge archive">archive</span></td>
-      <td>tool-* 3 件構成 finalization dig 独立 artifact (2026-05-13)</td>
+      <td>tool-* 3 件構成 finalization dig 独立 artifact (調査済、tool-architecture.html に成果統合済)</td>
     </tr>
     <tr>
       <td><code>archive/decisions/ADR-0006〜0011a/0011b.md</code></td>
@@ -346,19 +411,33 @@
       <td><span class="badge proposed">proposed</span></td>
       <td>su-* → admin-* rebrand (su-observer → administrator / su-compact → admin-compact / 関連 script rename)</td>
     </tr>
+    <tr>
+      <td><a href="../decisions/ADR-0013-spec-clean-architecture.md"><code>ADR-0013-spec-clean-architecture.md</code></a></td>
+      <td><span class="badge done">accepted</span></td>
+      <td>spec clean architecture (案 F): R-14〜R-20 + OpenSpec lifecycle + GitHub Spec Kit steering/ + ReSpec markup + Vale + MCP tool による 6 軸 SSoT cross-ref + L1〜L5 多層防御</td>
+    </tr>
   </tbody>
 </table>
 
 <h2 id="reading-guide">読む順序 (persona 別、dir prefix 表示)</h2>
 
-<p><strong>全体俯瞰</strong>: <a href="architecture-graph.html"><code>architecture-graph.html</code></a> — 5 cluster の dir 構造 + link 関係を一望、click navigation。</p>
+<p><strong>全体俯瞰</strong>: <a href="architecture-graph.html"><code>architecture-graph.html</code></a> — 7 dir cluster の構造 + link 関係を一望、click navigation。</p>
 
 <h3>初めて読む人 (全体把握優先)</h3>
 <ol>
+  <li><code>[steering/]</code> <a href="../steering/product.md">product.md</a> — TWiLL plugin の vision / goals / non-goals</li>
   <li><code>[spec/]</code> <a href="overview.html">overview.html</a> — 全体図 + Key Points + 新原則</li>
   <li><code>[spec/]</code> <a href="failure-analysis.html">failure-analysis.html</a> — なぜ rebuild が必要か (失敗の証拠)</li>
   <li><code>[spec/]</code> <a href="crash-failure-mode.html">crash-failure-mode.html</a> — 設計の root reliability</li>
   <li><code>[spec/]</code> <a href="twl-mcp-integration.html">twl-mcp-integration.html</a> — 既存 MCP 資産との接続戦略</li>
+</ol>
+
+<h3>spec を編集する人 (規律理解 + change flow)</h3>
+<ol>
+  <li><code>[steering/]</code> <a href="../steering/structure.md">structure.md</a> — spec/ dir 構造 + R-1〜R-20 cheatsheet + contributor guide</li>
+  <li><code>[decisions/]</code> <a href="../decisions/ADR-0013-spec-clean-architecture.md">ADR-0013-spec-clean-architecture.md</a> — 案 F 設計根拠 (R-14〜R-20 + ReSpec + Vale + MCP tool の relevance)</li>
+  <li><code>[changes/]</code> <a href="../changes/README.md">changes/README.md</a> — OpenSpec lifecycle 運用 guide</li>
+  <li><a href="../../plugins/twl/skills/tool-architect/SKILL.md">tool-architect SKILL.md</a> — Phase A-G workflow + R-N 適用 (skill 本体)</li>
 </ol>
 
 <h3>既存 plugin を知る人 (継承戦略確認)</h3>
@@ -385,31 +464,35 @@
 
 <h2 id="extensibility">拡張性 (新 file 追加 scenario)</h2>
 
-<p>新 file 追加時は <code>spec-management-rules.md</code> の R-10 decision tree で dir + sub-category が決定される。具体的な 3 scenario:</p>
+<p>新 file 追加時は <code>spec-management-rules.md</code> の R-10 decision tree で dir + sub-category が決定される。具体的な scenario:</p>
 
 <ul>
-  <li><strong>新 ADR (例: ADR-0013)</strong>: <code>decisions/</code> 配下に MD 配置、README の <a href="#decisions">decisions/</a> section table に entry 追加</li>
+  <li><strong>新 ADR (例: ADR-0014)</strong>: <code>decisions/</code> 配下に MD 配置、README の <a href="#decisions">decisions/</a> section table に entry 追加 (R-1)</li>
   <li><strong>新 spec file (例: phaser-lifecycle.html)</strong>: <code>spec/</code> 配下 (role 責務系なので core sub)、README の <a href="#spec-core">spec/core</a> table に entry + <a href="architecture-graph.html">graph</a> に node 追加 (R-1 + R-2)</li>
-  <li><strong>新 research file (例: dig-report-XXX-YYYY-MM-DD.html)</strong>: <code>research/</code> 配下、README の <a href="#research">research/</a> table に entry 追加</li>
+  <li><strong>新 research file (例: dig-report-XXX-YYYY-MM-DD.html)</strong>: <code>research/</code> 配下、README の <a href="#research">research/</a> table に entry 追加 (R-1)</li>
+  <li><strong>新 change proposal (例: 002-add-foo)</strong>: <code>changes/NNN-slug/</code> dir 作成 (proposal.md + design.md + tasks.md + spec-delta/{ADDED,MODIFIED}.md)、README の <a href="#changes">changes/</a> section table に entry 追加 (R-1 + R-17 lifecycle)。merge 後 <code>archive/changes/YYYY-MM-DD-NNN-slug/</code> へ移動</li>
+  <li><strong>新 steering file (例: deployment.md)</strong>: <code>steering/</code> 配下に MD 配置、README の <a href="#steering">steering/</a> section table に entry 追加 (R-1)。project-wide 規律のため scope 慎重判断</li>
 </ul>
 
-<p><strong>注</strong>: <code>decisions/</code> / <code>research/</code> / <code>migration/</code> 配下 file 自体の追加は tool-architect 編集対象外 (user manual edit)、ただし本 README への entry 追加 (R-1) は <code>spec/</code> 編集にあたるため <code>export TWL_TOOL_CONTEXT=tool-architect</code> caller marker MUST。</p>
+<p><strong>注</strong>: <code>decisions/</code> / <code>research/</code> / <code>migration/</code> / <code>changes/</code> / <code>steering/</code> 配下 file 自体の追加は tool-architect 編集対象外 (user manual edit + co-architect spawn)、ただし本 README への entry 追加 (R-1) は <code>spec/</code> 編集にあたるため <code>export TWL_TOOL_CONTEXT=tool-architect</code> caller marker MUST (R-7)。</p>
 
 <h2 id="ssot">SSoT 位置</h2>
 
 <ul>
-  <li>本 spec directory (<code>architecture/spec/</code>) = twill plugin の <strong>設計仕様 SSoT</strong></li>
-  <li>旧 ADR (<code>architecture/archive/decisions/ADR-0006〜0011a/0011b</code> 計 7 件) は <a href="../migration/adr-fate-table.html">adr-fate-table.html</a> で fate を議論済 (spec level)</li>
+  <li><code>architecture/spec/</code> = twill plugin の <strong>機能仕様 SSoT</strong> (role / boundary / protocol / policy)</li>
+  <li><code>architecture/steering/</code> = <strong>project-wide 規律 SSoT</strong> (product vision / tech constraint / structure rule)。spec が "なに" を、steering が "なぜ・どう" を規定</li>
+  <li><code>architecture/changes/</code> = <strong>in-flight 変更提案 SSoT</strong> (OpenSpec lifecycle、proposal → design → tasks → spec-delta → archive)</li>
+  <li><code>architecture/decisions/</code> = <strong>新 architecture 正典 ADR</strong> (ADR-0012〜、本 spec を supplement として link)</li>
+  <li>旧 ADR (<code>architecture/archive/decisions/ADR-0006〜0011a/0011b</code> 計 7 件) は <a href="../migration/adr-fate-table.html">adr-fate-table.html</a> で fate を議論済</li>
   <li>旧 invariant (<code>plugins/twl/refs/ref-invariants.md</code>、19 件) は <a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> で継承戦略を決定 + drift 訂正</li>
   <li>旧 twl MCP server (<code>cli/twl/src/twl/mcp_server/</code>) は <a href="twl-mcp-integration.html">twl-mcp-integration.html</a> で継承戦略決定</li>
-  <li>旧 chain SSoT 三重化 (<code>chain.py</code> + <code>chain-steps.sh</code> + <code>deps.yaml.chains</code>) は <a href="ssot-design.html">ssot-design.html</a> で <strong>案 4 registry.yaml 統合 SSoT</strong> に統一</li>
-  <li>新 architecture の正典 ADR は <code>architecture/decisions/</code> 配下 (ADR-0012〜、本 spec を supplement として link)</li>
+  <li>旧 chain SSoT 三重化 (<code>chain.py</code> + <code>chain-steps.sh</code> + <code>deps.yaml.chains</code>) は <a href="ssot-design.html">ssot-design.html</a> で <strong>registry.yaml 統合 SSoT</strong> に統一</li>
   <li><code>common.css</code> は <strong>HTML/MD boundary R-6 の例外</strong>、spec/ 配下に存続する唯一の CSS file (R-6 rationale および exception は <code>plugins/twl/skills/tool-architect/refs/spec-management-rules.md</code> R-6 参照)</li>
 </ul>
 
 <h2 id="machine-readable">machine-readable index (AI 用 semantic structure)</h2>
 
-<p>本 README は人間 + AI (将来 tool-architect 等) 両方の audience を想定。本 section は AI が parse しやすい <code>&lt;dl&gt;</code> 形式で全 file (33 entry、HTML + MD + CSS) の semantic structure を提供。<strong>SSoT は上部 directory tables、本 section は derived view (machine-readable mirror)</strong>。</p>
+<p>本 README は人間 + AI (将来 tool-architect 等) 両方の audience を想定。本 section は AI が parse しやすい <code>&lt;dl&gt;</code> 形式で全 file (43 entry、HTML + MD + CSS) の semantic structure を提供。<strong>SSoT は上部 directory tables、本 section は derived view (machine-readable mirror)</strong>。</p>
 
 <p>format: <code>&lt;dt&gt;path&lt;/dt&gt;&lt;dd&gt;dir=... | category=... | badge=... | desc=...&lt;/dd&gt;</code></p>
 
@@ -428,7 +511,7 @@
 <dd>dir=spec | category=core | badge=done | desc=10 role 責務 boundary 行列 (administrator/phaser/workflow/atomic/specialist + tool/reference/script/hook/monitor)</dd>
 
 <dt><code>spec/crash-failure-mode.html</code></dt>
-<dd>dir=spec | category=core | badge=done | desc=3 階層 crash 検知 + recovery + SLA (Inv G 強化、Phase I 2026-05-15 admin-health-check 反映)</dd>
+<dd>dir=spec | category=core | badge=done | desc=3 階層 crash 検知 + recovery + SLA (Inv G、admin-health-check 含む)</dd>
 
 <dt><code>spec/atomic-verification.html</code></dt>
 <dd>dir=spec | category=core | badge=done | desc=atomic skill 4-phase lifecycle (pre-check/exec/post-verify/report) + 機械検証規約 (Inv U)</dd>
@@ -458,7 +541,7 @@
 <dd>dir=spec | category=policy | badge=done | desc=twl MCP server (30+ tool、12 audit sections、TWL_AUDIT env) の継承戦略 + 新 architecture 統合</dd>
 
 <dt><code>spec/ssot-design.html</code></dt>
-<dd>dir=spec | category=policy | badge=done | desc=registry.yaml 統合 SSoT (案 4 確定、(2026-05-13))、chain.py/step.sh/deps.yaml/types.yaml 三重化解消設計</dd>
+<dd>dir=spec | category=policy | badge=done | desc=registry.yaml 統合 SSoT、chain.py/step.sh/deps.yaml/types.yaml 三重化解消設計</dd>
 
 <dt><code>spec/glossary.html</code></dt>
 <dd>dir=spec | category=auxiliary | badge=done | desc=用語集 (10 role 体系 + vocabulary 6 field schema + 用語廃止 listing、1 entity = 1 canonical name)</dd>
@@ -471,6 +554,33 @@
 
 <dt><code>spec/common.css</code></dt>
 <dd>dir=spec | category=auxiliary | badge=done | desc=共通 stylesheet (design token + 4-state status badge + EXP/src link class、R-6 HTML/MD boundary 例外)</dd>
+
+<dt><code>steering/product.md</code></dt>
+<dd>dir=steering | badge=done | desc=TWiLL plugin product vision + audience + goals + non-goals</dd>
+
+<dt><code>steering/tech.md</code></dt>
+<dd>dir=steering | badge=done | desc=技術選択・言語・tool constraint (Python / Bash / HTML / Markdown / ReSpec / Vale 採用根拠)</dd>
+
+<dt><code>steering/structure.md</code></dt>
+<dd>dir=steering | badge=done | desc=spec/ dir 構造・R-1〜R-20 適用範囲 cheatsheet・contributor guide</dd>
+
+<dt><code>changes/README.md</code></dt>
+<dd>dir=changes | badge=done | desc=changes/ 運用 guide (lifecycle / file 構成 / spec-delta semantics)</dd>
+
+<dt><code>changes/001-spec-purify/proposal.md</code></dt>
+<dd>dir=changes/001-spec-purify | badge=proposed | desc=spec clean architecture 導入 (案 F) の scope 宣言 (R-14〜R-20 + steering/ + changes/ + ReSpec markup + Vale + MCP tool)</dd>
+
+<dt><code>changes/001-spec-purify/design.md</code></dt>
+<dd>dir=changes/001-spec-purify | badge=proposed | desc=技術選択根拠 (OpenSpec lifecycle / GitHub Spec Kit / ReSpec / Diátaxis / Vale / 6 軸 SSoT cross-ref)</dd>
+
+<dt><code>changes/001-spec-purify/tasks.md</code></dt>
+<dd>dir=changes/001-spec-purify | badge=proposed | desc=実装 checklist (C1〜C16 commit 単位)</dd>
+
+<dt><code>changes/001-spec-purify/spec-delta/MODIFIED.md</code></dt>
+<dd>dir=changes/001-spec-purify | badge=proposed | desc=spec/ 18 file 変更概要 (group A/B/C 分割 + R-14/R-15 適用箇所)</dd>
+
+<dt><code>changes/001-spec-purify/spec-delta/ADDED.md</code></dt>
+<dd>dir=changes/001-spec-purify | badge=proposed | desc=新規追加 dir/file listing (changes/ + steering/ + specialist-spec-review-temporal + tools_spec.py 等)</dd>
 
 <dt><code>migration/adr-fate-table.html</code></dt>
 <dd>dir=migration | category=fate-audit | badge=done | desc=旧 plugin ADR 43 件 1 件ずつ fate audit (保全 / Superseded / 削除 / 統合)</dd>
@@ -509,10 +619,10 @@
 <dd>dir=archive | badge=archive | desc=実装作業 log (Phase F-J / Phase 1 PoC Cluster N 等の歴史保存)</dd>
 
 <dt><code>archive/research/dig-report-ssot-2026-05-13.html</code></dt>
-<dd>dir=archive/research | badge=archive | desc=registry.yaml 統合 SSoT 設計 dig 独立 artifact (2026-05-13、調査完了 + 案 4 確定)</dd>
+<dd>dir=archive/research | badge=archive | desc=registry.yaml 統合 SSoT 設計 dig 独立 artifact (調査済、ssot-design.html に成果統合済)</dd>
 
 <dt><code>archive/research/dig-report-tools-2026-05-13.html</code></dt>
-<dd>dir=archive/research | badge=archive | desc=tool-* 3 件構成 finalization dig 独立 artifact (2026-05-13)</dd>
+<dd>dir=archive/research | badge=archive | desc=tool-* 3 件構成 finalization dig 独立 artifact (調査済、tool-architecture.html に成果統合済)</dd>
 
 <dt><code>archive/decisions/ADR-0006〜0011a/0011b.md</code> (集約 entry)</dt>
 <dd>dir=archive/decisions | badge=archive | desc=旧 ADR 7 件 (fate 議論済、adr-fate-table.html 参照、R-1 例外で集約 listing)</dd>
@@ -523,11 +633,14 @@
 <dt><code>decisions/ADR-0012-administrator-rebrand.md</code></dt>
 <dd>dir=decisions | badge=proposed | desc=su-* → admin-* rebrand (su-observer → administrator、su-compact → admin-compact、関連 script rename)</dd>
 
+<dt><code>decisions/ADR-0013-spec-clean-architecture.md</code></dt>
+<dd>dir=decisions | badge=done | hub | desc=spec clean architecture (案 F) 採用根拠: R-14〜R-20 + OpenSpec lifecycle + GitHub Spec Kit steering/ + ReSpec markup + Vale + MCP tool + L1〜L5 多層防御</dd>
+
 </dl>
 
 <h2 id="management-rules">spec 管理規律</h2>
 
-<p>本 spec の管理は <code>plugins/twl/skills/tool-architect/SKILL.md</code> と <code>plugins/twl/skills/tool-architect/refs/spec-management-rules.md</code> で規定された R-1〜R-9 (+ R-10 decision tree) に従う。CI gate (<code>.github/workflows/spec-link-check.yml</code>) で broken link 0 + orphan 0 を強制。</p>
+<p>本 spec の管理は <code>plugins/twl/skills/tool-architect/SKILL.md</code> と <code>plugins/twl/skills/tool-architect/refs/spec-management-rules.md</code> で規定された <strong>R-1〜R-20</strong> (R-10 decision tree + R-14〜R-20 spec content semantic + lifecycle + ReSpec markup + 多層防御 + MCP tool 統合) に従う。CI gate (<code>.github/workflows/spec-link-check.yml</code>) で broken link 0 + orphan 0 を強制、L1〜L5 多層防御 (skill / bats / hook+MCP tool / pre-commit Vale + textlint / CI) で R-14〜R-20 を機械的に検証。</p>
 
 </body>
 </html>
