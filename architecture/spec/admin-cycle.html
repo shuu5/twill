@@ -18,9 +18,9 @@
 
 <header class="doc-header">
   <h1>administrator polling cycle — 6-step + 不変条件 I-1〜I-7 (公式 verified)</h1>
-  <div class="meta">draft-v3 (2026-05-13、(2026-05-13) 反映) &middot; CronCreate 制約反映済 (#40228 known bug 対応) &middot; 案 2 先行実装案 &middot; tmux window prefix phaser-&lt;type&gt;-&lt;issue&gt; (旧 phase-* から rename)</div>
+  <div class="meta">status: <span class="badge done">done</span> &middot; CronCreate 制約反映済 (#40228 known bug 対応) &middot; tmux window prefix <code>phaser-&lt;type&gt;-&lt;issue&gt;</code></div>
 
-<div class="info"><strong>(2026-05-13) 反映</strong>: administrator が spawn する controller の tmux window prefix を <code>phase-&lt;type&gt;-&lt;issue&gt;</code> から <code>phaser-&lt;type&gt;-&lt;issue&gt;</code> に rename (sed 機械化)。<code>STATUS_TRANSITION_MAP</code> のキー更新と spawn 判断ロジック (§3.4) も連動。Mail event field の <code>skill</code> 値変更 (<code>phase-impl</code> → <code>phaser-impl</code>)。Crash failure mode の <code>durable: true</code> 記述は <a href="failure-analysis.html">failure-analysis.html</a> + <a href="crash-failure-mode.html">crash-failure-mode.html</a> §6 で「BROKEN (Issue #40228)」と整合確認 (durable=false で fallback 必須)。</div>
+<div class="info">administrator が spawn する controller の tmux window prefix は <code>phaser-&lt;type&gt;-&lt;issue&gt;</code>。<code>STATUS_TRANSITION_MAP</code> のキー + spawn 判断ロジック (§3.4) はこの prefix で動作する。Mail event field の <code>skill</code> 値も <code>phaser-impl</code> 等の prefix を採用する。Crash failure mode の <code>durable: true</code> は BROKEN (Issue #40228) のため <code>durable=false</code> で fallback する (詳細: <a href="failure-analysis.html">failure-analysis.html</a> + <a href="crash-failure-mode.html">crash-failure-mode.html</a> §6)。</div>
 </header>
 
 <div class="info">
@@ -69,7 +69,7 @@
 
 <p>本 spec の方針: <strong>admin session は user が手動起動 + <code>--continue</code> で resume</strong>、CronCreate (recurring=true、durable 引数なし) で session 内 polling。machine 再起動時は user が手動 resume、または Desktop scheduled tasks で自動起動を schedule する。</p>
 
-<h2>§2. polling cycle 6 step (verified、draft-v1 §3b 発展)</h2>
+<h2>§2. polling cycle 6 step (verified)</h2>
 
 <div class="diagram">
 <svg class="arch-svg" viewBox="0 0 1080 400" xmlns="http://www.w3.org/2000/svg">
@@ -139,9 +139,9 @@
 
 <p>各 phaser が emit した mail を読み、未読 line を line 番号で track。flock 共有 lock で read。format:</p>
 
-<pre><code>{"from":"phaser-impl-1660","ts":"2026-05-12T22:00:00+09:00","event":"phase-completed","detail":{"issue":1660,"status":"Implementing"}}
-{"from":"phaser-pr-1660","ts":"2026-05-12T22:15:00+09:00","event":"merge-gate-failed","detail":{"issue":1660,"reason":"specialist FAIL"}}
-{"from":"phase-gate","ts":"2026-05-12T22:20:00+09:00","event":"phase-gate-denied","detail":{"skill":"phaser-impl-1700","issue":1700,"expected":"Refined","actual":"Todo"}}</code></pre>
+<pre><code>{"from":"phaser-impl-1660","ts":"&lt;ISO8601&gt;","event":"phase-completed","detail":{"issue":1660,"status":"Implementing"}}
+{"from":"phaser-pr-1660","ts":"&lt;ISO8601&gt;","event":"merge-gate-failed","detail":{"issue":1660,"reason":"specialist FAIL"}}
+{"from":"phase-gate","ts":"&lt;ISO8601&gt;","event":"phase-gate-denied","detail":{"skill":"phaser-impl-1700","issue":1700,"expected":"Refined","actual":"Todo"}}</code></pre>
 
 <h3>3.2 step 2: GitHub Project Board status poll</h3>
 
@@ -221,7 +221,7 @@ if not admin_cycle_task:
     )
 print("admin-cycle CronCreate set (session-scoped)")
 
-# 3. Monitor daemon health-check (Phase I 2026-05-15 確定、monitor-policy.html §5.2)
+# 3. Monitor daemon health-check (monitor-policy.html §5.2)
 # plugins/twl/monitors.json daemon が plugin loader で auto-start されているはず
 MONITOR_LIFECYCLE_FILE=".supervisor/monitor-lifecycle.json"
 if [[ -f "$MONITOR_LIFECYCLE_FILE" ]]; then
@@ -239,7 +239,7 @@ fi</code></pre>
 
 <ul>
   <li>admin SKILL.md の polling iteration 内で <code>CronList</code> を確認</li>
-  <li>残 expiry &lt; 2 日 → 新 CronCreate を set + 旧 CronDelete (atomic substitution)</li>
+  <li>残 expiry &lt; 2 日 → 次 CronCreate を set + 当該 CronDelete (atomic substitution)</li>
   <li>admin session が 7 日連続稼働しないと想定するなら、初回 set のみで十分</li>
 </ul>
 
@@ -314,7 +314,7 @@ fi</code></pre>
   <li><strong>gh project item-list キャッシュ</strong> 動作確認</li>
 </ul>
 
-<p>= <code>Phase 1 PoC</code> verify points の半数を admin 先行実装で確認可能。</p>
+<p>= PoC verify points の半数を admin 先行実装で確認可能。</p>
 
 <h2>§8. conflict scenario (verified)</h2>
 
@@ -333,13 +333,13 @@ fi</code></pre>
   </tbody>
 </table>
 
-<h2>§9. dual-stack 期間中の運用 (su-observer 旧 vs administrator 新)</h2>
+<h2>§9. dual-stack routing (su-observer ↔ administrator)</h2>
 
 <p>詳細は <a href="../migration/dual-stack-routing.html">dual-stack-routing.html</a>。本 file で重要な点:</p>
 
 <ul>
-  <li><strong>state 分離</strong>: 旧 <code>.supervisor/</code> と新 <code>.admin/</code> を別 directory で管理 (session.json / cld-observe-any.log)</li>
-  <li><strong>session.json field 追加</strong>: <code>stack: "new"|"legacy"</code> で区別、cross-stack 操作禁止</li>
+  <li><strong>state 分離</strong>: legacy stack <code>.supervisor/</code> と new stack <code>.admin/</code> を別 directory で管理 (session.json / cld-observe-any.log)</li>
+  <li><strong>session.json field</strong>: <code>stack: "new"|"legacy"</code> で区別、cross-stack 操作禁止</li>
   <li><strong>同時稼働制約</strong>: 同 Issue を両 stack が処理すると Project Board status race の risk、Issue label <code>stack:new</code>/<code>stack:legacy</code> で routing</li>
 </ul>
 
@@ -347,13 +347,13 @@ fi</code></pre>
 
 <ul>
   <li><a href="overview.html">overview.html</a> §3 (3 階層 architecture 全体図、administrator L0 図解)</li>
-  <li><a href="monitor-policy.html">monitor-policy.html</a> (Monitor primitive 規定 — actor / signal / composite / lifecycle、(2026-05-13) Phase I 確定)</li>
+  <li><a href="monitor-policy.html">monitor-policy.html</a> (Monitor primitive 規定 — actor / signal / composite / lifecycle)</li>
   <li><a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> 不変条件 G (crash 検知) + T (mailbox atomic) + V (per-specialist scope)</li>
   <li><a href="crash-failure-mode.html">crash-failure-mode.html</a> §3 (heartbeat 検知 + 3 階層 SLA)</li>
   <li><a href="gate-hook.html">gate-hook.html</a> (phase-gate 経由の deny 受信処理)</li>
   <li><a href="spawn-protocol.html">spawn-protocol.html</a> (tmux + mailbox spec 詳細)</li>
-  <li><a href="../migration/dual-stack-routing.html">dual-stack-routing.html</a> (outline、su-observer 旧 → administrator 新 移行)</li>
-  <li><a href="../migration/rebuild-plan.html">rebuild-plan.html</a> <code>Phase 1 PoC</code> (案 2 を最小実装する手順)</li>
+  <li><a href="../migration/dual-stack-routing.html">dual-stack-routing.html</a> (outline、su-observer ↔ administrator routing)</li>
+  <li><a href="../migration/rebuild-plan.html">rebuild-plan.html</a> (PoC implementation 手順)</li>
   <li><a href="../research/research-findings.html">research-findings.html</a> (CronCreate + Project Board の verified 制約)</li>
   <li>既存 ADR-014 (Supervisor redesign su-observer) — administrator の前身、rebrand 計画</li>
 </ul>
@@ -363,7 +363,7 @@ fi</code></pre>
 <p>polling cycle (§2 6 step) 以外の administrator 責務:</p>
 
 <ul>
-  <li><strong>knowledge externalization (compaction trigger)</strong>: LLM context が膨らんだ時、<code>admin-compact</code> command (旧 <code>su-compact</code>、<a href="../decisions/ADR-0012-administrator-rebrand.md">ADR-0012</a> 確定) を invoke して Long-term Memory 保存 + Working Memory 退避 + <code>/compact</code> 提案。polling cycle とは別 trigger (user 手動 or LLM 自律判断) で発火する。実 rename は migration phase 実施。</li>
+  <li><strong>knowledge externalization (compaction trigger)</strong>: LLM context が膨らんだ時、<code>admin-compact</code> command (rebrand 戦略は <a href="../decisions/ADR-0012-administrator-rebrand.md">ADR-0012</a>) を invoke して Long-term Memory 保存 + Working Memory 退避 + <code>/compact</code> 提案。polling cycle とは別 trigger (user 手動 or LLM 自律判断) で発火する。</li>
 </ul>
 
 <h2>§11. verify source</h2>
@@ -372,7 +372,6 @@ fi</code></pre>
   <li><strong>Claude Code Scheduled tasks docs</strong>: <a href="https://code.claude.com/docs/en/scheduled-tasks">code.claude.com/docs/en/scheduled-tasks</a></li>
   <li><strong>Issue #40228 (CronCreate durable bug)</strong>: <a href="https://github.com/anthropics/claude-code/issues/40228">github.com/anthropics/claude-code/issues/40228</a> (OPEN、stale)</li>
   <li><strong>research session bce9c4e4</strong>: KP-6 (PreToolUse + MCP shadow tier)、KP-2 (gh project item-edit 単発)、§6-4 (SessionStart hook 制約)</li>
-  <li><strong>Agent C 分析 (過去 session)</strong>: 案 2 先行実装の feasibility analysis、~245 行で su-observer + chain-runner 依存より縮小</li>
 </ul>
 
 </body>
