@@ -778,6 +778,123 @@ tool-architect Phase E (Implementation) 機械検証 step に `twl_spec_content_
 - Zenflow committee approach: 複数 LLM 相互検証 (verified URL: https://zencoder.ai/zenflow)
 - MCP protocol (Anthropic、tools as agent capability extension)
 
+## R-21: shell command 手順書系 code block は aside class="example" wrap MUST (2026-05-17 追加)
+
+shell command 手順書系 (caller marker `export TWL_TOOL_CONTEXT=tool-architect; ...; unset TWL_TOOL_CONTEXT` / `tmux send-keys` 等の操作手順) を `<pre>` で記述する場合、`<aside class="example">` で wrap + `<pre data-status="inferred|verified">` 属性付与 MUST。
+
+### rationale
+- R-15 文言 ambiguity 解消 (agent 3 finding 2026-05-17): caller marker 手順書 / bash 起動例 / log 収集 path listing 等は schema/table/ABNF/mermaid のいずれでもなく、aside wrap が legitimate
+- R-18 ReSpec markup と整合: `<aside class="example">` は informative 区分の正式 markup
+- MCP tool `twl_spec_content_check` の `demo_code` check で aside 外 `<pre>` を WARNING (confidence ≥80) として検出
+
+### 違反例
+- `<pre><code>export TWL_TOOL_CONTEXT=...</code></pre>` (aside なし、data-status なし) → R-21 違反
+- `<aside class="example"><pre>...</pre></aside>` (data-status なし) → R-21 違反 (data-status 必須)
+
+### 機械検証
+- L3 MCP tool: `twl_spec_content_check` の `demo_code` check で aside 外 `<pre>` を flag
+- L2 bats: `tests/bats/skills/tool-architect-temporal.bats` (R-21 追加)
+- Phase F 4 軸目 (specialist-spec-review-temporal)
+
+### 業界 BP 参照
+- W3C ReSpec `<aside class="example">` (verified URL: https://respec.org/docs/)
+- Diátaxis Reference informative-only example pattern (https://diataxis.fr/reference/)
+
+## R-22: 日付 annotation `(YYYY-MM-DD)` 禁止 (changelog/meta/ednote/ADR Status 以外) (2026-05-17 追加)
+
+`architecture/spec/*.html` 本文中で日付 annotation `(YYYY-MM-DD)` 形式は禁止。change identifier 参照は `change 001-spec-purify` 等のテキスト形式のみ (日付括弧なし)。
+
+### 例外
+- `architecture/spec/changelog.html` 全文 (history 専用 file)
+- `<div class="meta">draft-vN (YYYY-MM-DD)</div>` (structural metadata、build-time stamp)
+- `<aside class="ednote">` 内 (editor note は historical 記述 OK、ReSpec 慣行)
+- ADR file の Status 履歴 (Proposed / Accepted / Superseded の lifecycle date)
+
+### rationale
+- R-14 (現在形 declarative) の例外定義精密化: change identifier に日付括弧を付ける慣習は `change YYYY-MM-DD-NNN-slug` パッケージ名 (dir 命名規約) と衝突、本文中の日付は git log + changelog.html で参照可能なため重複
+- MCP tool `twl_spec_content_check` の date annotation pattern を再有効化、L3 hook と整合性確保 (agent 3 finding: 3 者 (MCP tool / hook / temporal agent) 不整合解消)
+
+### 違反例
+- `change 001-spec-purify (2026-05-16) で実装完遂` → R-22 違反
+- 「(2026-05-13) Round 6 で廃止確定」(deprecated table cells) → R-22 違反 (ednote 内なら例外)
+- `<a href="changes/2026-05-16-001-spec-purify/">` (path 内日付は OK、annotation ではない)
+
+### 機械検証
+- L3 MCP tool: `twl_spec_content_check` PAST_NARRATION_PATTERNS に date annotation pattern 追加 (現状 exempt されているが、本 wave 後に MCP tool source code 修正)
+- L2 bats: date annotation grep (changelog.html 除外)、 `tests/bats/skills/tool-architect-temporal.bats` (R-22 追加)
+- Phase F 4 軸目 (specialist-spec-review-temporal、Step 2: 時系列マーカー検出)
+
+## R-23: 未完了マーカー禁止 (R-14 から独立、2026-05-17 追加)
+
+`architecture/spec/*.html` 配下で未完了マーカー (TODO / FIXME / WIP / XXX / stub / pending / 未作成 / 未完了 / 未実装) は禁止。R-14 (現在形 declarative) の sub-bullet から独立 rule 化。
+
+### 例外
+- `<aside class="ednote">` 内 (editor note は defer item 記述 OK)
+- registry.yaml schema 内 field 名 (例: `stub:` field) を backtick + code 化 (例: `<code>stub-flag</code>` field) する場合、ただし MCP tool が false positive 化する場合は phrasing 工夫
+- 「placeholder」「未到達」「フォローアップ」等の synonym 表現は推奨
+
+### rationale
+- 未完了マーカーが spec/ に残ると「現在の設計」を represent していない、ambiguity 増加
+- changes/<NNN>-<slug>/tasks.md の checklist で管理すべき。spec/ は「確定した現在の設計」のみ記述
+- MCP tool UNCOMPLETED_PATTERNS で機械検出可能、現状 R-14 注釈 sub-bullet として言及あるが独立 rule 化で重要度明示
+
+### 違反例
+- 「実装ファイル未完了のため後続 Wave で fix」(spec 本文中) → R-23 違反
+- `<td>5 warning stub、stub field</td>` (table cell text 内) → R-23 違反 (placeholder / `stub-flag` field に書き換え)
+- 「TODO Issue」(技術用語と誤読 risk) → R-23 違反 (フォローアップ Issue 等の synonym 推奨)
+
+### 機械検証
+- L3 MCP tool: `twl_spec_content_check` check_declarative の UNCOMPLETED_PATTERNS で検出 (現状実装、severity WARNING confidence 85)
+- L2 bats: 未完了マーカー grep、`tests/bats/skills/tool-architect-temporal.bats` (R-23 追加)
+- Phase F 4 軸目 (specialist-spec-review-temporal)
+
+### 業界 BP 参照
+- Living Documentation (Martraire 2019): "TODO in spec = pending decision = anti-pattern"
+- Diátaxis Reference: "describe what is, not what should be"
+
+## R-24: verify status 昇格は evidence commit と同時 MUST (2026-05-17 追加)
+
+`<span class="vs ...">` の verify status 昇格 (例: `deduced → verified`、`verified → experiment-verified`) は、対応する evidence (bats PASS / verify_source URL / EXP page log_hash + verify_checks) を含む commit と同時に実施 MUST。evidence なしの手動 upgrade は禁止。
+
+### 例外
+- `inferred → deduced` 昇格は spec / docs / Issue 読みの推論で OK (deduced criteria 達成、別 evidence 不要)
+- multi-stage upgrade (registry-schema.html §10.2.1 で許容) は 1 commit 内で各段階の evidence を全て明示する場合に例外
+
+### rationale
+- verify status 4-state (inferred / deduced / verified / experiment-verified) の defining criteria は registry-schema.html §10.1 で SSoT 化済
+- evidence なし手動 upgrade = AI 自己申告 false positive のリスク (agent 2 finding: tool-architecture.html L156 EXP-039 誤参照のような cross-file SSoT drift)
+- changelog.html entry に昇格 finding listing MUST (Phase G Summary)
+
+### 違反例
+- `<span class="vs verified">` に upgrade、verify_source URL なし → R-24 違反
+- `<span class="vs experiment-verified">` に upgrade、smoke pass=true なし → R-24 違反
+- multi-stage upgrade `inferred → experiment-verified` で evidence 1 段階分のみ → R-24 違反
+
+### 機械検証
+- L1 規律 (本 rule)
+- L5 CI: 将来 `experiments/audit-status-log.py` で delta>=1 の experiment-verified 化を CRITICAL 記録、commit message に EXP-NNN anchor 必須化
+
+## R-25: EXP 参照 semantic correctness MUST (2026-05-17 追加)
+
+`architecture/spec/*.html` から `experiment-index.html#EXP-NNN` を参照する場合、参照先 EXP の verify 対象と参照元 spec の claim が意味的に一致 MUST。
+
+### rationale
+- agent 2 finding (2026-05-17): tool-architecture.html L156 が EXP-039 を「実機 MCP server invoke smoke」として参照していたが、EXP-039 は実は「hook 順序保証」concern。完全に異なる EXP → cross-file SSoT drift
+- 機械検証 (`spec-anchor-link-check.py`) は anchor 存在のみ確認、verify 対象 text と claim text の semantic 一致は未検証
+- Phase F ssot agent (specialist-spec-review-ssot) で目視確認
+
+### 違反例
+- `EXP-039 で experiment-verified 化` と書きつつ、EXP-039 は別 concern (hook 順序保証) → R-25 違反
+- 専用 EXP が存在しない claim を既存 EXP に紐付ける → R-25 違反 (新 EXP 起票 MUST、本 wave で EXP-044 追加例)
+
+### 機械検証
+- 現状 L1 規律 + Phase F ssot agent 目視確認
+- 将来: `spec-anchor-link-check.py` 拡張で EXP block 内 verify 対象 text と参照元 spec claim text の semantic match audit
+
+### 業界 BP 参照
+- IETF code traceability (RFC 6982): claim → implementation evidence の名指し参照 MUST
+- W3C QA Framework Good Practice 6: example link MUST point to verified test
+
 ## CI gate 一覧
 
 ### 実装済み CI gate (機械的強制)

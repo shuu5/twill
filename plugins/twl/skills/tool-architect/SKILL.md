@@ -222,6 +222,11 @@ changelog.html entry 追加 + 累積 commit list + defer task listing + Phase F 
 | **R-18** | ReSpec semantic markup 必須 (新規 section、grandfather) | L2 bats + L3 MCP tool (respec_markup) + L5 ReSpec build check |
 | **R-19** | 多層 hook chain L1-L5 義務 (emergency override は intervention-log 記録 MUST) | Phase G Summary 記録 (将来 CI 機械化) |
 | **R-20** | `twl_spec_content_check` MCP tool 統合 MUST (Phase E 機械検証) | L5 CI workflow (spec-content-check.yml) + L2 bats |
+| **R-21** | shell command 手順書系 `<pre>` は `<aside class="example">` wrap + data-status MUST | L3 MCP tool `demo_code` check (aside 外 `<pre>` を WARNING) |
+| **R-22** | 日付 annotation `(YYYY-MM-DD)` は changelog/meta/ednote/ADR Status 以外で禁止 | L3 MCP tool PAST_NARRATION_PATTERNS (再有効化要、現状 exempt) + L2 bats |
+| **R-23** | 未完了マーカー (TODO/FIXME/WIP/XXX/stub/pending/未作成/未完了) は spec/ 配下禁止 (R-14 から独立) | L3 MCP tool UNCOMPLETED_PATTERNS (実装済) + L2 bats |
+| **R-24** | verify status 昇格は evidence commit と同時 MUST (bats PASS / verify_source URL / EXP log_hash + verify_checks) | L1 規律 + Phase G changelog 記録 + 将来 audit-status-log.py |
+| **R-25** | EXP 参照の semantic correctness MUST (spec から EXP-NNN link 時、参照先 EXP 内容と意味的一致) | Phase F ssot agent 目視 + 将来 spec-anchor-link-check.py 拡張 |
 
 ## 標準ワークフロー (7-phase 概要)
 
