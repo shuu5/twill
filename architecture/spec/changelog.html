@@ -21,6 +21,48 @@
   <strong>関連</strong>: <a href="README.html">README</a> / <a href="architecture-graph.html">architecture-graph</a>
 </div>
 
+<h2 id="2026-05-16-spec-purify">2026-05-16: spec clean architecture 導入 (change 001-spec-purify、案 F: R-14〜R-20 + OpenSpec + steering + ReSpec + Vale + MCP tool)</h2>
+
+<h3>核心成果</h3>
+
+<p>ユーザー指摘 3 点 (1: 過去メモが現状仕様を阻害 / 2: 架空デモコードが多い / 3: tool-architect 経由の整合性/メンテナンス性/再現性をどう保つか) を契機に、業界 BP (OpenSpec + GitHub Spec Kit + ReSpec + Diátaxis + Vale + AWS Kiro 等) を統合した <strong>spec clean architecture (案 F)</strong> を導入。本 wave で 22 commit 累積、broken 0 / orphan 0 維持、6 軸 SSoT cross-ref (SKILL ↔ spec ↔ rules R-1〜R-20 ↔ ref-schema ↔ registry ↔ changes/) 完成。</p>
+
+<ol>
+  <li><strong>Phase 1-4 (前 session)</strong>: feature-dev:feature-dev で discovery / 3 並列 code-explorer / 4 round AskUserQuestion / 3 並列 code-architect。<strong>案 F 採用</strong> (clean architecture、整合性 risk 0 を最優先、budget は安全性に含めない)。</li>
+  <li><strong>Phase 5 Foundation (C1-C6、6 commit)</strong>: changes/001-spec-purify/ package 作成 → R-14〜R-17 rules → R-18〜R-20 + SKILL.md update → ADR-0013 Accepted → steering/ 新設 (product/tech/structure.md) → HTML template ReSpec markup 追加。</li>
+  <li><strong>Phase 5 Specialist+Tool (C7-C10、5 commit)</strong>: specialist-spec-review-temporal 新規 (Phase F 軸 4 / opus 固定) → Vale config + styles/TwillSpec/ 3 rule → twl_spec_content_check MCP tool 実装 (~360 行、html.parser + regex、5 check function) → pre-tool-use-spec-write-boundary hook R-14 warning 拡張 → bats 4 新規 file + 4 既存 update。</li>
+  <li><strong>Phase 5 spec/ refactor (C11-C13、16 commit)</strong>: spec/ 18 HTML file に R-14/R-15 大量適用。過去日付 marker / draft-vN / Phase F-J / Phase 1 PoC / Round N 等 ~250 件削除、架空 bash/Python/bats code (phase-gate.sh ~120 行 / twl_phase_gate_check ~80 行 / spawn-tmux.sh ~100 行 / mailbox.sh ~46 行 / admin-health-check.sh ~30 行 / phase-gate-hook.bats ~45 行) を schema table に置換。Stage A/B/C migration strategy table (hooks-mcp-policy) を現状仕様 + ednote defer に書き換え。廃案 3 案 (deps.yaml/chain.py/step.sh SSoT) を archive/decisions/0001-ssot-design-rejected-alternatives.md に切り出し。README.html に新 dir entry (steering/, changes/, ADR-0013) + persona「spec を編集する人」追加。</li>
+  <li><strong>Phase 5 Archive+CI (C14-C15、2 commit)</strong>: architecture/migration/ → archive/migration/ git mv (7 file) + 81 inbound link sed 更新。CI workflow 2 件新規 (spec-content-check.yml: twl_spec_content_check + Vale / spec-respec-build.yml: respec CLI build) + spec-link-check.yml paths 拡張 (changes/** + archive/** + steering/** + decisions/**)。</li>
+  <li><strong>Phase 6 Quality Review (F1-F6、1 commit、5c576f45)</strong>: 3 並列 code-reviewer (simplicity/DRY + bugs/correctness + conventions、opus) で findings consolidate (<strong>CRITICAL 3 + WARNING 5 + INFO 3</strong>)、CRITICAL 全件 + WARNING 主要件 fix:
+    <ul>
+      <li>F1 tasks.md checklist 全 [x] 化 + 対応 commit SHA 付記 (R-17 lifecycle 整合)</li>
+      <li>F2 spec-management-rules.md R-11/R-12/R-13 「3→4」「5→6」+ temporal 行追加 (Phase F 4 並列固定の SSoT 整合)</li>
+      <li>F3 tools_spec.py check_changes_lifecycle CWD 依存修正 (file_path.resolve() で absolute 化 + regex 抽出)</li>
+      <li>F4 registry.yaml specialist-spec-review-vocabulary concern field 「3 並列固定」→「4 並列固定」</li>
+      <li>F5 spec-content-check.yml で find ベース recursive 列挙 (changes/** の R-17 lifecycle check 空振り解消) + Vale action 安定版 vale-cli/vale-action@v2.1.1 に更新</li>
+      <li>F6 specialist-spec-review-ssot.md 本文 migration/ → archive/migration/ + 「3 並列」→「4 並列」 + 「他 2 軸」→「他 3 軸」</li>
+    </ul>
+    INFO 3 件 (aside 入れ子 robustness / extract_frontmatter delimiter / handler status field) は現状実害なしで defer。
+  </li>
+  <li><strong>Phase 7 Summary (本 entry、G1-G3)</strong>: changelog 反映 + changes/001-spec-purify/ → archive/changes/2026-05-16-001-spec-purify/ 移動 (R-17 lifecycle 完遂) + working-memory.md 退避 + doobidoo memory store。</li>
+</ol>
+
+<h3>核心 deliverables</h3>
+
+<ul>
+  <li><strong>R-14〜R-20 (7 rule)</strong>: 現在形 declarative / code block 制限 / archive 移動 / changes lifecycle / ReSpec markup / 多層防御 / MCP tool 統合 — `plugins/twl/skills/tool-architect/refs/spec-management-rules.md` で SSoT 化</li>
+  <li><strong>L1〜L5 多層防御</strong>: L1 SKILL.md (LLM 規律) / L2 bats (機械検証) / L3 hook + MCP tool (PreToolUse + PostToolUseFailure) / L4 pre-commit Vale + textlint / L5 CI (spec-content-check + spec-respec-build + spec-link-check)</li>
+  <li><strong>OpenSpec lifecycle</strong>: <code>architecture/changes/NNN-slug/</code> (proposal + design + tasks + spec-delta) → merge → <code>archive/changes/YYYY-MM-DD-NNN-slug/</code> 移動</li>
+  <li><strong>GitHub Spec Kit steering/</strong>: <code>architecture/steering/{product,tech,structure}.md</code> で project-wide 規律 SSoT (spec は機能仕様、steering は規律)</li>
+  <li><strong>ReSpec semantic markup</strong>: <code>&lt;section class="normative|informative"&gt;</code> / <code>&lt;aside class="example|ednote"&gt;</code> / <code>&lt;pre data-status="..."&gt;</code> (R-18 grandfather: 既存 section 遡及適用なし、新規 section のみ MUST)</li>
+  <li><strong>Vale custom rules</strong>: <code>styles/TwillSpec/{PastTense,DeclarativeOnly,CodeBlock}.yml</code> + <code>.vale.ini</code> + <code>.textlintrc</code></li>
+  <li><strong>MCP tool</strong>: <code>twl_spec_content_check</code> (5 check_types: past_narration / demo_code / declarative / changes_lifecycle / respec_markup、html.parser + regex、~360 行)</li>
+  <li><strong>Phase F 4 並列 specialist</strong>: vocabulary / structure / ssot / temporal (全 opus 固定、R-13)</li>
+  <li><strong>ADR-0013-spec-clean-architecture.md</strong> (Accepted): 案 F 採用根拠、L1-L5 多層防御 mapping</li>
+</ul>
+
+<hr>
+
 <h2 id="2026-05-16">2026-05-16: tool-architect 7-phase multi-agent PR cycle 完全実装 (feature-dev:feature-dev workflow Phase 1-7)</h2>
 
 <h3>核心成果</h3>

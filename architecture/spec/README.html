@@ -20,7 +20,7 @@
 
 <header class="doc-header">
   <h1>twill plugin rebuild — spec index</h1>
-  <div class="meta">status: <span class="badge done">done</span> &middot; 7 dir cluster (spec / steering / changes / migration / research / archive / decisions) &middot; <a href="architecture-graph.html"><strong>architecture-graph で全体俯瞰</strong></a></div>
+  <div class="meta">status: <span class="badge done">done</span> &middot; 6 top-level dir cluster (spec / steering / changes / research / archive / decisions) + archive/{migration,changes,decisions/} sub-clusters &middot; <a href="architecture-graph.html"><strong>architecture-graph で全体俯瞰</strong></a></div>
 </header>
 
 <div class="info">
@@ -51,11 +51,6 @@
       <td><a href="#changes"><code>changes/</code></a></td>
       <td>active change package</td>
       <td>進行中の変更提案 (OpenSpec lifecycle: proposal → design → tasks → spec-delta)</td>
-    </tr>
-    <tr>
-      <td><a href="#migration"><code>migration/</code></a></td>
-      <td>7 HTML</td>
-      <td>旧→新 移行計画 (fate audit / 実行計画)</td>
     </tr>
     <tr>
       <td><a href="#research"><code>research/</code></a></td>
@@ -261,17 +256,15 @@
       <td>changes/ 運用 guide (lifecycle / file 構成 / spec-delta semantics)</td>
     </tr>
     <tr>
-      <td><a href="../changes/001-spec-purify/proposal.md"><code>001-spec-purify/</code></a></td>
-      <td><span class="badge proposed">in-flight</span></td>
-      <td>spec clean architecture 導入 (R-14〜R-20 + steering/ + changes/ + ReSpec markup + Vale + MCP tool、ADR-0013 参照)。<code>{proposal,design,tasks}.md</code> + <code>spec-delta/{ADDED,MODIFIED}.md</code></td>
+      <td colspan="3" style="font-style: italic; color: var(--gray-600);">現在 active な change package なし (直近完了: <a href="../archive/changes/2026-05-16-001-spec-purify/proposal.md">2026-05-16-001-spec-purify</a>、archive/changes/ 参照)</td>
     </tr>
   </tbody>
 </table>
 </section>
 
-<h2 id="migration" class="dir-section">migration/ — 旧→新 移行計画</h2>
+<h2 id="migration" class="dir-section">archive/migration/ — 旧→新 移行計画 (archive 内 sub-cluster)</h2>
 
-<div class="dir-purpose"><strong>役割</strong>: 旧 twill plugin から新 architecture への移行計画。fate audit (旧資産の処遇判定) + 実行計画 (削除・rebuild 手順) の 2 sub-category。tool-architect の編集対象外、user manual edit。</div>
+<div class="dir-purpose"><strong>役割</strong>: 旧 twill plugin から新 architecture への移行計画 (<code>architecture/archive/migration/</code> 配下)。fate audit (旧資産の処遇判定) + 実行計画 (削除・rebuild 手順) の 2 sub-category。本 sub-cluster は archive scope (rollback 保持)。各 file への direct link は本 section から提供 (archive/ section の集約 entry の詳細)。</div>
 
 <h3 id="migration-fate">fate audit — 旧資産の処遇 (3 file)</h3>
 
@@ -394,6 +387,21 @@
       <td><span class="badge archive">archive</span></td>
       <td>旧 TWiLL DDD 資産 (context-map / glossary / model / twill-integration / tier-2-caller migration / vision)</td>
     </tr>
+    <tr>
+      <td><a href="../archive/migration/adr-fate-table.html"><code>archive/migration/</code></a></td>
+      <td><span class="badge archive">archive</span></td>
+      <td>旧→新 移行計画 7 file (adr-fate-table / invariant-fate-table / pitfalls-inheritance / deletion-inventory / rebuild-plan / regression-test-strategy / dual-stack-routing、archive 化により migration cluster は archive 内 sub-cluster)</td>
+    </tr>
+    <tr>
+      <td><a href="../archive/changes/2026-05-16-001-spec-purify/proposal.md"><code>archive/changes/2026-05-16-001-spec-purify/</code></a></td>
+      <td><span class="badge archive">archive</span></td>
+      <td>完了 change package 1 件 (spec clean architecture 導入、ADR-0013 参照、R-17 lifecycle で merge 後移動)</td>
+    </tr>
+    <tr>
+      <td><a href="../archive/decisions/0001-ssot-design-rejected-alternatives.md"><code>archive/decisions/0001-ssot-design-rejected-alternatives.md</code></a></td>
+      <td><span class="badge archive">archive</span></td>
+      <td>ssot-design.html の廃案 3 案 (deps.yaml SSoT / chain.py SSoT / step.sh 単一 SSoT) の判断経緯 (rollback / decision rationale 補強 reference)</td>
+    </tr>
   </tbody>
 </table>
 
@@ -492,7 +500,7 @@
 
 <h2 id="machine-readable">machine-readable index (AI 用 semantic structure)</h2>
 
-<p>本 README は人間 + AI (将来 tool-architect 等) 両方の audience を想定。本 section は AI が parse しやすい <code>&lt;dl&gt;</code> 形式で全 file (43 entry、HTML + MD + CSS) の semantic structure を提供。<strong>SSoT は上部 directory tables、本 section は derived view (machine-readable mirror)</strong>。</p>
+<p>本 README は人間 + AI (将来 tool-architect 等) 両方の audience を想定。本 section は AI が parse しやすい <code>&lt;dl&gt;</code> 形式で全 file (40 entry、HTML + MD + CSS、archive/migration/ 7 entry + archive/changes 集約 1 + archive/decisions/0001 含む) の semantic structure を提供する。<strong>SSoT は上部 directory tables、本 section は derived view (machine-readable mirror)</strong>。</p>
 
 <p>format: <code>&lt;dt&gt;path&lt;/dt&gt;&lt;dd&gt;dir=... | category=... | badge=... | desc=...&lt;/dd&gt;</code></p>
 
@@ -567,41 +575,26 @@
 <dt><code>changes/README.md</code></dt>
 <dd>dir=changes | badge=done | desc=changes/ 運用 guide (lifecycle / file 構成 / spec-delta semantics)</dd>
 
-<dt><code>changes/001-spec-purify/proposal.md</code></dt>
-<dd>dir=changes/001-spec-purify | badge=proposed | desc=spec clean architecture 導入 (案 F) の scope 宣言 (R-14〜R-20 + steering/ + changes/ + ReSpec markup + Vale + MCP tool)</dd>
+<dt><code>archive/migration/adr-fate-table.html</code></dt>
+<dd>dir=archive/migration | category=fate-audit | badge=done | desc=旧 plugin ADR 43 件 1 件ずつ fate audit (保全 / Superseded / 削除 / 統合)</dd>
 
-<dt><code>changes/001-spec-purify/design.md</code></dt>
-<dd>dir=changes/001-spec-purify | badge=proposed | desc=技術選択根拠 (OpenSpec lifecycle / GitHub Spec Kit / ReSpec / Diátaxis / Vale / 6 軸 SSoT cross-ref)</dd>
+<dt><code>archive/migration/invariant-fate-table.html</code></dt>
+<dd>dir=archive/migration | category=fate-audit | badge=done | desc=不変条件 A-S 19 件 + 新規 T-X 5 件 = A-X 24 件 継承戦略 + drift 訂正</dd>
 
-<dt><code>changes/001-spec-purify/tasks.md</code></dt>
-<dd>dir=changes/001-spec-purify | badge=proposed | desc=実装 checklist (C1〜C16 commit 単位)</dd>
+<dt><code>archive/migration/pitfalls-inheritance.html</code></dt>
+<dd>dir=archive/migration | category=fate-audit | badge=done | desc=既存 pitfalls-catalog 継承戦略 + 構造的不能化 mapping</dd>
 
-<dt><code>changes/001-spec-purify/spec-delta/MODIFIED.md</code></dt>
-<dd>dir=changes/001-spec-purify | badge=proposed | desc=spec/ 18 file 変更概要 (group A/B/C 分割 + R-14/R-15 適用箇所)</dd>
+<dt><code>archive/migration/deletion-inventory.html</code></dt>
+<dd>dir=archive/migration | category=plan | badge=done | desc=削除対象 60+ 件 + 新規 helper 5 本 listing (rebuild scope の boundary)</dd>
 
-<dt><code>changes/001-spec-purify/spec-delta/ADDED.md</code></dt>
-<dd>dir=changes/001-spec-purify | badge=proposed | desc=新規追加 dir/file listing (changes/ + steering/ + specialist-spec-review-temporal + tools_spec.py 等)</dd>
+<dt><code>archive/migration/rebuild-plan.html</code></dt>
+<dd>dir=archive/migration | category=plan | badge=done | hub | desc=4 phase plan (PoC/dual-stack/cutover/cleanup) + Phase 1 PoC + 8 verify points</dd>
 
-<dt><code>migration/adr-fate-table.html</code></dt>
-<dd>dir=migration | category=fate-audit | badge=done | desc=旧 plugin ADR 43 件 1 件ずつ fate audit (保全 / Superseded / 削除 / 統合)</dd>
+<dt><code>archive/migration/regression-test-strategy.html</code></dt>
+<dd>dir=archive/migration | category=plan | badge=done | desc=既存 bats 90+ 継承 + 新 test 計画 (phaser-gate-hook.bats 等)</dd>
 
-<dt><code>migration/invariant-fate-table.html</code></dt>
-<dd>dir=migration | category=fate-audit | badge=done | desc=不変条件 A-S 19 件 + 新規 T-X 5 件 = A-X 24 件 継承戦略 + drift 訂正</dd>
-
-<dt><code>migration/pitfalls-inheritance.html</code></dt>
-<dd>dir=migration | category=fate-audit | badge=done | desc=既存 pitfalls-catalog 継承戦略 + 構造的不能化 mapping</dd>
-
-<dt><code>migration/deletion-inventory.html</code></dt>
-<dd>dir=migration | category=plan | badge=done | desc=削除対象 60+ 件 + 新規 helper 5 本 listing (rebuild scope の boundary)</dd>
-
-<dt><code>migration/rebuild-plan.html</code></dt>
-<dd>dir=migration | category=plan | badge=done | hub | desc=4 phase plan (PoC/dual-stack/cutover/cleanup) + Phase 1 PoC + 8 verify points</dd>
-
-<dt><code>migration/regression-test-strategy.html</code></dt>
-<dd>dir=migration | category=plan | badge=done | desc=既存 bats 90+ 継承 + 新 test 計画 (phaser-gate-hook.bats 等)</dd>
-
-<dt><code>migration/dual-stack-routing.html</code></dt>
-<dd>dir=migration | category=plan | badge=done | desc=su-observer 旧 vs administrator 新 共存ルール (Phase 2 dual-stack 期間)</dd>
+<dt><code>archive/migration/dual-stack-routing.html</code></dt>
+<dd>dir=archive/migration | category=plan | badge=done | desc=su-observer 旧 vs administrator 新 共存ルール (Phase 2 dual-stack 期間)</dd>
 
 <dt><code>research/research-findings.html</code></dt>
 <dd>dir=research | badge=done | desc=公式 docs 計 13 件 verified + research session bce9c4e4 (stdio MCP / hooks / plugins / Plugin Monitor)</dd>
@@ -629,6 +622,12 @@
 
 <dt><code>archive/contexts/ + archive/domain/ + archive/migrations/ + archive/vision.md</code> (集約 entry)</dt>
 <dd>dir=archive | badge=archive | desc=旧 TWiLL DDD 資産 (context-map / glossary / model / tier-2-caller migration / vision、R-1 例外)</dd>
+
+<dt><code>archive/changes/2026-05-16-001-spec-purify/</code> (集約 entry)</dt>
+<dd>dir=archive/changes | badge=archive | desc=完了 change package 1 件 (spec clean architecture 導入、ADR-0013 参照、R-17 lifecycle で merge 後移動)</dd>
+
+<dt><code>archive/decisions/0001-ssot-design-rejected-alternatives.md</code></dt>
+<dd>dir=archive/decisions | badge=archive | desc=ssot-design.html の廃案 3 案 (deps.yaml SSoT / chain.py SSoT / step.sh 単一 SSoT) の判断経緯 (rollback / decision rationale 補強 reference)</dd>
 
 <dt><code>decisions/ADR-0012-administrator-rebrand.md</code></dt>
 <dd>dir=decisions | badge=proposed | desc=su-* → admin-* rebrand (su-observer → administrator、su-compact → admin-compact、関連 script rename)</dd>
