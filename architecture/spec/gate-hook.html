@@ -206,7 +206,7 @@
   </tbody>
 </table>
 
-<h2>§6. 4 phase の前提 status mapping (verified、ADR-024 拡張)</h2>
+<h2>§6. 4 status-transition の前提 status mapping (verified、ADR-024 拡張)</h2>
 
 <table>
   <thead>
@@ -249,18 +249,18 @@
   <li><strong>禁止</strong>: code 内の <code>SKIP_*_REASON</code> や <code>SKIP_PILOT_GATE</code> 等の env var による bypass — これが Bug #1660/1662/1663 の根本問題</li>
 </ul>
 
-<h2>§9. retry path (前 phase 完了待ち or user 介入)</h2>
+<h2>§9. retry path (前 status-transition 完了待ち or user 介入)</h2>
 
 <ol>
   <li>deny 受信 → administrator が mail を読み、状況を user に報告</li>
   <li>user 判断:
     <ul>
-      <li>前 phase が未完了 → 該当 phase を先に実行</li>
+      <li>前 status-transition が未完了 → 該当 <code>phaser-*</code> を先に実行</li>
       <li>status 遷移漏れ → user 手動で Project Board status 更新</li>
       <li>緊急 → <code>TWL_PHASE_GATE_BYPASS=1</code> で bypass</li>
     </ul>
   </li>
-  <li>administrator polling cycle で status 変更を検知 → 再度 phase invocation</li>
+  <li>administrator polling cycle で status 変更を検知 → 再度 <code>phaser-*</code> invocation</li>
 </ol>
 
 <h2>§10. Bug #1660/1662/1663/1684 の構造的不能化</h2>

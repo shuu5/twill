@@ -20,7 +20,7 @@
 
 <header class="doc-header">
   <h1>twill plugin rebuild — spec index</h1>
-  <div class="meta">status: <span class="badge done">done</span> &middot; 6 top-level dir cluster (spec / steering / changes / research / archive / decisions) + archive/{migration,changes,decisions/} sub-clusters &middot; <a href="architecture-graph.html"><strong>architecture-graph で全体俯瞰</strong></a></div>
+  <div class="meta">status: <span class="badge done">done</span> &middot; 7 dir cluster (spec / archive/migration / research / archive / changes / steering / decisions) &middot; archive/ は sub-cluster (migration/changes/decisions/) を保持 &middot; <a href="architecture-graph.html"><strong>architecture-graph で全体俯瞰</strong></a></div>
 </header>
 
 <div class="info">
@@ -241,7 +241,7 @@
 <section class="normative">
 <h2 id="changes" class="dir-section">changes/ — 進行中の変更提案 (OpenSpec lifecycle)</h2>
 
-<div class="dir-purpose"><strong>役割</strong>: 進行中の spec 変更提案 (proposal / design / tasks / spec-delta)。各 change package は <code>NNN-slug/</code> dir で隔離 (R-17)。merge 後 <code>archive/changes/YYYY-MM-DD-NNN-slug/</code> へ移動。tool-architect 編集対象外 (user manual edit + co-architect spawn)、運用 guide は <a href="../changes/README.md"><code>changes/README.md</code></a> 参照。</div>
+<div class="dir-purpose"><strong>役割</strong>: 進行中の spec 変更提案 (proposal / design / tasks / spec-delta)。各 change package は <code>NNN-slug/</code> dir で隔離 (R-17)。merge 後 <code>archive/changes/YYYY-MM-DD-NNN-slug/</code> へ移動。tool-architect 編集対象外 (user manual edit + <code>tool-architect</code> spawn; <code>co-architect</code> は旧 controller 名で本 wave ADR-0013 で <code>tool-architect</code> に rebrand 済)、運用 guide は <a href="../changes/README.md"><code>changes/README.md</code></a> 参照。</div>
 
 <aside class="ednote">R-17 lifecycle: <code>changes/</code> 配下は active proposal のみ。merge 完了時は <code>archive/changes/YYYY-MM-DD-NNN-slug/</code> へ <code>git mv</code>。本 README の <a href="#changes">changes/</a> table から entry 削除し、<a href="#archive">archive/</a> table に集約 listing 追加 (R-1 例外: archive 集約)。</aside>
 
@@ -482,7 +482,7 @@
   <li><strong>新 steering file (例: deployment.md)</strong>: <code>steering/</code> 配下に MD 配置、README の <a href="#steering">steering/</a> section table に entry 追加 (R-1)。project-wide 規律のため scope 慎重判断</li>
 </ul>
 
-<p><strong>注</strong>: <code>decisions/</code> / <code>research/</code> / <code>migration/</code> / <code>changes/</code> / <code>steering/</code> 配下 file 自体の追加は tool-architect 編集対象外 (user manual edit + co-architect spawn)、ただし本 README への entry 追加 (R-1) は <code>spec/</code> 編集にあたるため <code>export TWL_TOOL_CONTEXT=tool-architect</code> caller marker MUST (R-7)。</p>
+<p><strong>注</strong>: <code>decisions/</code> / <code>research/</code> / <code>archive/migration/</code> / <code>changes/</code> / <code>steering/</code> 配下 file 自体の追加は tool-architect 編集対象外 (user manual edit + <code>tool-architect</code> spawn; <code>co-architect</code> は旧 controller 名で本 wave ADR-0013 で <code>tool-architect</code> に rebrand 済)、ただし本 README への entry 追加 (R-1) は <code>spec/</code> 編集にあたるため <code>export TWL_TOOL_CONTEXT=tool-architect</code> caller marker MUST (R-7)。</p>
 
 <h2 id="ssot">SSoT 位置</h2>
 

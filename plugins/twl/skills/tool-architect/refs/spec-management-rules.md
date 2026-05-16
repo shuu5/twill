@@ -217,13 +217,13 @@ Q2: spec/ 内の何の仕様か?
   「既存資産接続 (旧 MCP / 旧 SSoT)」 → spec/policy
   「用語 / changelog / navigation (graph) / CSS」 → spec/auxiliary
 
-Q3: 移行・既存資産関連か?
+Q3: 移行・既存資産関連 (旧→新) か?
   YES → Q4 へ
   NO  → Q5 へ
 
 Q4: audit (旧資産評価) か plan (実行計画) か?
-  audit (ADR fate / invariant fate / pitfalls 等) → migration/fate-audit
-  plan (deletion / rebuild / regression / dual-stack 等) → migration/plan
+  audit (ADR fate / invariant fate / pitfalls 等) → archive/migration/ (旧 migration/、change 001-spec-purify C14 で archive 統合)
+  plan (deletion / rebuild / regression / dual-stack 等) → archive/migration/ (同上)
 
 Q5: 調査・実験関連か?
   YES → research/ (dig-report / experiment / findings 等)
@@ -235,6 +235,14 @@ Q6: 過去バージョン保存 / rollback 用 か?
 
 Q7: ADR (新 architecture decision record) か?
   YES → decisions/ (MD のみ、ADR template 規約)
+  NO  → Q8 へ
+
+Q8: project-wide 規約 (product vision / 技術選択 / dir 構造) か?
+  YES → steering/ (MD のみ、3 文書 product.md/tech.md/structure.md、change 001-spec-purify C5 で新設、GitHub Spec Kit transposition)
+  NO  → Q9 へ
+
+Q9: 進行中の structural change package か?
+  YES → changes/<NNN>-<slug>/ (proposal.md/design.md/tasks.md/spec-delta/ の 4 文書、OpenSpec lifecycle、change 001-spec-purify C1 で新設、R-17 で archive 移動規律)
   NO  → 上記いずれにも該当しない → tool-architect 責務外 (user 判断)
 ```
 

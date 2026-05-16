@@ -231,7 +231,7 @@
   <li><strong>不変条件 G 強化</strong>: 全 3 階層に heartbeat file + 上位 layer 確認 mechanism MUST</li>
   <li><strong>新規 invariant X</strong> (deploy/verify セット): heartbeat-watcher.sh は <strong>起動 hook + 起動確認テスト</strong> を同 PR で merge MUST</li>
   <li><strong>recovery 試行回数</strong>: 各層 1 回まで (不変条件 E と整合)、2 回目失敗で上位 layer に escalate</li>
-  <li><strong>state 永続性</strong>: file mailbox + GitHub Project Board status の 2 SSoT で L2-3 (workflow/atomic/specialist) 状態は再起動後も復元可能</li>
+  <li><strong>status 永続性</strong>: file mailbox + GitHub Project Board status の 2 SSoT で L2-3 (workflow/atomic/specialist) 状態は再起動後も復元可能</li>
   <li><strong>巻き添え死防止</strong>: 各層は別 main session (tmux new-window) で隔離、L0 administrator crash でも L1/L2-3 は生存 (tmux server 全死の例外を除く)</li>
 </ul>
 </div>
@@ -245,7 +245,7 @@
 <tr><td>L2-3 hang 検知</td><td>L2-3 内で `sleep 900` (15 min) を inject → phaser が 10 min で kill + re-spawn</td></tr>
 <tr><td>phaser crash 検知</td><td>phaser session を `tmux kill-window` → administrator が 25 min cycle 内に検知 + re-spawn</td></tr>
 <tr><td>file mailbox 永続性</td><td>L2-3 (atomic/specialist) が mail 書き直後に kill → 新 phaser 起動 → mail を正しく読めることを verify</td></tr>
-<tr><td>state SSoT 整合</td><td>phaser crash 時、GitHub Project Board status と mailbox state が一致することを administrator が verify</td></tr>
+<tr><td>status SSoT 整合</td><td>phaser crash 時、GitHub Project Board status と mailbox status (mail event field) が一致することを administrator が verify</td></tr>
 <tr><td>tmux server crash recovery (#1360)</td><td>tmux server kill → 外部 cron が検知 → user の手動 recovery 手順は <code>rebuild-plan.html</code> に記載 (自動化は ADR-042 統合 scope)</td></tr>
 </tbody>
 </table>

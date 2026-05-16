@@ -20,7 +20,7 @@
   <h1>administrator polling cycle — 6-step + 不変条件 I-1〜I-7 (公式 verified)</h1>
   <div class="meta">status: <span class="badge done">done</span> &middot; CronCreate 制約反映済 (#40228 known bug 対応) &middot; tmux window prefix <code>phaser-&lt;type&gt;-&lt;issue&gt;</code></div>
 
-<div class="info">administrator が spawn する controller の tmux window prefix は <code>phaser-&lt;type&gt;-&lt;issue&gt;</code>。<code>STATUS_TRANSITION_MAP</code> のキー + spawn 判断ロジック (§3.4) はこの prefix で動作する。Mail event field の <code>skill</code> 値も <code>phaser-impl</code> 等の prefix を採用する。Crash failure mode の <code>durable: true</code> は BROKEN (Issue #40228) のため <code>durable=false</code> で fallback する (詳細: <a href="failure-analysis.html">failure-analysis.html</a> + <a href="crash-failure-mode.html">crash-failure-mode.html</a> §6)。</div>
+<div class="info">administrator が spawn する <code>phaser</code> の tmux window prefix は <code>phaser-&lt;type&gt;-&lt;issue&gt;</code> (forbidden synonym <code>controller</code> は backtick + 「旧」明示 context のみ exception)。<code>STATUS_TRANSITION_MAP</code> のキー + spawn 判断ロジック (§3.4) はこの prefix で動作する。Mail event field の <code>skill</code> 値も <code>phaser-impl</code> 等の prefix を採用する。Crash failure mode の <code>durable: true</code> は BROKEN (Issue #40228) のため <code>durable=false</code> で fallback する (詳細: <a href="failure-analysis.html">failure-analysis.html</a> + <a href="crash-failure-mode.html">crash-failure-mode.html</a> §6)。</div>
 </header>
 
 <div class="info">
@@ -135,7 +135,7 @@
 
 <h2>§3. 各 step の詳細 (verified pattern)</h2>
 
-<h3>3.1 step 1: <code>.mailbox/administrator/inbox.jsonl</code> 読込</h3>
+<h3>3.1 Step 1: <code>.mailbox/administrator/inbox.jsonl</code> 読込</h3>
 
 <p>各 phaser が emit した mail を読み、未読 line を line 番号で track。flock 共有 lock で read。format:</p>
 
@@ -143,15 +143,15 @@
 {"from":"phaser-pr-1660","ts":"&lt;ISO8601&gt;","event":"merge-gate-failed","detail":{"issue":1660,"reason":"specialist FAIL"}}
 {"from":"phase-gate","ts":"&lt;ISO8601&gt;","event":"phase-gate-denied","detail":{"skill":"phaser-impl-1700","issue":1700,"expected":"Refined","actual":"Todo"}}</code></pre>
 
-<h3>3.2 step 2: GitHub Project Board status poll</h3>
+<h3>3.2 Step 2: GitHub Project Board status poll</h3>
 
 <p><code>gh project item-list &lt;PROJ_NUMBER&gt; --owner &lt;OWNER&gt; --format json</code> で全 Issue Status + 前回 cycle との diff。5 min cache で API rate limit 緩和。</p>
 
-<h3>3.3 step 3: tmux windows 列挙</h3>
+<h3>3.3 Step 3: tmux windows 列挙</h3>
 
 <p><code>tmux list-windows -a -F '#{window_name}|#{pane_dead}'</code> で全 phaser session の生存確認 (Inv G クラッシュ検知保証、format 変数 verified)。specialist は subagent context で動作するため tmux window 不在。</p>
 
-<h3>3.4 step 4: spawn 判断</h3>
+<h3>3.4 Step 4: spawn 判断</h3>
 
 <p>各 Issue について「次 phase を起動すべきか?」を判定。判断ロジック:</p>
 
@@ -174,7 +174,7 @@
 
   spawn_tmux phaser-{next_phase}-{issue_num}</code></pre>
 
-<h3>3.5 step 5: failure / escalate</h3>
+<h3>3.5 Step 5: failure / escalate</h3>
 
 <ul>
   <li>phaser failure mail (phase-gate-denied / phase-failed / specialist-FAIL) を集約 (mail event 名の <code>phase-*</code> prefix は spawn-protocol §6.1 で定義された canonical event 名、role prefix とは独立)</li>
@@ -182,7 +182,7 @@
   <li>budget exhaustion mail (Inv Q) → pause + recovery (CronCreate を <code>YYm+5min</code> 後に reschedule)</li>
 </ul>
 
-<h3>3.6 step 6: cleanup</h3>
+<h3>3.6 Step 6: cleanup</h3>
 
 <ul>
   <li>completed phaser window (status=PR Reviewed / Merged) は <code>tmux kill-window -t &lt;name&gt;</code></li>

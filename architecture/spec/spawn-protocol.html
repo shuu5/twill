@@ -196,7 +196,7 @@ flock -x -w 10 9 || exit 1
 
 <p><strong>config</strong>: <code>MAILBOX_ROOT=${TWILL_MAILBOX_ROOT:-.mailbox}</code> で env override 可。実装規模は ~40 行 (set -euo pipefail + 4 関数 + lock file 管理)。</p>
 
-<h2>§6. message format (JSON Lines、verified)</h2>
+<h2>§6. mail format (JSON Lines、verified)</h2>
 
 <table>
   <thead><tr><th>field</th><th>型</th><th>意味</th></tr></thead>
