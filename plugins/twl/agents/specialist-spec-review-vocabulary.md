@@ -112,12 +112,13 @@ confidence 80 未満は出力しない (false-positive のリスク高、Phase F
 
 ## 制約
 
-- **Read-only**: ファイル変更は行わない (Write / Edit 不可)
-- **Task tool 禁止**: 全 check を自身で実行
-- **Bash は読み取り系のみ**: `git diff` / `git log` / `grep` / `cat` 等
-- **confidence 閾値**: 80 未満は出力しない
+**共通制約** (詳細: [`refs/ref-specialist-spec-review-constraints.md`](../refs/ref-specialist-spec-review-constraints.md)):
+- Read-only (Edit/Write 不可) / Task tool 禁止 / Bash 読み取り系のみ / confidence ≥80 のみ出力 / 軸専任 (overlap 排除)
+
+**軸固有制約 (用語整合性 軸 1)**:
 - **用語軸に集中**: 構造 / SSoT の問題は出力しない (他 2 軸の specialist に委譲)
-- **歴史的引用は false-positive 除外**: backtick + 「旧」明示は legitimate
+- **歴史的引用は false-positive 除外**: backtick + 「旧」明示は legitimate (例: `` `worker-*` (旧、現 specialist) ``)
+- **mail event 名 exclusion**: `phase-completed` / `step-started` は event canonical 名、role prefix と独立 (spawn-protocol §6.1 exclusion_context)
 
 ## 出力形式 (MUST)
 

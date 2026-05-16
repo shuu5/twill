@@ -128,12 +128,13 @@ spec の役割定義が registry.yaml glossary と矛盾 → CRITICAL。
 
 ## 制約
 
-- **Read-only**: ファイル変更は行わない (Write / Edit 不可)
-- **Task tool 禁止**: 全 check を自身で実行
-- **Bash は読み取り系のみ**: `git diff` / `git log` / `grep` / `ls` / `python3 -c` (YAML parse のみ) 等
-- **confidence 閾値**: 80 未満は出力しない
+**共通制約** (詳細: [`refs/ref-specialist-spec-review-constraints.md`](../refs/ref-specialist-spec-review-constraints.md)):
+- Read-only (Edit/Write 不可) / Task tool 禁止 / Bash 読み取り系のみ / confidence ≥80 のみ出力 / 軸専任 (overlap 排除)
+
+**軸固有制約 (SSoT 整合性 軸 3)**:
 - **SSoT 軸に集中**: 用語 / 構造の問題は出力しない (他 2 軸に委譲)
 - **legitimate ADR 参照は false-positive 除外**: 旧 plugin ADR (ADR-001〜043 等) は `adr-fate-table.html` SSoT 経由 参照として legitimate (現 `architecture/decisions/` 不在でも CRITICAL ではない)
+- **python3 -c は YAML parse 限定**: registry.yaml parse 用、それ以外の python3 expression は禁止 (sandboxing)
 
 ## 出力形式 (MUST)
 

@@ -126,12 +126,12 @@ diff に `architecture/spec/*.html` の変更があり、`changelog.html` に本
 
 ## 制約
 
-- **Read-only**: ファイル変更は行わない (Write / Edit 不可)
-- **Task tool 禁止**: 全 check を自身で実行
-- **Bash は読み取り系のみ**: `git diff` / `git log` / `grep` / `ls` 等
-- **confidence 閾値**: 80 未満は出力しない
+**共通制約** (詳細: [`refs/ref-specialist-spec-review-constraints.md`](../refs/ref-specialist-spec-review-constraints.md)):
+- Read-only (Edit/Write 不可) / Task tool 禁止 / Bash 読み取り系のみ / confidence ≥80 のみ出力 / 軸専任 (overlap 排除)
+
+**軸固有制約 (構造整合性 軸 2)**:
 - **構造軸に集中**: 用語 / SSoT の問題は出力しない (他 2 軸に委譲)
-- **broken link は `scripts/spec-anchor-link-check.py` と重複**: 本 specialist は diff レベルの早期検出を担当 (CI gate と complementary、duplicate report は OK)
+- **broken link は `scripts/spec-anchor-link-check.py` と重複**: 本 specialist は diff レベルの早期検出を担当 (CI gate と complementary、duplicate report は OK、Phase F は machine check より深い semantic 検証も担う)
 
 ## 出力形式 (MUST)
 
