@@ -21,6 +21,77 @@
   <strong>関連</strong>: <a href="README.html">README</a> / <a href="architecture-graph.html">architecture-graph</a>
 </div>
 
+<h2 id="2026-05-16">2026-05-16: tool-architect 7-phase multi-agent PR cycle 完全実装 (feature-dev:feature-dev workflow Phase 1-7)</h2>
+
+<h3>核心成果</h3>
+
+<p>ユーザー指摘「tool-architect spec の review が 1 agent で薄い」を契機に、<code>feature-dev:feature-dev</code> (claude-plugins-official、7-9 並列 agent) 型に拡張。Phase 1-7 サイクルで深部 verification 含む実装完遂。</p>
+
+<ol>
+  <li><strong>Phase 1 Discovery</strong>: scope 確定 (21 file = 5 agent + 10 bats + 6 修正)、user 質問 4 件 (opus 矛盾解消 / 3 file 別 / registry 同期 / SKILL 全面 rewrite)。</li>
+  <li><strong>Phase 2 Codebase Exploration</strong>: 3 並列 <code>code-explorer</code> で twl agent convention + SKILL.md gap + bats infrastructure を audit。<strong>CRITICAL drift 発見</strong>: spec §3.3 で言及された <code>specialist-spec-review.md</code> agent file は実態として未作成、tool-architect の PR cycle review 部分は機能していなかった (verified)。</li>
+  <li><strong>Phase 3 Clarifying Questions</strong>: 4 設計分岐確定 (C1 opus 矛盾 → ref-* update、C2 3 file 別 / C3 registry 同期 / C4 SKILL 全面 rewrite + bats)。</li>
+  <li><strong>Phase 4 Architecture Design</strong>: 3 並列 <code>code-architect</code> で minimal / clean / pragmatic 3 案 blueprint。<strong>案 B clean (推奨) 採用</strong>: bats 99 test 完全 verification、scope 11 → 21 file。</li>
+  <li><strong>Phase 5 Implementation (7 commit、C1-C7)</strong>: refs → spec → rules → SKILL → registry → agent → bats の dependency 順:
+    <ul>
+      <li>C1 <code>e5630125</code>: ref-specialist-output-schema.md opus 開放 + category 3 件追加 (spec-vocabulary/spec-structure/spec-ssot)</li>
+      <li>C2 <code>894404ae</code>: tool-architecture.html §3.7.3 を 3 file 別 sub-section に rewrite</li>
+      <li>C3 <code>4d98e15b</code>: spec-management-rules.md R-11/R-12/R-13 追加 (agent 配置 / 7-phase MUST / opus 固定)</li>
+      <li>C4 <code>e34d0d98</code>: SKILL.md 全面 rewrite (103 → 245 行、7-phase workflow + Agent invoke 例)</li>
+      <li>C5 <code>49823959</code>: registry.yaml に 5 specialist-spec-* entry + glossary examples 6 件追加</li>
+      <li>C6 <code>7dae6b1f</code>: 5 agent file 新規 (813 行、specialist-spec-{explorer,architect,review-vocabulary,review-structure,review-ssot}.md)</li>
+      <li>C7 <code>fe3f2d80</code>: 10 bats test 新規 (99 test、~660 行、TDD 完全 verification)</li>
+    </ul>
+  </li>
+  <li><strong>Phase 6 Quality Review</strong>: 3 並列 <code>code-reviewer</code> で simplicity/DRY + bugs + conventions 3 軸 review、<strong>CRITICAL 2 + WARNING 4 findings 発見、全 6 件 fix (F1-F5 5 commit)</strong>:
+    <ul>
+      <li>F1 <code>88563a89</code>: spec §3.3/§3.7 「未作成/未実装」記述を Phase 5 実装完了状態に update + <code>id="s3-3"</code> anchor 追加 (broken link 修正)</li>
+      <li>F2 <code>962461fb</code>: registry.yaml phaser-refine.can_spawn の旧 specialist-spec-review → 3 分割 (vocabulary/structure/ssot)</li>
+      <li>F3 <code>086accaf</code>: tool-architect-7phase.bats の Agent 検証を single-line + list format 両対応に robust 化</li>
+      <li>F4 <code>52164bb7</code>: bats DRY (common.bash に <code>extract_frontmatter</code> helper、7 bats file で 19 箇所 sed call 集約)</li>
+      <li>F5 <code>f7209662</code>: 3 review agent 制約 section を <code>refs/ref-specialist-spec-review-constraints.md</code> に DRY 化 (12 行重複削減)</li>
+    </ul>
+  </li>
+  <li><strong>Phase 7 Summary (本 entry、F6)</strong>: changelog 反映 + 累積 commit list + defer task listing。</li>
+</ol>
+
+<h3>新規 / 修正 file (累積)</h3>
+
+<ul>
+  <li><strong>新規 16 file</strong>:
+    <ul>
+      <li>5 agent: <code>plugins/twl/agents/specialist-spec-{explorer,architect,review-vocabulary,review-structure,review-ssot}.md</code> (~813 行)</li>
+      <li>10 bats: <code>plugins/twl/tests/bats/{agents,skills,structure,refs,integration}/...</code> (~660 行、99 test)</li>
+      <li>1 ref: <code>plugins/twl/refs/ref-specialist-spec-review-constraints.md</code> (~40 行、F5 で追加)</li>
+    </ul>
+  </li>
+  <li><strong>修正 7 file</strong>: ref-specialist-output-schema.md / tool-architecture.html (§3.3/§3.7/§3.7.3) / spec-management-rules.md / SKILL.md / registry.yaml / changelog.html (本 entry) / common.bash + tool-architect-7phase.bats (F3/F4)</li>
+</ul>
+
+<h3>累積 commit (Phase 5 + Phase 6 = 12 commit)</h3>
+
+<ul>
+  <li>Phase 5 (C1-C7、7 commit、HEAD <code>e5630125</code> → <code>fe3f2d80</code>): refs → spec → rules → SKILL → registry → agent → bats の dependency 順実装</li>
+  <li>Phase 6 (F1-F5、5 commit、HEAD <code>88563a89</code> → <code>f7209662</code>): review findings 6 件 (CRITICAL 2 + WARNING 4) を fix</li>
+</ul>
+
+<h3>機能検証 (verified)</h3>
+
+<ul>
+  <li><strong>bats 99/99 PASS</strong> (5 agent × 11 + skills 2 + structure 1 + refs 1 + integration 1)</li>
+  <li><strong>broken 0 / orphan 0</strong> 維持 (全 commit)</li>
+  <li><strong>YAML valid</strong>: registry.yaml 11 components entry (Phase 1 PoC seed 1 → 5 specialist 追加で 6 → 11)</li>
+  <li><strong>cross-doc 整合</strong>: SKILL.md ↔ spec §3.3/§3.7.3 ↔ spec-management-rules.md R-11/R-12/R-13 ↔ ref-specialist-output-schema.md ↔ registry.yaml glossary.specialist.examples の 5 軸双方向参照完成</li>
+</ul>
+
+<h3>未完 / 別 phase 推奨</h3>
+
+<ul>
+  <li><strong>EXP-029 smoke 検証</strong>: 5 agent 実機 invoke で sandbox sandbox で 1 cycle 検証 → experiment-verified 化 (現状 deduced)</li>
+  <li><strong>R-N の CI 機械化拡張</strong>: R-1/R-2/R-5 (PR review 依存) の機械化 (spec-management-rules.md CI automation roadmap Phase 2/3)</li>
+  <li><strong>旧 worker-* agent 14 件 rename</strong>: registry.yaml glossary で forbidden 確定済、Phase 2 dual-stack で本 rename</li>
+</ul>
+
 <h2 id="2026-05-15-3rd">2026-05-15 (3rd): tool-architecture + 全 spec drift 一括 fix (Q2/Q3)</h2>
 
 <h3>核心成果</h3>
