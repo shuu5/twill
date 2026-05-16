@@ -1,0 +1,19 @@
+# Vale rule: <pre> タグ検出 (R-15 違反 candidate)
+# spec/ 内の <pre> タグを検出、schema/table/ABNF/mermaid 以外の実装デモコードを警告
+
+extends: existence
+message: "spec/ 内 <pre> タグ検出 (R-15 違反 candidate)。schema/table/ABNF/mermaid のみ許容。実装デモコード (bash/python/js) は research/ へ移動 + link only に。<aside class=\"example\"> で囲む場合は informative 扱い、data-status 属性付与 MUST。"
+level: warning
+scope: raw
+nonword: true
+
+# 検出 pattern:
+# - <pre> タグの開始タグ (data-status 属性なし)
+# regexp2 lookahead で data-status= が続かないものを検出 (false-positive 削減)
+
+tokens:
+  - '<pre(?![^>]*data-status=)[^>]*>'
+
+# 業界 BP:
+# - W3C QA Framework GP-6 (example traceability)
+# - ReSpec <aside class="example"> + <pre data-status="..."> (verified URL: https://respec.org/docs/)

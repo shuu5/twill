@@ -1,0 +1,26 @@
+# Vale rule: 未完了マーカー検出 (R-14 違反 candidate)
+# spec/ 内の TODO / FIXME / 未作成 等を検出、確定形への書き換えまたは changes/ 移動を促す
+
+extends: existence
+message: "spec/ 内で未完了マーカー '%s' を検出 (R-14 違反)。実装完了後に確定形に書き換えるか、changes/<NNN>-<slug>/tasks.md の checklist に移動してください。"
+level: warning
+ignorecase: false
+scope: text
+
+# 検出 pattern:
+# - TODO / FIXME / WIP (作業中マーカー)
+# - 未作成 / stub / pending (未完了マーカー)
+# - 未完了 / 未決定 / 未確定 (進行状況マーカー)
+# 例外: changelog.html / archive/ / changes/ は .vale.ini で除外
+
+tokens:
+  - 'TODO\b'
+  - 'FIXME\b'
+  - 'WIP\b'
+  - 'XXX\b'
+  - '未作成'
+  - 'stub\b'
+  - '\bpending\b'
+  - '未完了'
+  - '未決定'
+  - '未確定'

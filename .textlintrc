@@ -1,0 +1,10 @@
+{
+  "rules": {
+    "no-todo": true,
+    "no-mix-dearu-desumasu": false,
+    "prh": false
+  },
+  "filters": {
+    "comments": true
+  }
+}

@@ -1,0 +1,30 @@
+# Vale rule: 過去形 narration 検出 (R-14 違反 candidate)
+# spec/ 内で過去形 marker を検出、現在形 declarative への書き換えを促す
+
+extends: existence
+message: "spec/ 内で過去形 narration '%s' を検出 (R-14 違反 candidate)。現在形 declarative に書き換えるか、archive/ または changes/<NNN>-<slug>/ に移動してください。"
+level: warning
+ignorecase: false
+scope: text
+nonword: false
+
+# 検出 pattern (regexp2 lookahead 対応):
+# - ISO date (YYYY-MM-DD)
+# - Japanese date (YYYY年MM月DD日)
+# - 「Phase N で」(過去 phase 言及)
+# - 「以前は〜」「〜していた」「〜だった」(過去比較)
+# - 「を確認した」「により実施した」「を行った」(過去動作記述)
+# 例外: changelog.html / archive/ / changes/ は .vale.ini で除外
+
+tokens:
+  - '\(\s*\d{4}-\d{1,2}-\d{1,2}\s*\)'
+  - '\d{4}年\d{1,2}月\d{1,2}日'
+  - 'Phase \d+ で(?!は確定形)'
+  - '以前は'
+  - 'を確認した'
+  - 'により実施した'
+  - 'を行った'
+  - 'であった'
+  - 'していた'
+
+# 業界 BP: Vale existence rule (verified URL: https://vale.sh/docs/keys/existence)
