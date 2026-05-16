@@ -13,9 +13,9 @@
 
 <header class="doc-header">
   <h1>spawn protocol — 10 role spawn + file mailbox + plugin 化</h1>
-  <div class="meta">draft-v3 (2026-05-13、(2026-05-13) 反映) &middot; twl plugin 化前提 + tmux 公式 verified + flock atomic + JSON Lines &middot; phaser-* SKILL.md (旧 phase-* から rename)</div>
+  <div class="meta">status: <span class="badge done">done</span> &middot; twl plugin 化前提 + tmux 公式 verified + flock atomic + JSON Lines &middot; phaser-* SKILL.md</div>
 
-<div class="info"><strong>(2026-05-13) 反映</strong>: skill 名 <code>phase-explore</code>/<code>phase-refine</code>/<code>phase-impl</code>/<code>phase-pr</code> 4 件を <code>phaser-*</code> に rename (sed 機械化)。<code>administrator → phaser → workflow/atomic + specialist</code> の階層 spawn を <a href="boundary-matrix.html">boundary-matrix.html</a> + <a href="overview.html">overview.html</a> 図 1 で表現。<code>Skill</code> 公式機構 = workflow/atomic spawn、<code>Agent</code> 公式機構 = specialist spawn (subagent spawn 不可 <span class="vs verified">verified</span>)。詳細: <a href="registry-schema.html#s3">registry-schema.html §3 (10 role × concern matrix)</a>。</div>
+<div class="info">skill 名 <code>phaser-explore</code>/<code>phaser-refine</code>/<code>phaser-impl</code>/<code>phaser-pr</code> 4 件を採用する。<code>administrator → phaser → workflow/atomic + specialist</code> の階層 spawn を <a href="boundary-matrix.html">boundary-matrix.html</a> + <a href="overview.html">overview.html</a> 図 1 で表現する。<code>Skill</code> 公式機構 = workflow/atomic spawn、<code>Agent</code> 公式機構 = specialist spawn (subagent spawn 不可 <span class="vs verified">verified</span>)。詳細: <a href="registry-schema.html#s3">registry-schema.html §3 (10 role × concern matrix)</a>。</div>
 </header>
 
 <div class="info">
@@ -31,7 +31,7 @@
 <ol>
   <li>twl を plugin として正式化: <code>plugins/twl/.claude-plugin/plugin.json</code> 作成</li>
   <li>plugin として load: <code>claude --plugin-dir plugins/twl</code> or marketplace 経由 <code>/plugin install twl</code></li>
-  <li>skill invoke は <strong>slash command + namespace</strong>: <code>/twl:administrator</code>, <code>/twl:phaser-impl &lt;args&gt;</code>, <code>/twl:workflow-test-ready &lt;args&gt;</code> (旧 specialist-test-ready から(2026-05-13) で rename)</li>
+  <li>skill invoke は <strong>slash command + namespace</strong>: <code>/twl:administrator</code>, <code>/twl:phaser-impl &lt;args&gt;</code>, <code>/twl:workflow-test-ready &lt;args&gt;</code></li>
 </ol>
 これにより namespace 衝突防止 (強制 <code>/twl:*</code>)、<code>/reload-plugins</code> 自動 reload、<code>--plugin-dir</code> local test、Plugin Monitor (公式機能) 利用が可能 <a class="exp-link" href="../research/experiment-index.html#EXP-010">EXP-010</a>
 </div>
@@ -47,14 +47,14 @@
 │   ├── phaser-refine/SKILL.md
 │   ├── phaser-impl/SKILL.md
 │   ├── phaser-pr/SKILL.md
-│   ├── workflow-test-ready/SKILL.md  # 旧 specialist-test-ready ((2026-05-13) rename)
-│   ├── workflow-pr-verify/SKILL.md   # 旧 specialist-pr-cycle (Phase 1 PoC で実装)
+│   ├── workflow-test-ready/SKILL.md
+│   ├── workflow-pr-verify/SKILL.md
 │   ├── atomic-test-scaffold/SKILL.md
 │   ├── atomic-green-impl/SKILL.md
 │   ├── atomic-check/SKILL.md
 │   ├── tool-architect/SKILL.md
 │   ├── tool-project/SKILL.md
-│   └── tool-sandbox-runner/SKILL.md  # 旧 tool-self-improve rename、tool-utility 廃止 ((2026-05-13))
+│   └── tool-sandbox-runner/SKILL.md
 ├── hooks/
 │   └── hooks.json                 # PreToolUse phase-gate hook 等
 ├── monitors/
@@ -102,105 +102,44 @@
   </tbody>
 </table>
 
-<h3>3.2 実装 (pseudo-bash)</h3>
+<h3>3.2 動作仕様 (~50 行 helper の責務)</h3>
 
-<pre><code>#!/bin/bash
-# spawn-tmux.sh — 3 階層共通 spawn helper (~50 行)
-# verified: tmux new-window -d -n -c flags <span class="src-link">tmux(1)</span>
+<p>spawn-tmux.sh は <strong>3 階層共通 spawn helper</strong>。tmux new-window で detached session を生成し、claude code を起動した後、slash command を inject して skill 呼び出しを trigger する。verified flags: <code>tmux new-window -d/-n/-c/-e</code> (<span class="src-link">tmux(1)</span>)。</p>
 
-set -euo pipefail
-source "$(dirname "$0")/mailbox.sh"
+<table>
+  <thead>
+    <tr><th>step</th><th>動作</th><th>verify rule</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1. 引数 parse</td><td>5 引数を while/case で取得 (<code>--window-name</code> / <code>--skill</code> / <code>--args</code> / <code>--cwd</code> / <code>--mailbox-from</code>)</td><td>必須引数欠落で exit 1</td></tr>
+    <tr><td>2. window 名 length check</td><td>tmux 制約に従い 50 文字上限を assert</td><td>50 文字超で <code>_fail</code></td></tr>
+    <tr><td>3. idempotent guard (Inv I-1)</td><td><code>tmux list-windows -a -F '#{window_name}' | grep -qx</code> で既存 window 検査</td><td>既存なら <code>spawn-skip</code> mail emit して return 0</td></tr>
+    <tr><td>4. plugin dir 解決</td><td><code>${TWILL_PLUGIN_DIR:-$CLAUDE_PROJECT_DIR/plugins/twl}</code> で plugin path 取得</td><td>env override 可</td></tr>
+    <tr><td>5. tmux new-window</td><td><code>tmux new-window -d -n &lt;name&gt; -c &lt;cwd&gt; -e TWL_PHASER_NAME=&lt;name&gt; -- "claude --plugin-dir &lt;path&gt;"</code></td><td><code>-d</code>=detached / <code>-n</code>=name / <code>-c</code>=start-directory / <code>-e</code>=env variable (tmux man verified)</td></tr>
+    <tr><td>6. session ready wait</td><td><code>_wait_session_ready &lt;window&gt; 30</code> で 3 条件 AND 判定 (§3.3) を最大 30 秒</td><td>timeout で <code>_fail</code></td></tr>
+    <tr><td>7. slash command inject</td><td><code>tmux send-keys -t &lt;window&gt; "/${skill} ${args}" Enter</code> (Enter は C-m として送信)</td><td>send-keys は spawn 直後 1 回のみ許容 (Inv I-7 例外)</td></tr>
+    <tr><td>8. spawn-completed mail</td><td><code>mailbox_emit "$mailbox_from" "administrator" "spawn-completed" "{window, skill}"</code></td><td>Inv T flock atomic write</td></tr>
+  </tbody>
+</table>
 
-main {
-  local window_name skill args cwd mailbox_from
-  while [ $# -gt 0 ]; do
-    case "$1" in
-      --window-name) window_name="$2"; shift 2 ;;
-      --skill) skill="$2"; shift 2 ;;
-      --args) args="$2"; shift 2 ;;
-      --cwd) cwd="$2"; shift 2 ;;
-      --mailbox-from) mailbox_from="$2"; shift 2 ;;
-      *) shift ;;
-    esac
-  done
+<p><strong>env 注入 (step 5)</strong>: <code>TWL_PHASER_NAME=&lt;window_name&gt;</code> を tmux <code>-e</code> 経由で session env に登録する。atomic SKILL.md Step 3 が mailbox path 解決にこの env を使用する (<a href="atomic-verification.html#s3">atomic-verification.html §3.1</a> 参照)。</p>
 
-  # 1. window 名 length check (50 文字上限、tmux 制約)
-  [ "${#window_name}" -le 50 ] || _fail "window name too long: $window_name"
+<h3>3.3 _wait_session_ready 仕様 (3 条件 AND 判定)</h3>
 
-  # 2. 既存 window 確認 (Inv I-1 idempotent guard)
-  if tmux list-windows -a -F '#{window_name}' | grep -qx "$window_name"; then
-    _emit_admin "spawn-skip" "{\"window\":\"$window_name\",\"reason\":\"already exists\"}"
-    return 0
-  fi
+<p>spawn 直後の claude session が <strong>ready かつ idle</strong> な状態を 3 条件 AND で判定する (false ready 防止)。判定間隔は 1 秒、default timeout 30 秒:</p>
 
-  # 3. plugin 化 twl の場合、--plugin-dir で起動
-  local plugin_dir="${TWILL_PLUGIN_DIR:-$CLAUDE_PROJECT_DIR/plugins/twl}"
+<table>
+  <thead>
+    <tr><th>条件</th><th>判定</th><th>失敗時の動作</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>(a) pane idle</td><td><code>tmux list-windows -a -F '#{window_name}|#{pane_in_mode}'</code> で <code>pane_in_mode == 0</code> を assert</td><td>idle_accumulated reset + 1 秒 sleep + retry</td></tr>
+    <tr><td>(b) inject queue 不在</td><td><code>tmux capture-pane -t &lt;window&gt; -p -S -5 | tail -3</code> で <code>"Press up to edit"</code> 不在を assert</td><td>queue 残留検知 → Enter 送信して flush + retry</td></tr>
+    <tr><td>(c) idle 持続時間</td><td><code>idle_accumulated &gt;= IDLE_MIN_SEC</code> (default 2 秒) を assert</td><td>累積不足なら + 1 秒 sleep + retry</td></tr>
+  </tbody>
+</table>
 
-  # 4. tmux new-window (detached、cwd 指定、env 変数注入)
-  tmux new-window \
-    -d \
-    -n "$window_name" \
-    -c "${cwd:-$CLAUDE_PROJECT_DIR}" \
-    -e "TWL_PHASER_NAME=$window_name" \
-    -- "claude --plugin-dir $plugin_dir"
-  # ↑ tmux man verified: -d=detached, -n=name, -c=start-directory, -e=env variable
-  # ↑ TWL_PHASER_NAME は atomic SKILL.md Step 3 が mailbox path 解決に使用
-  #   (Phase I 2026-05-15 確定、atomic-verification.html §3.1 参照)
-
-  # 5. slash command inject (Claude が起動して prompt ready になるまで wait)
-  _wait_session_ready "$window_name" 30 || _fail "session not ready after 30s"
-
-  # 6. inject /twl:&lt;skill&gt; &lt;args&gt;
-  local cmd="/${skill} ${args:-}"
-  tmux send-keys -t "$window_name" "$cmd" Enter
-  # ↑ send-keys: Enter key を C-m として inject (公式 syntax)
-
-  # 7. spawn-completed mail emit
-  _emit_admin "spawn-completed" "{\"window\":\"$window_name\",\"skill\":\"$skill\"}"
-}
-
-_wait_session_ready {
-  # Phase I 2026-05-15 確定: 3 条件 AND 判定 (CLAUDE.md feedback_inject_queue_verification 知見反映)
-  # (a) pane_in_mode=0 (idle、edit mode でない)
-  # (b) "Press up to edit queued" 不在 (旧 inject の queue 残留検知)
-  # (c) idle 持続時間 > IDLE_MIN_SEC (default 2s、startup initialization 中 false ready 防止)
-  local window="$1"; local timeout="$2"; local elapsed=0
-  local idle_min_sec="${IDLE_MIN_SEC:-2}"
-  local idle_accumulated=0
-
-  while [ "$elapsed" -lt "$timeout" ]; do
-    # (a) pane_in_mode=0 check
-    local in_mode=$(tmux list-windows -a -F '#{window_name}|#{pane_in_mode}' \
-                      | grep "^${window}|" | cut -d'|' -f2)
-    if [ "$in_mode" != "0" ]; then
-      idle_accumulated=0; sleep 1; elapsed=$((elapsed+1)); continue
-    fi
-
-    # (b) "Press up to edit queued" 不在 check (queue 残留検知)
-    local pane_tail=$(tmux capture-pane -t "$window" -p -S -5 2>/dev/null | tail -3)
-    if echo "$pane_tail" | grep -q "Press up to edit"; then
-      # queue 残留 → Enter 送信して flush し再判定
-      tmux send-keys -t "$window" Enter
-      idle_accumulated=0; sleep 1; elapsed=$((elapsed+1)); continue
-    fi
-
-    # (c) idle 持続時間 check
-    idle_accumulated=$((idle_accumulated+1))
-    if [ "$idle_accumulated" -ge "$idle_min_sec" ]; then
-      return 0  # 3 条件 AND 成立、ready + idle
-    fi
-    sleep 1; elapsed=$((elapsed+1))
-  done
-  return 1
-}
-
-_emit_admin {
-  local event="$1"; local detail="$2"
-  mailbox_emit "$mailbox_from" "administrator" "$event" "$detail"
-}
-
-_fail { echo "spawn-tmux.sh: $*" &gt;&amp;2; exit 1; }
-main "$@"</code></pre>
+<p>3 条件 AND 成立で return 0 (ready)、timeout 経過で return 1 (caller は <code>_fail</code>)。startup initialization 中の false ready 防止のため (c) idle 持続時間を必須化する。</p>
 
 <p><strong>verify points</strong>: <a class="exp-link" href="../research/experiment-index.html#EXP-010">EXP-010</a> (plugin 起動 + namespace 解決)、<a class="exp-link" href="../research/experiment-index.html#EXP-016">EXP-016</a> (tmux new-window -d)、<a class="exp-link" href="../research/experiment-index.html#EXP-017">EXP-017</a> (format 変数 pane state)。</p>
 
@@ -218,8 +157,7 @@ main "$@"</code></pre>
 └── archive/
     └── inbox-&lt;ts&gt;.jsonl         # 7 日 retention archive
 
-# specialist/atomic/workflow は phaser mailbox に書き込み、自身 mailbox 不要 (boundary-matrix.html I-4)
-# 旧 specialist-test-ready-1660/ 例は drift、新 architecture では使用しない</code></pre>
+# specialist/atomic/workflow は phaser mailbox に書き込み、自身 mailbox 不要 (boundary-matrix.html I-4)</code></pre>
 
 <h3>4.2 flock atomic write (verified pattern)</h3>
 
@@ -244,51 +182,19 @@ flock -x -w 10 9 || exit 1
 </ul>
 </div>
 
-<pre><code>#!/bin/bash
-# mailbox.sh — file mailbox helper (~40 行)
-# verified pattern: session-atomic-write.sh L41-50 (flock + mktemp + mv)
-# 不変条件 T: file mailbox atomic write
+<table>
+  <thead>
+    <tr><th>関数</th><th>動作仕様</th><th>verify rule</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>mailbox_emit</code></td><td>JSON Lines 1 行 (<code>{from, to, ts, event, detail}</code>) を <code>jq -nc</code> で生成し、<code>$MAILBOX_ROOT/$to/inbox.jsonl</code> に追記。<code>flock -x -w 10</code> で exclusive lock 取得 + timeout 10 秒</td><td>Inv T (atomic write)、fd 9 経由</td></tr>
+    <tr><td><code>mailbox_read</code></td><td><code>$MAILBOX_ROOT/$mailbox/.read-offset</code> から既読 line 数を取得、<code>tail -n +$((from+1)) inbox.jsonl</code> で未読を stdout に出力。読了後 <code>wc -l &lt; inbox</code> で offset 更新。<code>flock -s -w 10</code> で 共有 lock</td><td>write との衝突防止 (exclusive)</td></tr>
+    <tr><td><code>mailbox_drain</code></td><td><code>mailbox_read</code> の各 line を引数 callback 関数に渡す (iteration helper)</td><td>callback exit code を集計</td></tr>
+    <tr><td><code>mailbox_archive</code></td><td><code>$MAILBOX_ROOT/$mailbox/inbox.jsonl</code> を <code>$MAILBOX_ROOT/archive/inbox-&lt;mailbox&gt;-&lt;ts&gt;.jsonl</code> に <code>mv</code>。新 inbox は空作成</td><td>Wave 完了時に呼ぶ</td></tr>
+  </tbody>
+</table>
 
-set -euo pipefail
-MAILBOX_ROOT="${TWILL_MAILBOX_ROOT:-.mailbox}"
-
-mailbox_emit {
-  local from="$1" to="$2" event="$3" detail="$4"
-  local target_dir="$MAILBOX_ROOT/$to"
-  mkdir -p "$target_dir"
-  local lock_file="$target_dir/.lock"
-  local inbox="$target_dir/inbox.jsonl"
-
-  # JSON Lines 1 行 (jq -c で compact、改行なし)
-  local line=$(jq -nc \
-    --arg from "$from" --arg to "$to" \
-    --arg event "$event" --argjson detail "$detail" \
-    --arg ts "$(date -Iseconds)" \
-    '{from: $from, to: $to, ts: $ts, event: $event, detail: $detail}')
-
-  # flock atomic append (timeout 10s、fd 9)
-  (
-    flock -x -w 10 9 || exit 1
-    echo "$line" &gt;&gt; "$inbox"
-  ) 9&gt;&gt;"$lock_file"
-}
-
-mailbox_read {
-  local mailbox="$1"
-  local inbox="$MAILBOX_ROOT/$mailbox/inbox.jsonl"
-  local offset_file="$MAILBOX_ROOT/$mailbox/.read-offset"
-  local from=$(cat "$offset_file" 2&gt;/dev/null || echo 0)
-
-  [ -f "$inbox" ] || return 0
-
-  # 共有 lock で read (write は exclusive で衝突防止)
-  (
-    flock -s -w 10 9 || exit 1
-    tail -n +$((from + 1)) "$inbox"
-    local total=$(wc -l &lt; "$inbox")
-    echo "$total" &gt; "$offset_file"
-  ) 9&gt;&gt;"$MAILBOX_ROOT/$mailbox/.lock"
-}</code></pre>
+<p><strong>config</strong>: <code>MAILBOX_ROOT=${TWILL_MAILBOX_ROOT:-.mailbox}</code> で env override 可。実装規模は ~40 行 (set -euo pipefail + 4 関数 + lock file 管理)。</p>
 
 <h2>§6. message format (JSON Lines、verified)</h2>
 
@@ -313,7 +219,7 @@ mailbox_read {
   <li><strong>phase 系</strong>: <code>phase-started</code>, <code>phase-progress</code>, <code>phase-completed</code>, <code>phase-failed</code> (canonical event 名、role prefix とは独立)</li>
   <li><strong>step 系</strong> (atomic→phaser): <code>step-started</code>, <code>step-completed</code>, <code>step-precheck-failed</code>, <code>step-postverify-failed</code> (mail event 名の <code>step-*</code> prefix は canonical event 名として継続、role prefix とは独立)</li>
   <li><strong>gate 系</strong>: <code>phase-gate-denied</code></li>
-  <li><strong>tool 系</strong>: <code>tool-completed</code> (tool-sandbox-runner のみ administrator に送る、旧 tool-self-improve rename)</li>
+  <li><strong>tool 系</strong>: <code>tool-completed</code> (tool-sandbox-runner のみ administrator に送る)</li>
   <li><strong>escalate 系</strong>: <code>escalate-human-gate</code>, <code>budget-pause</code></li>
 </ul>
 
@@ -321,23 +227,35 @@ mailbox_read {
 
 <h3>7.1 atomic → phaser (step 完了 mail)</h3>
 
-<pre><code># atomic SKILL.md 内 Step 3 report (Phase I 2026-05-15 確定: TWL_PHASER_NAME env 経由)
-source plugins/twl/scripts/lib/mailbox.sh
-mailbox_emit \
-  "atomic-test-scaffold" \
-  "$TWL_PHASER_NAME" \
-  "step-completed" \
-  '{"step":"test-scaffold","issue":1660,"verify":{"test_added":5,"red":true}}'</code></pre>
+<p>atomic SKILL.md Step 3 (report phase) が <code>TWL_PHASER_NAME</code> env 経由で recipient を解決し、<code>mailbox_emit</code> を呼ぶ:</p>
+
+<table>
+  <thead>
+    <tr><th>field</th><th>値</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>from</code></td><td><code>"atomic-test-scaffold"</code> (atomic skill 名)</td></tr>
+    <tr><td><code>to</code></td><td><code>"$TWL_PHASER_NAME"</code> (spawn-tmux.sh 経由で注入された env)</td></tr>
+    <tr><td><code>event</code></td><td><code>"step-completed"</code></td></tr>
+    <tr><td><code>detail</code></td><td><code>{step: "test-scaffold", issue: 1660, verify: {test_added: 5, red: true}}</code></td></tr>
+  </tbody>
+</table>
 
 <h3>7.2 phaser → administrator (phase 完了の集約 mail)</h3>
 
-<pre><code># phaser SKILL.md 内 (atomic mail 集約後)
-source plugins/twl/scripts/lib/mailbox.sh
-mailbox_emit \
-  "phaser-impl-1660" \
-  "administrator" \
-  "phase-completed" \
-  '{"issue":1660,"status":"Implementing","atomic_count":3,"all_steps_pass":true}'</code></pre>
+<p>phaser SKILL.md が atomic/specialist mail を集約後、administrator mailbox に要約 mail を送る:</p>
+
+<table>
+  <thead>
+    <tr><th>field</th><th>値</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>from</code></td><td><code>"phaser-impl-1660"</code> (window 名 = phaser-name)</td></tr>
+    <tr><td><code>to</code></td><td><code>"administrator"</code></td></tr>
+    <tr><td><code>event</code></td><td><code>"phase-completed"</code></td></tr>
+    <tr><td><code>detail</code></td><td><code>{issue: 1660, status: "Implementing", atomic_count: 3, all_steps_pass: true}</code></td></tr>
+  </tbody>
+</table>
 
 <h3>7.3 administrator → phaser (spawn 経由、mailbox は使わない)</h3>
 
@@ -389,7 +307,7 @@ verified source: Claude Code 公式 docs (code.claude.com/docs/en/sub-agents.md 
   <li><strong>Inv I-7 (tmux send-keys 使用禁止)</strong>: ただし spawn-tmux.sh の <strong>spawn 直後 1 回のみ</strong>例外として inject 許可 (skill 起動 trigger)。それ以外の通信は mailbox 経由</li>
 </ul>
 
-<h2>§12. <code>Phase 1 PoC</code> verify points (本 file 関連)</h2>
+<h2>§12. verify points (本 file 関連)</h2>
 
 <ul>
   <li>VP-1: 3 階層 spawn が動く (<code>tmux list-windows</code>) <a class="exp-link" href="../research/experiment-index.html#EXP-010">EXP-010</a> + <a class="exp-link" href="../research/experiment-index.html#EXP-016">EXP-016</a></li>
