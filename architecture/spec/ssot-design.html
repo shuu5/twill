@@ -18,12 +18,12 @@
 <body>
 
 <header class="doc-header">
-  <h1>registry.yaml 統合 SSoT design — 案 4 確定 ((2026-05-13))</h1>
-  <div class="meta">draft-v3 (2026-05-13) &middot; 案 3 (step.sh) → 案 4 (registry.yaml) 進化、atomic skill composition + vocabulary table 統合</div>
+  <h1>registry.yaml 統合 SSoT design</h1>
+  <div class="meta">status: <span class="badge done">done</span> &middot; atomic skill composition + vocabulary table 統合</div>
 </header>
 
 <div class="info">
-  <strong>目的</strong>: 既存 twill plugin の chain 定義 SSoT が <code>chain.py</code> / <code>chain-steps.sh</code> / <code>deps.yaml.chains</code> の三重化状態にあり (ADR-022 で正式定義)、Issue #853 で integrity 違反が顕在化。さらに <code>cli/twl/types.yaml</code> (component 型 + token 閾値 SSoT) と命名 vocabulary SSoT 不在の課題も(2026-05-13) で確定。本設計で 1 つの統合 SSoT に絞る。<br>
+  <strong>目的</strong>: 既存 twill plugin の chain 定義 SSoT が <code>chain.py</code> / <code>chain-steps.sh</code> / <code>deps.yaml.chains</code> の三重化状態にあり (ADR-022 で正式定義)、Issue #853 で integrity 違反が顕在化。さらに <code>cli/twl/types.yaml</code> (component 型 + token 閾値 SSoT) と命名 vocabulary SSoT 不在の課題も併存する。本設計で 1 つの統合 SSoT に絞る。<br>
   <br>
   <strong>結論先出し</strong>: <strong>案 4 (registry.yaml 統合 SSoT) を採用</strong>。<code>plugins/twl/registry.yaml</code> 1 file が以下 5 section の Authority SSoT を保有:
   <ol>
@@ -35,10 +35,10 @@
   </ol>
   旧 <code>chain.py</code> + <code>chain-steps.sh</code> + <code>chain-runner.sh</code> + <code>cli/twl/types.yaml</code> + 過去 dig <code>step.sh framework</code> を全廃。<br>
   <br>
-  <strong>source</strong>: spec session dig (10 round × 平均 4 question)、公式 docs 4 件再 WebFetch verify、ADR-022 Context、code-explorer agent C 深掘り。
+  <strong>source</strong>: 公式 docs WebFetch verified + ADR-022 Context + code-explorer による既存 chain 実装の深掘り。
 </div>
 
-<h2>§1. 三重化問題の verified 物証 (歴史的記録、保全)</h2>
+<h2>§1. 三重化問題の verified 物証</h2>
 
 <h3>1.1 3 つの SSoT 候補 (旧)</h3>
 
@@ -97,34 +97,22 @@
   </tbody>
 </table>
 
-<h2>§2. (2026-05-13) での再認識 (vocabulary SSoT 不在も判明)</h2>
+<h2>§2. chain SSoT 以外の多重化課題</h2>
 
-<p>(2026-05-13) (2026-05-13、10 round × 33+ question) で <strong>chain SSoT 三重化に加えて以下の SSoT 多重化が判明</strong>:</p>
+<p>chain SSoT 三重化に加えて以下の SSoT 多重化が併存する:</p>
 
 <ul>
-  <li><strong>types.yaml 矛盾</strong>: <code>cli/twl/types.yaml</code> が component 型 + token 閾値 SSoT として記述されているが、plugin component 構成では旧 type 名 (controller / co-autopilot 等) が残存。新 type 名 (administrator / phaser-* / workflow-* / atomic-* / specialist-*) との整合性が drift。<strong>(2026-05-13) で types.yaml 自体が廃止確定</strong>、registry.yaml 統合 SSoT に移行</li>
+  <li><strong>types.yaml 矛盾</strong>: <code>cli/twl/types.yaml</code> が component 型 + token 閾値 SSoT として記述されているが、plugin component 構成では旧 type 名 (controller / co-autopilot 等) が残存し、新 type 名 (administrator / phaser-* / workflow-* / atomic-* / specialist-*) との整合性が drift する。types.yaml は廃止し registry.yaml 統合 SSoT に移行する</li>
   <li><strong>vocabulary SSoT 不在</strong>: pilot/phase/controller の 5 重、worker の 5 重、step の 5 重等の用語多重化が「1 entity = 1 name」違反、SSoT として機能不全</li>
   <li><strong>役割名 (role) の階層分類不在</strong>: tool / pilot / worker / specialist 等の役割が 11 種以上に膨らんでいたが、階層関係 (L0/L1/L2/independent) や concern 分離が暗黙</li>
   <li><strong>制御系 4 語多重</strong>: administrator / orchestrator / controller / supervisor の 4 語が同概念に対し並存</li>
 </ul>
 
-<h2>§3. 旧 3 案 trade-off (過去 dig、歴史的記録)</h2>
+<h2>§3. 採用案 (registry.yaml 統合 SSoT)</h2>
 
-<div class="caution">過去 dig (2026-05-12) で検討された 3 案を歴史的記録として保全。(2026-05-13) で「案 4 registry.yaml 統合 SSoT」に進化したため、いずれの旧案も廃案だが、判断経緯として残す。</div>
+<p>本 spec で採用するのは <strong>案 4 (registry.yaml 統合 SSoT)</strong>。検討段階で却下された 3 廃案 (deps.yaml SSoT / chain.py SSoT / step.sh 単一 SSoT) の判断経緯は <a href="../archive/decisions/0001-ssot-design-rejected-alternatives.md">archive/decisions/0001-ssot-design-rejected-alternatives.md</a> に切り出して保存する (rollback / decision rationale 補強 reference)。</p>
 
-<h3>案 1 (廃案): <code>deps.yaml</code> SSoT (chain.py + chain-steps.sh 全廃、deps.yaml から生成)</h3>
-<div class="pros">YAML editing は人間にとって直感的、yamllint integration、コメント sup</div>
-<div class="cons">deps.yaml v3.0 既存巨大化 (~250 行)、bash dispatch logic を yaml 内 inline は無理、chain.py を捨てると Python validation も再実装が必要</div>
-
-<h3>案 2 (廃案): <code>chain.py</code> SSoT (chain-steps.sh + deps.yaml.chains 全廃、Python が SSoT)</h3>
-<div class="pros">既存 chain.py に dispatch / metadata / export が集約、Python type hint で integrity を強化可</div>
-<div class="cons">bash 側 (chain-runner.sh) から chain.py 直接呼び出し不可、引き続き chain-steps.sh 経由 export 必要、本質は「dispatch + metadata の 2 重 SSoT」のままで mitigation</div>
-
-<h3>案 3 (廃案、過去 dig 採用 → (2026-05-13) で廃案化): <code>step.sh</code> 単一 SSoT</h3>
-<div class="pros">1 step = 1 <code>steps/&lt;name&gt;.sh</code> file = SSoT、 <code>_verify_&lt;name&gt;</code> 関数で post-verify rule 同 file 内に、最も「分散 SSoT」原則に忠実</div>
-<div class="cons"><strong>(2026-05-13) 発覚問題</strong>: (1) step は forbidden 一般語、atomic が canonical、(2) <code>step.sh framework</code> の <code>step::run</code> bash 呼び出しは公式 skill 機構 (Skill tool + atomic SKILL.md) と二重 framework になる、(3) vocabulary / types.yaml と独立した別 SSoT を作るため SSoT 多重化解消にならない</div>
-
-<h2>§4. 案 4 registry.yaml 統合 SSoT ((2026-05-13) 確定)</h2>
+<h2>§4. 案 4 registry.yaml 統合 SSoT 詳細</h2>
 
 <div class="info">本節の詳細 schema: <a href="registry-schema.html">registry-schema.html §2 (registry.yaml 全体 schema と 5 section)</a></div>
 
@@ -141,8 +129,8 @@
     <tr><td class="deprecated"><code>plugins/twl/deps.yaml</code></td><td>component depends + chains + types</td><td><code>components</code> section (depends/next) + <code>chains</code> section</td></tr>
     <tr><td class="deprecated"><code>cli/twl/src/twl/autopilot/chain.py</code> <code>CHAIN_STEPS</code></td><td>chain 18 atomic の SSoT</td><td><code>chains</code> section (workflow → atomic sequence)</td></tr>
     <tr><td class="deprecated"><code>plugins/twl/scripts/chain-steps.sh</code></td><td>chain.py の bash mirror</td><td>(全廃、registry.yaml から必要時 generate)</td></tr>
-    <tr><td>(なし、(2026-05-13) 新規)</td><td>vocabulary table (用語集 + canonical/forbidden)</td><td><code>glossary</code> section (新規)</td></tr>
-    <tr><td>(なし、(2026-05-13) 新規)</td><td>命名衝突 audit ルール</td><td><code>integrity_rules</code> section (vocabulary_forbidden_use rule)</td></tr>
+    <tr><td>(従来不在)</td><td>vocabulary table (用語集 + canonical/forbidden)</td><td><code>glossary</code> section</td></tr>
+    <tr><td>(従来不在)</td><td>命名衝突 audit ルール</td><td><code>integrity_rules</code> section (vocabulary_forbidden_use rule)</td></tr>
     <tr><td><code>plugins/twl/hooks/hooks.json</code></td><td>hook entry config</td><td><code>hooks</code> section (registry.yaml が SSoT、hooks.json は derived)</td></tr>
     <tr><td><code>plugins/twl/monitors/monitors.json</code></td><td>monitor entry config</td><td><code>monitors</code> section (registry.yaml が SSoT、monitors.json は derived)</td></tr>
   </tbody>
@@ -163,9 +151,9 @@
   </tbody>
 </table>
 
-<h2>§5. atomic skill composition pattern ((2026-05-13) Round 6 確定)</h2>
+<h2>§5. atomic skill composition pattern</h2>
 
-<div class="info">詳細仕様: <a href="atomic-verification.html">atomic-verification.html</a> (atomic skill 4-phase lifecycle specification、旧 step-verification.html から rename)</div>
+<div class="info">詳細仕様: <a href="atomic-verification.html">atomic-verification.html</a> (atomic skill 4-phase lifecycle specification)</div>
 
 <h3>5.1 呼び出し chain (公式仕様 verified)</h3>
 
@@ -192,32 +180,7 @@
 
 <h3>5.2 atomic SKILL.md inline 4-phase lifecycle</h3>
 
-<p>旧 <code>step.sh framework</code> の外部 bash 呼び出しを廃止し、atomic SKILL.md 本文に <code>Step 0</code>〜<code>Step 3</code> として 4-phase を inline 実装。<code>Step N</code> は公式 SKILL.md スタイルの手順番号 (backtick + 大文字、migration-stage entity との混同なし)。</p>
-
-<pre><code>---
-disable-model-invocation: true
-allowed-tools: [Bash, Read, Edit, Agent]
----
-
-# atomic-test-scaffold
-
-`Step 0` lifecycle phase: pre-check
-- !`bats --list tests/ | wc -l &gt; /tmp/pre_test_count`
-- !`git diff --name-only HEAD | grep '^src/' | wc -l &gt; /tmp/pre_src_diff`
-- Verify `status` == Refined via !`gh project item-list ...`
-
-`Step 1` lifecycle phase: exec
-- Read $ARGUMENTS[0] (AC file for Issue)
-- Generate RED test targeting the AC, Write to tests/unit/...
-
-`Step 2` lifecycle phase: post-verify
-- !`POST=$(bats --list tests/ | wc -l); PRE=$(cat /tmp/pre_test_count); [ "$POST" -gt "$PRE" ] || exit 1`
-- !`bats tests/unit/... 2&gt;&amp;1 | grep -q "not ok"` # RED 確認
-- !`cat /tmp/pre_src_diff | grep -q '^0$'` # src/ 変更 0 確認
-
-`Step 3` lifecycle phase: report
-- !`jq -nc '{from:"atomic-test-scaffold",ts:"'"$(date -u +%FT%TZ)"'",event:"step-completed",detail:{...}}' &gt;&gt; .mailbox/$ARGUMENTS[session]/inbox.jsonl`
-</code></pre>
+<p>外部 bash 関数 (<code>step::run</code>) を採用せず、atomic SKILL.md 本文に <code>Step 0</code>〜<code>Step 3</code> として 4-phase を inline 実装する。<code>Step N</code> は公式 SKILL.md スタイルの手順番号 (backtick + 大文字、migration-stage entity との混同なし)。具体的な inline 実装例 (<code>Step 0</code> pre-check / <code>Step 1</code> exec / <code>Step 2</code> post-verify / <code>Step 3</code> report) および <code>disable-model-invocation: true</code> + <code>allowed-tools: [Bash, Read, Edit, Agent]</code> frontmatter の rationale は <a href="atomic-verification.html#s3">atomic-verification.html §3</a> を参照する。mailbox identifier 注入規約 (<code>$TWL_PHASER_NAME</code> env 経由、Step 3 で <code>.mailbox/$TWL_PHASER_NAME/inbox.jsonl</code> 参照) は <a href="atomic-verification.html#s3">atomic-verification.html §3.1</a> が SSoT。</p>
 
 <h2>§6. 全廃する SSoT (deletion inventory)</h2>
 
@@ -234,7 +197,7 @@ allowed-tools: [Bash, Read, Edit, Agent]
     <tr><td class="deprecated"><code>plugins/twl/deps.yaml</code></td><td>chain section + types section の二重 SSoT</td><td><code>registry.yaml#components</code> + <code>#chains</code></td></tr>
     <tr><td class="deprecated"><code>cli/twl/types.yaml</code></td><td>component 型 SSoT、新型との drift</td><td><code>registry.yaml#components</code> + <code>#integrity_rules</code></td></tr>
     <tr><td class="deprecated"><code>cli/twl/src/twl/chain/integrity.py</code> <code>check_deps_integrity</code></td><td>chain.py / chain-steps.sh / deps.yaml の整合検証、本廃止により不要</td><td><code>twl audit --registry</code> (新規) で registry.yaml integrity_rules 適用</td></tr>
-    <tr><td class="deprecated">過去 dig <code>step.sh framework</code> (案 3、未実装)</td><td>step は forbidden、公式 skill 機構と二重</td><td>atomic SKILL.md 本文 inline 4-phase lifecycle</td></tr>
+    <tr><td class="deprecated">廃案 <code>step.sh framework</code> (案 3、<a href="../archive/decisions/0001-ssot-design-rejected-alternatives.md">archive 廃案集 §3</a>)</td><td>step は forbidden、公式 skill 機構と二重</td><td>atomic SKILL.md 本文 inline 4-phase lifecycle</td></tr>
   </tbody>
 </table>
 
@@ -252,7 +215,7 @@ allowed-tools: [Bash, Read, Edit, Agent]
     <tr><td>VP-5</td><td>atomic 内 <code>Agent(specialist-*)</code> spawn 動作 (subagent context、subagent spawn 不可制約)</td><td>EXP-036 (smoke)</td></tr>
     <tr><td>VP-6</td><td>doobidoo cross-machine MCP の Tailscale 経由安定性 (100.82.69.124:18765、8 時間連続稼働)</td><td>EXP-037 (調査)</td></tr>
     <tr><td>VP-7</td><td><code>twl audit --vocabulary</code> の命名衝突検出 (<code>phaser</code> forbidden list + 公式名 (<code>Agent</code>/<code>Skill</code>) false positive 抑制)</td><td>EXP-038 (bats unit)</td></tr>
-    <tr><td>VP-8</td><td>atomic post-verify FAIL で chain abort + escalate mail emit</td><td>EXP-012 (旧 step.sh framework から repurpose)</td></tr>
+    <tr><td>VP-8</td><td>atomic post-verify FAIL で chain abort + escalate mail emit</td><td>EXP-012 (atomic skill lifecycle smoke)</td></tr>
   </tbody>
 </table>
 
@@ -265,27 +228,28 @@ allowed-tools: [Bash, Read, Edit, Agent]
     <tr><th>migration-stage</th><th>期間</th><th>本 SSoT 設計の作業</th></tr>
   </thead>
   <tbody>
-    <tr><td><code>Phase 1 PoC</code></td><td>Day 1-3</td><td>registry.yaml 新規作成 + glossary section seed (core 12 entity) + EXP-032〜038 PASS + Issue #1660 sanitize 再実装</td></tr>
-    <tr><td><code>Phase 2 dual-stack</code></td><td>Day 4-7</td><td>残り phaser / workflow / atomic / specialist 実装、旧 chain freeze、vocabulary table 拡張 (隠れ重複 entity 追加)</td></tr>
-    <tr><td><code>Phase 3 cutover</code></td><td>Day 8-11</td><td>旧 chain.py / chain-steps.sh / chain-runner.sh / deps.yaml / types.yaml ~7,000 行削除、in-flight Issue 全完遂、用語 rename 完遂 (~2000+ occurrence)</td></tr>
-    <tr><td><code>Phase 4 cleanup</code></td><td>Day 12-14</td><td>docs 整合、bats regression 全 PASS、ADR-043 Accepted 化 (命名 policy ADR-045 は (2026-05-14) で既に Accepted 化済、<a href="registry-schema.html#s9-5">registry-schema.html §9.5</a> 参照)</td></tr>
+    <tr><td><code>PoC</code></td><td>Day 1-3</td><td>registry.yaml 新規作成 + glossary section seed (core 12 entity) + EXP-032〜038 PASS + Issue #1660 sanitize 再実装</td></tr>
+    <tr><td><code>dual-stack</code></td><td>Day 4-7</td><td>残り phaser / workflow / atomic / specialist 実装、旧 chain freeze、vocabulary table 拡張 (隠れ重複 entity 追加)</td></tr>
+    <tr><td><code>cutover</code></td><td>Day 8-11</td><td>旧 chain.py / chain-steps.sh / chain-runner.sh / deps.yaml / types.yaml ~7,000 行削除、in-flight Issue 全完遂、用語 rename 完遂 (~2000+ occurrence)</td></tr>
+    <tr><td><code>cleanup</code></td><td>Day 12-14</td><td>docs 整合、bats regression 全 PASS、ADR-043 Accepted 化 (命名 policy ADR-045 は Accepted 済、<a href="registry-schema.html#s9-5">registry-schema.html §9.5</a> 参照)</td></tr>
   </tbody>
 </table>
 
 <h2>§9. 関連 spec</h2>
 
 <ul>
-  <li><a href="registry-schema.html">registry-schema.html</a> (registry.yaml 全体 schema + 10 role × concern matrix + vocabulary 6 field schema + 階層図、本 file の core 詳細、(2026-05-13) 新規)</li>
+  <li><a href="registry-schema.html">registry-schema.html</a> (registry.yaml 全体 schema + 10 role × concern matrix + vocabulary 6 field schema + 階層図、本 file の core 詳細)</li>
   <li><a href="glossary.html">glossary.html</a> (10 role 正規定義 + vocabulary 6 field schema 説明 + Authority/Reference/Derived 用語)</li>
-  <li><a href="atomic-verification.html">atomic-verification.html</a> (atomic skill 4-phase lifecycle、旧 step-verification.html から rename)</li>
+  <li><a href="atomic-verification.html">atomic-verification.html</a> (atomic skill 4-phase lifecycle)</li>
   <li><a href="../migration/deletion-inventory.html">deletion-inventory.html</a> (削除対象 file + 移行先 mapping)</li>
   <li><a href="../migration/rebuild-plan.html">rebuild-plan.html</a> (Strangler Fig 4 phase migration スケジュール)</li>
-  <li><a href="../research/experiment-index.html">experiment-index.html</a> (EXP-001〜038、(2026-05-13) で EXP-032〜038 追加)</li>
-  <li><a href="failure-analysis.html">failure-analysis.html</a> (9 P0 bug + 横断要因 F-1〜F-4 (F-4 用語 SSoT 不在は(2026-05-13) 追加))</li>
-  <li><a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> (Inv U "Atomic skill verification" 旧 "Step verification framework" から rename)</li>
+  <li><a href="../research/experiment-index.html">experiment-index.html</a> (EXP-001〜038、EXP-032〜038 が本 spec 関連)</li>
+  <li><a href="failure-analysis.html">failure-analysis.html</a> (9 P0 bug + 横断要因 F-1〜F-4、F-4 は用語 SSoT 不在の論点)</li>
+  <li><a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> (Inv U "Atomic skill verification")</li>
   <li><a href="../migration/adr-fate-table.html">adr-fate-table.html</a> (ADR-022 = chain SSoT 三重化定義、本 ADR-043 で Superseded)</li>
-  <li><a href="../research/research-findings.html">research-findings.html</a> (公式 verified 根拠、120 sources + 過去 session 16 件 WebFetch 追加)</li>
-  <li><a href="../archive/research/dig-report-ssot-2026-05-13.html">dig-report-ssot-2026-05-13.html</a> ((2026-05-13) 独立 artifact、10 round + 33+ question + 921 行)</li>
+  <li><a href="../research/research-findings.html">research-findings.html</a> (公式 verified 根拠、120 sources)</li>
+  <li><a href="../archive/research/dig-report-ssot-2026-05-13.html">dig-report-ssot-2026-05-13.html</a> (独立 dig artifact、10 round + 33+ question + 921 行)</li>
+  <li><a href="../archive/decisions/0001-ssot-design-rejected-alternatives.md">archive/decisions/0001-ssot-design-rejected-alternatives.md</a> (採用に至らなかった 3 廃案 (deps.yaml SSoT / chain.py SSoT / step.sh 単一 SSoT) の判断経緯)</li>
 </ul>
 
 </body>
