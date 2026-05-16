@@ -10,6 +10,16 @@ on:
       - 'architecture/decisions/**'
       - 'scripts/spec-anchor-link-check.py'
       - '.github/workflows/spec-link-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'architecture/spec/**'
+      - 'architecture/changes/**'
+      - 'architecture/archive/**'
+      - 'architecture/steering/**'
+      - 'architecture/decisions/**'
+      - 'scripts/spec-anchor-link-check.py'
+      - '.github/workflows/spec-link-check.yml'
 
 permissions:
   contents: read

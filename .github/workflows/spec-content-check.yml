@@ -15,6 +15,17 @@ on:
       - '.vale.ini'
       - 'cli/twl/src/twl/mcp_server/tools_spec.py'
       - '.github/workflows/spec-content-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'architecture/spec/**'
+      - 'architecture/changes/**'
+      - 'architecture/archive/**'
+      - 'architecture/steering/**'
+      - 'styles/TwillSpec/**'
+      - '.vale.ini'
+      - 'cli/twl/src/twl/mcp_server/tools_spec.py'
+      - '.github/workflows/spec-content-check.yml'
 
 permissions:
   contents: read

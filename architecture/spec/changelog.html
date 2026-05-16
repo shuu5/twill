@@ -68,7 +68,7 @@
   <li>INFO temporal-1: registry-schema.html L774 未来形「実装予定」→ 現在形 declarative</li>
   <li>INFO vocabulary-1: glossary.html L35 canonical entry self-reference meta 問題</li>
   <li>MED-i2 (Phase B 検出、本 wave defer): hooks-mcp-policy / monitor-policy への L3 hook chain × MCP tool 連携 section 追加</li>
-  <li>HIGH defer (前 wave 継承): Vale + textlint pre-commit hook 設置 (L4 mechanization、ADR-0013 §References 参照)</li>
+  <li>OPTIONAL (本 wave で HIGH defer → OPTIONAL に格下げ判定、tool-architect 動作検証で L3+L5 機能カバー確認): Vale + textlint pre-commit hook 設置 (L4 mechanization、developer 個別 judgement)</li>
   <li>MED defer: EXP-029 + EXP-039 smoke 実施 (deduced → experiment-verified 昇格)</li>
 </ul>
 
@@ -121,7 +121,7 @@
 
 <ul>
   <li><strong>R-14〜R-20 (7 rule)</strong>: 現在形 declarative / code block 制限 / archive 移動 / changes lifecycle / ReSpec markup / 多層防御 / MCP tool 統合 — `plugins/twl/skills/tool-architect/refs/spec-management-rules.md` で SSoT 化</li>
-  <li><strong>L1〜L5 多層防御</strong>: L1 SKILL.md (LLM 規律) / L2 bats (機械検証) / L3 hook + MCP tool (PreToolUse + PostToolUseFailure) / L4 pre-commit Vale + textlint / L5 CI (spec-content-check + spec-respec-build + spec-link-check)</li>
+  <li><strong>L1〜L5 多層防御</strong>: L1 SKILL.md (LLM 規律) / L2 bats (機械検証) / L3 hook + MCP tool (PreToolUse + PostToolUse + MCP <code>twl_spec_content_check</code>) / L4 pre-commit Vale + textlint (OPTIONAL) / L5 CI (spec-content-check + spec-respec-build + spec-link-check)</li>
   <li><strong>OpenSpec lifecycle</strong>: <code>architecture/changes/NNN-slug/</code> (proposal + design + tasks + spec-delta) → merge → <code>archive/changes/YYYY-MM-DD-NNN-slug/</code> 移動</li>
   <li><strong>GitHub Spec Kit steering/</strong>: <code>architecture/steering/{product,tech,structure}.md</code> で project-wide 規律 SSoT (spec は機能仕様、steering は規律)</li>
   <li><strong>ReSpec semantic markup</strong>: <code>&lt;section class="normative|informative"&gt;</code> / <code>&lt;aside class="example|ednote"&gt;</code> / <code>&lt;pre data-status="..."&gt;</code> (R-18 grandfather: 既存 section 遡及適用なし、新規 section のみ MUST)</li>

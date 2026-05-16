@@ -10,6 +10,11 @@ on:
     paths:
       - 'architecture/spec/**'
       - '.github/workflows/spec-respec-build.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'architecture/spec/**'
+      - '.github/workflows/spec-respec-build.yml'
 
 permissions:
   contents: read

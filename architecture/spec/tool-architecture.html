@@ -250,9 +250,9 @@
     </tr>
     <tr>
       <td><strong>L4</strong></td>
-      <td>pre-commit (defer)</td>
+      <td>pre-commit (OPTIONAL)</td>
       <td>Vale (TwillSpec/PastTense/DeclarativeOnly/CodeBlock) + textlint</td>
-      <td>git commit 直前 (L4 mechanization 未配置、現状は L5 CI 経由のみ)</td>
+      <td>git commit 直前 (OPTIONAL、developer 個別 install、未配置でも L3+L5 で機能カバー)</td>
       <td>規律違反を block (現状は CI 経由のみ)</td>
     </tr>
     <tr>
@@ -267,7 +267,7 @@
 
 <p><strong>多層化の根拠</strong>: 単層 (LLM 規律 or hook のみ) では bypass 容易。L1 (規律) を L2 (test) で reify、L3 (hook+MCP) で runtime enforce、L4 (pre-commit) で local guard、L5 (CI) で remote guard。各層は次層への escalation 経路を保つ。<strong>warning-only 方針</strong>: false positive 許容のため findings &gt; 0 でも block しない (CRITICAL 違反のみ後続 step で fail)。</p>
 
-<p><strong>L4 defer 根拠</strong>: pre-commit hook の Vale + textlint 機械化は HIGH defer task として独立する (ADR-0013 §References 参照)。L5 CI のみで mechanization を完結し、ローカル開発時は L1 規律 + L3 hook + L3 MCP の 3 重 guard で代替する。</p>
+<p><strong>L4 位置づけ (OPTIONAL)</strong>: pre-commit hook の Vale + textlint 機械化は <strong>必須ではない (OPTIONAL)</strong>。R-14/R-15/R-17/R-18 は L3 (MCP tool <code>twl_spec_content_check</code> の 5 check_types) で完全カバーし、L5 CI (Vale CLI + spec-content-check workflow) で merge gate を構成する。L4 (pre-commit) の独自価値は「commit 直前の rapid feedback」のみで、L3 で同等。developer 個別 install (vale CLI + textlint + .pre-commit-config.yaml + install-git-hooks.sh 拡張) は judgement に委ねる。</p>
 </section>
 
 <h3 id="s3-3">3.3 7-phase multi-agent PR cycle (feature-dev 型 transposition) <a class="exp-link" href="../research/experiment-index.html#EXP-029">EXP-029</a></h3>

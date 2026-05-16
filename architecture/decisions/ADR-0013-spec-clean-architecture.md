@@ -34,12 +34,12 @@ user の品質要求 (2026-05-16): 「メンテナンス性 + 論理構造再現
 
 5. **新 MCP tool `twl_spec_content_check` 実装** — `cli/twl/src/twl/mcp_server/tools_spec.py` (Python、html.parser + regex、check_types: past_narration / demo_code / declarative / changes_lifecycle / respec_markup)
 
-6. **多層防御 L1-L5 確立**:
-   - L1 skill: SKILL.md + spec-management-rules.md R-14〜R-20
-   - L2 bats: 新規 4 file (tool-architect-temporal / specialist-spec-review-temporal / twl-spec-content-check / changes-dir-structure) + 既存 2 file update
-   - L3 PreToolUse hook + MCP tool: 既存 hook 拡張 + 新 MCP tool
-   - L4 pre-commit: Vale (.vale.ini + styles/TwillSpec/) + textlint (.textlintrc)
-   - L5 CI: 既存 spec-link-check.yml 拡張 + 新 2 workflow (spec-content-check.yml + spec-respec-build.yml)
+6. **多層防御 L1-L5 確立** (L1+L2+L3+L5 = MUST、L4 = OPTIONAL):
+   - L1 skill (MUST): SKILL.md + spec-management-rules.md R-14〜R-20
+   - L2 bats (MUST): 新規 4 file (tool-architect-temporal / specialist-spec-review-temporal / twl-spec-content-check / changes-dir-structure) + 既存 2 file update
+   - L3 PreToolUse + PostToolUse hook + MCP tool (MUST): `pre-tool-use-spec-write-boundary.sh` (caller deny) + `post-tool-use-verify-coverage.sh` (verify warn) + 新 MCP tool `twl_spec_content_check` (5 check_types)
+   - L4 pre-commit (**OPTIONAL**): Vale (.vale.ini + styles/TwillSpec/) + textlint (.textlintrc) — developer 個別 install judgement、L3 MCP tool で R-14/R-15/R-17/R-18 完全カバー、L5 CI で merge gate、L4 の独自価値は rapid feedback のみ (tool-architect 動作検証 2026-05-17 確認済)
+   - L5 CI (MUST): spec-link-check.yml + spec-content-check.yml + spec-respec-build.yml (push:main + pull_request 両方 trigger、本 wave で push trigger 追加)
 
 7. **spec/ 18 file 全 refactor** — 時系列メモ削除 + デモコード論理表現置換 (mermaid sequence / state machine / HTML table / JSON Schema / ABNF) + ReSpec semantic markup 適用 (新規 section のみ、grandfather)
 
