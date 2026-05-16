@@ -66,7 +66,7 @@
       <td><code>ref-invariants.md</code></td>
       <td><code>plugins/twl/refs/ref-invariants.md</code></td>
       <td>不変条件 (invariant) A-X 24 件</td>
-      <td><span class="vs deduced">drift (A-N 14 件のまま、Pilot/Worker rename 未実施、Inv U title 未 rename)</span></td>
+      <td><span class="vs verified">A-X 24 件 SSoT 更新完了 (ref-invariants.md L1-L15)、Phase 4 cleanup で実 file rename 連動予定</span></td>
       <td>9 / 27</td>
       <td>invariant-fate-table.html が Reference として参照</td>
     </tr>
@@ -122,7 +122,7 @@
     <tr>
       <td><code>experiment-index.html</code></td>
       <td>architecture/spec/</td>
-      <td>EXP-001〜038 結果集約 + status badge + 関連 spec link</td>
+      <td>EXP-001〜044 結果集約 + status badge + 関連 spec link</td>
       <td><span class="vs verified">反映完了 (EXP-032〜038 含む)</span></td>
     </tr>
     <tr>
@@ -203,9 +203,9 @@
     </tr>
     <tr>
       <td>2</td>
-      <td><code>ref-invariants.md</code> (A-N 14 件のまま) と <code>invariant-fate-table.html</code> (A-X 24 件)</td>
-      <td><span class="vs deduced">完全 drift (overview.html §8 で「訂正課題」と既に記載)</span></td>
-      <td>過去 session 次 step で ref-invariants.md を A-X (24 件) に rename + Pilot/Worker rename + Inv U rename</td>
+      <td><code>ref-invariants.md</code> (A-X 24 件 SSoT 更新済、L14 Pilot/Worker rename 明示) と <code>invariant-fate-table.html</code> (A-X 24 件)</td>
+      <td><span class="vs verified">drift 解消 (両 file が A-X 24 件で整合)</span></td>
+      <td>Phase 4 cleanup で実 file rename (worker-* / pilot.sh 等) を invariants の影響範囲 path に連動更新</td>
     </tr>
     <tr>
       <td>3</td>
@@ -491,7 +491,7 @@
   </tbody>
 </table>
 
-<p style="margin-top: 0.5em; font-size: 0.9em;"><em>※ <strong>audit logic</strong>: <code>audit_registry</code> (Section 12) の <code>no_duplicate_concern</code> rule は component 間で同一 <code>concern</code> 値を保有する row を critical 検出する。<strong>concern field 値の正規化ルール</strong>: 実 registry.yaml components の concern field は「canonical + 括弧内説明」の複合形式を許容する (例: <code>status-transition (Idea → Explored)</code>)。audit は <strong>canonical prefix match</strong> (<code>concern.startswith(canonical)</code>) または正規化 (括弧内除去) で本 §4.5 list と照合する。Phase 2 dual-stack で components 完全 listing 時に正規化 logic を audit_registry に実装予定。</em></p>
+<p style="margin-top: 0.5em; font-size: 0.9em;"><em>※ <strong>audit logic</strong>: <code>audit_registry</code> (Section 12) の <code>no_duplicate_concern</code> rule は component 間で同一 <code>concern</code> 値を保有する row を critical 検出する。<strong>concern field 値の正規化ルール</strong>: 実 registry.yaml components の concern field は「canonical + 括弧内説明」の複合形式を許容する (例: <code>status-transition (Idea → Explored)</code>)。audit は <strong>canonical prefix match</strong> (<code>concern.startswith(canonical)</code>) または正規化 (括弧内除去) で本 §4.5 list と照合する。Phase 2 dual-stack 段階で正規化 logic を audit_registry に追加 (実装は changes/ で扱う)。</em></p>
 
 <h2 id="s5">§5. Authority / Reference / Derived 階層図</h2>
 
@@ -802,7 +802,7 @@
 <h3>10.5 関連 spec</h3>
 
 <ul>
-  <li><a href="../research/experiment-index.html">experiment-index.html</a>: 全 38 EXP の status badge (本節 §10.1 criteria に従って付与)</li>
+  <li><a href="../research/experiment-index.html">experiment-index.html</a>: 全 44 EXP の status badge (本節 §10.1 criteria に従って付与)</li>
   <li><a href="../research/sandbox-experiment.html">sandbox-experiment.html</a>: EXP framework 上位 architecture (本節 §10.3 audit infra と整合)</li>
   <li><a href="glossary.html">glossary.html</a>: "verify status" entity (canonical 名)</li>
 </ul>

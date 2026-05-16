@@ -149,7 +149,7 @@ spec の役割定義が registry.yaml glossary と矛盾 → CRITICAL。
       "confidence": 85,
       "file": "architecture/spec/tool-architecture.html",
       "line": 190,
-      "message": "§3.3 7-phase 設計は <span class=\"vs inferred\"> status のまま。EXP-029 (specialist-spec-review-* 3 並列 fix loop 収束) の smoke 検証が experiment-index.html で未完了。verified 化には EXP-029 の smoke pass + verify_source 記録が必要。",
+      "message": "§3.3 7-phase 設計は <span class=\"vs inferred\"> status のまま。EXP-029 (specialist-spec-review-* 4 並列 fix loop 収束) の smoke 検証が experiment-index.html で未完了。verified 化には EXP-029 の smoke pass + verify_source 記録が必要。",
       "category": "spec-ssot"
     }
   ]
