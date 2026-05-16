@@ -2,16 +2,16 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>twill plugin rebuild — Hooks + MCP 組み合わせ規定 (Phase I 2026-05-15 確定)</title>
+<title>twill plugin rebuild — Hooks + MCP 組み合わせ規定</title>
 <link rel="stylesheet" href="common.css">
 </head>
 <body>
 <header class="doc-header">
   <a class="back-link" href="README.html">← spec index</a>
-  <h1>Hooks + MCP 組み合わせ規定 — 公式 type 一覧 / independence invariant / 未活用機能 (Phase I 2026-05-15 確定)</h1>
+  <h1>Hooks + MCP 組み合わせ規定 — 公式 type 一覧 / independence invariant / 未活用機能</h1>
 </header>
 
-<div class="info"><strong>(2026-05-13) Round 2 (Phase I 2026-05-15)</strong> で確定。User 懸念「Hooks は機械的であるがゆえに考察の余地が残されているのではないか、特に MCP との組み合わせ機能の考察は足りていそうか」への dig 4 件 + 未活用機能 defer 結果を SSoT 化。</div>
+<div class="info">Hooks 14 type の twill 活用状況 + MCP との組み合わせ pattern + hook independence invariant (Inv H-1〜3) + 未活用機能の defer 整理を SSoT 化する。</div>
 
 <h2 id="s1">§1. Hooks 公式 type 一覧 (Claude Code Sonnet 4.6 / Opus 4.7、<span class="vs verified">verified</span>)</h2>
 
@@ -26,7 +26,7 @@
     <tr><td><code>PreToolUse</code></td><td>tool 実行 <strong>前</strong></td><td>0=allow / 2=deny</td><td><strong>Yes</strong></td><td>active (7 hook)</td></tr>
     <tr><td><code>PermissionRequest</code></td><td>permission dialog 表示時</td><td>JSON 出力</td><td><strong>Yes</strong></td><td>未活用</td></tr>
     <tr><td><code>PostToolUse</code></td><td>tool 実行成功 <strong>後</strong></td><td>0=ok / 2=block</td><td><strong>Yes</strong></td><td>active (post-bash-error.sh)</td></tr>
-    <tr><td><code>PostToolUseFailure</code></td><td>tool 実行失敗時</td><td>0=ok</td><td>No</td><td><strong>Phase 1 PoC 新規追加</strong> (§5)</td></tr>
+    <tr><td><code>PostToolUseFailure</code></td><td>tool 実行失敗時</td><td>0=ok</td><td>No</td><td>active (§5 PostToolUseFailure + memory_store 自動学習)</td></tr>
     <tr><td><code>Stop</code></td><td>Claude 応答完了時</td><td>0=ok / 2=block</td><td><strong>Yes</strong></td><td>active (twl_check_specialist)</td></tr>
     <tr><td><code>WorktreeCreate</code></td><td>worktree 作成時</td><td>0=ok</td><td><strong>Yes</strong></td><td>未活用</td></tr>
     <tr><td><code>PreCompact</code></td><td>compaction 開始前</td><td>0=ok</td><td>No</td><td>active (su-precompact.sh)</td></tr>
@@ -37,7 +37,7 @@
   </tbody>
 </table>
 
-<p>verify source: <a href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a> (Phase I 2026-05-15 WebFetch verified)</p>
+<p>verify source: <a href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a> (WebFetch verified)</p>
 
 <h2 id="s2">§2. MCP との組み合わせ pattern</h2>
 
@@ -50,14 +50,14 @@
     <tr><td>Hook type: <code>mcp_tool</code></td><td>Yes</td><td>7 件</td><td>.claude/settings.json で全 mcp_tool hook が <code>outputType: log</code></td></tr>
     <tr><td>MCP tool in PreToolUse hook</td><td>Yes</td><td>5 件</td><td><code>twl_validate_merge</code>, <code>twl_validate_commit</code> 等</td></tr>
     <tr><td>MCP tool in Stop hook</td><td>Yes</td><td>1 件</td><td><code>twl_check_specialist</code> on Stop / SubagentStop</td></tr>
-    <tr><td>MCP tool in PostToolUseFailure</td><td>Yes</td><td><strong>0 件 → Phase 1 PoC で新規 1 件</strong></td><td>§5 PostToolUseFailure + <code>mcp__doobidoo__memory_store</code></td></tr>
+    <tr><td>MCP tool in PostToolUseFailure</td><td>Yes</td><td>1 件 (command hook 経由)</td><td>§5 PostToolUseFailure + <code>mcp__doobidoo__memory_store</code></td></tr>
     <tr><td>MCP tool + <code>prompt</code> handler (LLM-based gate)</td><td>Yes</td><td>0 件 → EXP-040 verify 後判定</td><td>defer (§6)</td></tr>
     <tr><td>Hook input substitution <code>${tool_input.*}</code></td><td>Yes</td><td>複数</td><td><code>${tool_input.command}</code> 等</td></tr>
     <tr><td>Hook chain (1 hook 内 multiple mcp_tool)</td><td>Yes</td><td>1 件</td><td>Bash PreToolUse で 4 mcp_tool 連鎖</td></tr>
   </tbody>
 </table>
 
-<h2 id="s3">§3. hook independence invariant (Phase I dig Q1 確定、Inv H-1 新設)</h2>
+<h2 id="s3">§3. hook independence invariant (Inv H-1〜3)</h2>
 
 <dl class="inv-row">
   <dt>Inv H-1 (hook independence)</dt><dd><strong>各 hook は他 hook の中間 state に依存しない</strong>。公式仕様「Hook chain (複数 hook 同一 matcher) の実行順序は保証なし」のため、順序依存は破綻リスクあり。共有 state は <strong>file 経由のみ</strong> (<code>.audit/&lt;run-id&gt;/</code> or <code>.mailbox/&lt;session&gt;/</code>) で交換、env 変数や process 内部 state を inter-hook で共有しない。</dd>
@@ -66,9 +66,9 @@
   <dt>例外 (順序依存が真に必要な場合)</dt><dd>単一 wrapper script (<code>pre-bash-master.sh</code> 等) に sequential chain を集約、spec で明示。例: pr-test → merge-gate → final-decision の連鎖が必要なら 1 script 内で順序固定。</dd>
 </dl>
 
-<p><strong>EXP-039 (Phase G 追加予定)</strong>: 公式仕様「順序保証なし」が実装上どの程度厳密かを empirical verify。詳細 §7。</p>
+<p><strong>EXP-039</strong>: 公式仕様「順序保証なし」が実装上どの程度厳密かを empirical verify。詳細 §7。</p>
 
-<h2 id="s4">§4. twill 実装現状 (Phase F-G 時点)</h2>
+<h2 id="s4">§4. twill 実装現状</h2>
 
 <h3>4.1 PreToolUse hook 一覧 (7 件 + tool-* 別系統 1 件)</h3>
 
@@ -84,7 +84,7 @@
     <tr><td><code>pre-bash-refined-status-gate.sh</code></td><td><code>Bash(gh project item-edit *)</code></td><td>Refined label state gate</td></tr>
     <tr><td><code>pre-tool-use-host-safety.sh</code></td><td><code>Bash</code></td><td>host safety check</td></tr>
     <tr><td><code>pre-tool-use-deps-yaml-guard.sh</code></td><td><code>Edit|Write</code></td><td>deps.yaml 整合性検証</td></tr>
-    <tr><td><strong>tool-* 別系統</strong>: <code>pre-tool-use-spec-write-boundary.sh</code></td><td><code>Edit|Write</code> on architecture/</td><td>tool-architect / user 以外の spec edit を deny (Phase 1 PoC 実装、EXP-028 verify)</td></tr>
+    <tr><td><strong>tool-* 別系統</strong>: <code>pre-tool-use-spec-write-boundary.sh</code></td><td><code>Edit|Write</code> on architecture/</td><td>tool-architect / user 以外の spec edit を deny (EXP-028 verify)</td></tr>
   </tbody>
 </table>
 
@@ -94,30 +94,17 @@
   <li><code>twl_check_specialist</code> (mcp_tool): Stop + SubagentStop 両方で fire、specialist 完了 audit</li>
 </ul>
 
-<h2 id="s5">§5. Phase 1 PoC 新規追加: PostToolUseFailure + memory_store 自動学習 (Phase I dig Q2 確定)</h2>
+<h2 id="s5">§5. PostToolUseFailure + memory_store 自動学習</h2>
 
 <h3>5.1 設計思想</h3>
 
 <p>tool 実行失敗時の <code>PostToolUseFailure</code> hook で <code>mcp__doobidoo__memory_store</code> を呼び、失敗 pattern を doobidoo memory に <code>type: feedback</code> として自動保存する。将来同 pattern が memory_search hit したら LLM が warning 表示。</p>
 
-<h3>5.2 実装 Stage 戦略 (Phase 1 PoC C1 user 確定 2026-05-15)</h3>
+<h3>5.2 現状実装 (command hook 経由)</h3>
 
-<p>mcp_tool hook の template 変数展開 (<code>${tool_input.command}</code> 等) は公式 docs に明示なし → 段階的 migration strategy 採用:</p>
+<p>mcp_tool hook の template 変数展開 (<code>${tool_input.command}</code> 等) は公式 docs に明示なし。現状仕様: <code>command</code> hook で script 起動し、script が stdin JSON を parse して <code>additionalContext</code> で LLM に memory_store を促進する形式を採用する。</p>
 
-<table>
-  <thead>
-    <tr><th>Stage</th><th>Phase</th><th>hook type</th><th>memory_store 経路</th><th>verify</th></tr>
-  </thead>
-  <tbody>
-    <tr><td><strong>A</strong></td><td>Phase 1 PoC C1 (実装済 2026-05-15)</td><td><code>command</code></td><td>script → <code>additionalContext</code> → LLM が memory_store</td><td>verified safe (command hook stdin JSON、gate-hook.html §2 verified)</td></tr>
-    <tr><td><strong>B</strong></td><td>Phase 2 (EXP-043 fire)</td><td>—</td><td>—</td><td>mcp_tool hook の template 変数展開 empirical verify (<a class="exp-link" href="../research/experiment-index.html#EXP-043">EXP-043</a>)</td></tr>
-    <tr><td><strong>C</strong></td><td>Phase 2 以降 (EXP-043 verified 後)</td><td><code>mcp_tool</code></td><td>hook 直接 → doobidoo memory_store</td><td>EXP-043 で template 変数展開 verified なら migrate、Stage A script を archive</td></tr>
-  </tbody>
-</table>
-
-<h4>5.2.1 Stage A 実装 (Phase 1 PoC C1、command hook)</h4>
-
-<pre><code># plugins/twl/hooks/hooks.json (公式 verified 入れ子 schema、Phase 6 review C-2 fix)
+<pre><code># plugins/twl/hooks/hooks.json (公式 verified 入れ子 schema)
 {
   "hooks": {
     "PostToolUseFailure": [
@@ -136,37 +123,10 @@
 }
 
 # post-tool-use-failure-learn.sh 内で stdin JSON parse、additionalContext で LLM に memory_store 促進
-# 実装参照: plugins/twl/scripts/hooks/post-tool-use-failure-learn.sh</code></pre>
+# 実装参照: plugins/twl/scripts/hooks/post-tool-use-failure-learn.sh
+# hook input field: tool_name / tool_input / error / error_type / is_interrupt / is_timeout</code></pre>
 
-<h4>5.2.2 Stage C 目標 (Phase 2 以降、mcp_tool hook 直接、EXP-043 verified 前提)</h4>
-
-<pre><code># mcp_tool hook 直接形式 (EXP-043 で template 変数展開 verified 後に migrate、現時点では未 verified)
-{
-  "hooks": {
-    "PostToolUseFailure": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "mcp_tool",
-            "tool": "mcp__doobidoo__memory_store",
-            "input": {
-              "content": "Bash failure: ${tool_input.command} → ${error_type}: ${error}",
-              "metadata": {
-                "type": "feedback",
-                "tags": ["bash-failure", "auto-learned", "${tool_name}"]
-              }
-            },
-            "outputType": "log"
-          }
-        ]
-      }
-    ]
-  }
-}
-
-# 実 hook input field (Phase 6 review CRITICAL-1 fix): tool_name / tool_input / error / error_type / is_interrupt / is_timeout
-# verified source (旧): plugins/twl/scripts/hooks/post-tool-use-bash-error.sh (archive、Stage A script 経由で置換済)</code></pre>
+<aside class="ednote">mcp_tool hook 直接形式 (<code>type: "mcp_tool"</code> + <code>tool: "mcp__doobidoo__memory_store"</code>) は template 変数展開 (<code>${tool_input.command}</code> 等) が公式 docs に明示されていない。直接 migrate するには EXP-043 で template 変数展開を empirical verify する必要があり、defer item (§6) として扱う。</aside>
 
 <h3>5.3 制約</h3>
 
@@ -176,31 +136,33 @@
   <li>noise 過多防止: hook 内で error string の最初 200 文字のみ取り込み (長文は MCP server 側で cull)、stderr 直接参照は不可 (hook input schema に stderr field なし)</li>
 </ul>
 
-<h2 id="s6">§6. defer items (Phase 2 以降検討)</h2>
+<h2 id="s6">§6. defer items</h2>
 
 <table>
   <thead>
-    <tr><th>機能</th><th>defer 理由</th><th>Phase</th></tr>
+    <tr><th>機能</th><th>defer 理由</th></tr>
   </thead>
   <tbody>
-    <tr><td><code>if</code> 条件フィルタ (<code>if: "Bash(git *)"</code> 等)</td><td>Bash hook 7 件全実行の overhead 削減、low priority</td><td>Phase 2</td></tr>
-    <tr><td><code>once</code> フラグ (SessionStart init を 1 回のみ実行)</td><td>session 起動が頻繁でない、low priority</td><td>Phase 2</td></tr>
-    <tr><td><code>asyncRewake</code> (slow validation async + UI refresh)</td><td>EXP-040 prompt handler verify と併せて検討</td><td>Phase 2 以降</td></tr>
-    <tr><td><code>statusMessage</code> (hook 実行中 UI 進捗)</td><td>low value、現 hook は <code>outputType: log</code> で十分</td><td>defer</td></tr>
-    <tr><td><code>FileChanged</code> hook</td><td>用途未定義、low priority</td><td>defer</td></tr>
-    <tr><td><code>Notification</code> hook (Discord/Slack webhook)</td><td>既存 mcp__discord__reply path 維持</td><td>defer</td></tr>
-    <tr><td><code>Elicitation</code> hook (approval 自動応答)</td><td>Monitor regex 代替の clean path、EXP-042 公式存在 verify 後判定</td><td>Phase G 以降</td></tr>
-    <tr><td>Plugin scope hook 分散 (plugins/twl/hooks.json 分離)</td><td>plugin loader schema verify が必要、EXP-041 検証後判定</td><td>Phase G 以降</td></tr>
+    <tr><td><code>if</code> 条件フィルタ (<code>if: "Bash(git *)"</code> 等)</td><td>Bash hook 7 件全実行の overhead 削減、low priority</td></tr>
+    <tr><td><code>once</code> フラグ (SessionStart init を 1 回のみ実行)</td><td>session 起動が頻繁でない、low priority</td></tr>
+    <tr><td><code>asyncRewake</code> (slow validation async + UI refresh)</td><td>EXP-040 prompt handler verify と併せて判定</td></tr>
+    <tr><td><code>statusMessage</code> (hook 実行中 UI 進捗)</td><td>low value、現 hook は <code>outputType: log</code> で十分</td></tr>
+    <tr><td><code>FileChanged</code> hook</td><td>用途未定義、low priority</td></tr>
+    <tr><td><code>Notification</code> hook (Discord/Slack webhook)</td><td>既存 mcp__discord__reply path 維持</td></tr>
+    <tr><td><code>Elicitation</code> hook (approval 自動応答)</td><td>Monitor regex 代替の clean path、EXP-042 公式存在 verify 後判定</td></tr>
+    <tr><td>Plugin scope hook 分散 (plugins/twl/hooks.json 分離)</td><td>plugin loader schema verify が必要、EXP-041 検証後判定</td></tr>
+    <tr><td>mcp_tool hook 直接形式 (template 変数展開)</td><td>EXP-043 で <code>${tool_input.command}</code> 等の展開 empirical verify 後に migrate 候補 (§5.2 ednote)</td></tr>
   </tbody>
 </table>
 
-<h2 id="s7">§7. EXP 追加 (Phase G smoke 候補)</h2>
+<h2 id="s7">§7. EXP 追加 (smoke 候補)</h2>
 
 <dl class="inv-row">
-  <dt>EXP-039 (hook 実行順序)</dt><dd>公式仕様「Hook chain 順序保証なし」の Claude Code 現実装 (Opus 4.7) における実態を empirical verify。.claude/settings.json に同 matcher (<code>Bash</code>) で 3 dummy hook 登録、各 hook が stderr に <code>hook-A-fired-at-$(date +%N)</code> emit、10 回 fire で order_stability 判定。出力: <code>{order_stable: bool, observed_orders: [...], variance: ...}</code>。status: <span class="vs inferred">inferred</span> (Phase G smoke で <span class="vs experiment-verified">experiment-verified</span> 化)</dd>
+  <dt>EXP-039 (hook 実行順序)</dt><dd>公式仕様「Hook chain 順序保証なし」の Claude Code 現実装 (Opus 4.7) における実態を empirical verify。.claude/settings.json に同 matcher (<code>Bash</code>) で 3 dummy hook 登録、各 hook が stderr に <code>hook-A-fired-at-$(date +%N)</code> emit、10 回 fire で order_stability 判定。出力: <code>{order_stable: bool, observed_orders: [...], variance: ...}</code>。status: <span class="vs inferred">inferred</span></dd>
   <dt>EXP-040 (MCP tool + prompt handler latency / cost)</dt><dd>LLM-based gate 判定 (複雑な IF-THEN logic) の per-hook latency + cost を empirical 計測。ADR-040 phaser → tool-* spawn gate を test 対象として、Sonnet vs Opus の latency (5-10s) + cost ($0.01) を実機計測。status: <span class="vs inferred">inferred</span></dd>
   <dt>EXP-041 (Plugin scope hook schema)</dt><dd><code>plugins/&lt;plugin&gt;/hooks.json</code> が Claude Code plugin loader で supported か empirical verify。schema (matcher / type / handler) が plugin loader で誤らない confirm。<code>plugins/twl/hooks.json</code> を新規作成して plugin reload で動作確認。status: <span class="vs inferred">inferred</span></dd>
   <dt>EXP-042 (Elicitation hook 公式存在)</dt><dd>Elicitation hook が現 Claude Code 実装で supported か WebFetch + 実機 fire で empirical verify。approval dialog が hook で自動応答できるなら Monitor regex 代替の clean path、token 節約効果あり。status: <span class="vs inferred">inferred</span></dd>
+  <dt>EXP-043 (mcp_tool template 変数展開)</dt><dd><code>type: "mcp_tool"</code> hook で <code>${tool_input.command}</code> 等の template 変数が展開されるか empirical verify。verified なら §5.2 の command hook 経路を mcp_tool 直接形式に migrate 可能。status: <span class="vs inferred">inferred</span></dd>
 </dl>
 
 <h2 id="s8">§8. 関連 spec ファイル</h2>
@@ -209,18 +171,17 @@
   <li><a href="boundary-matrix.html">boundary-matrix.html</a> (hook independence invariant Inv H-1〜3、5 entity boundary)</li>
   <li><a href="gate-hook.html">gate-hook.html</a> (phase-gate 特化、不変条件 W tier 1+2 防御)</li>
   <li><a href="tool-architecture.html">tool-architecture.html</a> §9 pending (tool-architect spec-write-boundary hook)</li>
-  <li><a href="../migration/rebuild-plan.html">rebuild-plan.html</a> <code>Phase 1 PoC</code> STEP -1 (hook 無効化 + 残す 3 hook id audit)</li>
-  <li><a href="../research/experiment-index.html">experiment-index.html</a> EXP-039/040/041/042 (Phase G smoke 候補)</li>
-  <li><a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> Inv H-1〜3 (Phase I 新設)</li>
+  <li><a href="../migration/rebuild-plan.html">rebuild-plan.html</a> STEP -1 (hook 無効化 + 残す 3 hook id audit)</li>
+  <li><a href="../research/experiment-index.html">experiment-index.html</a> EXP-039/040/041/042/043 (smoke 候補)</li>
+  <li><a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> Inv H-1〜3 (hook independence)</li>
 </ul>
 
 <h2 id="s9">§9. verify source</h2>
 
 <ul>
-  <li><strong>Claude Code Hooks Reference</strong>: <a href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a> (Phase I 2026-05-15 WebFetch verified)</li>
-  <li><strong>Claude Code MCP Integration</strong>: <a href="https://code.claude.com/docs/en/mcp">code.claude.com/docs/en/mcp</a> (Phase I WebFetch verified)</li>
+  <li><strong>Claude Code Hooks Reference</strong>: <a href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a> (WebFetch verified)</li>
+  <li><strong>Claude Code MCP Integration</strong>: <a href="https://code.claude.com/docs/en/mcp">code.claude.com/docs/en/mcp</a> (WebFetch verified)</li>
   <li><strong>Claude Code 2026 Cheat Sheet</strong>: <a href="https://techbytes.app/posts/claude-code-2026-cheat-sheet-hooks-mcp-commands/">techbytes.app (community ref)</a></li>
-  <li><strong>Phase I dig (過去 session)</strong>: agent 3 (claude-code-guide) cross-AI bias 低減 audit、4 件 judgment + 8 defer items 確定</li>
 </ul>
 
 </body>
