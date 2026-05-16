@@ -11,8 +11,6 @@
   .tool-box h3 { margin-top: 0; }
   .layer-box { background: var(--gray-50); border-left: 4px solid var(--brand); padding: 12px 16px; margin: 12px 0; border-radius: var(--radius-md); }
   .layer-box h5 { margin: 0 0 6px 0; color: var(--gray-800); }
-  .pending { background: var(--caution-bg); border-left: 4px solid var(--caution-fg); padding: 12px 16px; margin: 12px 0; border-radius: var(--radius-md); }
-  .pending h4 { margin-top: 0; color: var(--caution-fg); }
 </style>
 </head>
 <body>
@@ -1010,9 +1008,11 @@ $TWL_SANDBOX_DIR/.audit/&lt;run-id&gt;/</code></pre>
   </tbody>
 </table>
 
-<h2 id="s9">§9. 残課題 (将来 dig / 実装段階で詰める)</h2>
+<h2 id="s9">§9. Editor notes (defer items)</h2>
 
-<div class="pending">
+<aside class="ednote">
+<p><strong>Editor note (defer items)</strong>: 以下は将来 dig / 実装段階で詳細化する未確定事項。本 spec の core (§1-§8) は確定済、本 §9 は補助的な未解決項目 listing として保持。実装着手時は <code>architecture/changes/&lt;NNN&gt;-&lt;slug&gt;/tasks.md</code> 形式 (R-17 lifecycle) に migration MUST。</p>
+
 <h4>詳細実装レベル</h4>
 <ul>
   <li><code>specialist-spec-review-*</code> 4 agent の正確な prompt (findings JSON schema は <code>plugins/twl/refs/ref-specialist-output-schema.md</code> 準拠、category=spec-vocabulary/spec-structure/spec-ssot/spec-temporal)</li>
@@ -1021,58 +1021,48 @@ $TWL_SANDBOX_DIR/.audit/&lt;run-id&gt;/</code></pre>
   <li><code>problem-patterns.yaml</code> の各 pattern severity threshold 値</li>
   <li>template version migration の semver / breaking change handling</li>
 </ul>
-</div>
 
-<div class="pending">
 <h4>運用設計</h4>
 <ul>
   <li>twill-templates 別 repo の管理者 / PR review policy</li>
   <li>sandbox 並列実行 (複数 sandbox 同時) の可否 + resource conflict</li>
   <li>sandbox-runner timeout の budget threshold 値 (50% 妥当か)</li>
 </ul>
-</div>
 
-<div class="pending">
 <h4>tool-architect 追加検討</h4>
 <ul>
   <li>recursive PR の review 委譲先 (user only? 他 tool? user/admin/他 tool の優先順位)</li>
   <li>spec file 削除 / file rename の handling (specialist-spec-review-structure で catch、R-4 適用確認)</li>
 </ul>
-</div>
 
-<div class="pending">
 <h4>tool-project 追加検討</h4>
 <ul>
   <li>cross-repo support (twill 外の repo に apply 可?)</li>
   <li><code>migrate</code> sub-command の動作 (前 version から新 version への diff 反映)</li>
   <li><code>snapshot</code> sub-command の動作 (現 state を新 template として抽出?)</li>
 </ul>
-</div>
 
-<div class="pending">
 <h4>tool-sandbox-runner 追加検討</h4>
 <ul>
   <li>sandbox 内 twill が更に sandbox-runner を呼ぶ recursive 制限</li>
   <li>features.yaml の sync method (実 SKILL.md 一覧との integrity check 自動化)</li>
 </ul>
-</div>
 
-<div class="pending">
-<h4>hooks 全体規定 + 未活用機能 (Phase I 2026-05-15 確定)</h4>
+<h4>hooks 全体規定 + 未活用機能</h4>
 <ul>
   <li><strong>hook independence invariant (Inv H-1〜3)</strong>: 各 hook は他 hook 中間 state に依存しない、共有 state は file 経由のみ。詳細: <a href="hooks-mcp-policy.html#s3">hooks-mcp-policy.html §3</a></li>
-  <li><strong>未活用機能 (Phase 2 以降 defer)</strong>: <code>if</code> 条件フィルタ / <code>once</code> / <code>asyncRewake</code> / <code>statusMessage</code> / <code>FileChanged</code> / <code>Notification</code> / <code>Elicitation</code> / Plugin scope hook 分散。詳細: <a href="hooks-mcp-policy.html#s6">hooks-mcp-policy.html §6 defer items</a></li>
-  <li><strong>新 EXP 4 件 (Phase G smoke 候補)</strong>: <a class="exp-link" href="../research/experiment-index.html#EXP-039">EXP-039 hook 順序</a> / <a class="exp-link" href="../research/experiment-index.html#EXP-040">EXP-040 prompt handler</a> / <a class="exp-link" href="../research/experiment-index.html#EXP-041">EXP-041 plugin scope hook</a> / <a class="exp-link" href="../research/experiment-index.html#EXP-042">EXP-042 Elicitation hook</a></li>
-  <li><strong>PostToolUseFailure + memory_store 自動学習 hook</strong>: Phase 1 PoC で新規追加。詳細: <a href="hooks-mcp-policy.html#s5">hooks-mcp-policy.html §5</a></li>
+  <li><strong>未活用機能</strong>: <code>if</code> 条件フィルタ / <code>once</code> / <code>asyncRewake</code> / <code>statusMessage</code> / <code>FileChanged</code> / <code>Notification</code> / <code>Elicitation</code> / Plugin scope hook 分散。詳細: <a href="hooks-mcp-policy.html#s6">hooks-mcp-policy.html §6 defer items</a></li>
+  <li><strong>新 EXP 4 件 (smoke 候補)</strong>: <a class="exp-link" href="../research/experiment-index.html#EXP-039">EXP-039</a> hook 順序 / <a class="exp-link" href="../research/experiment-index.html#EXP-040">EXP-040</a> prompt handler / <a class="exp-link" href="../research/experiment-index.html#EXP-041">EXP-041</a> plugin scope hook / <a class="exp-link" href="../research/experiment-index.html#EXP-042">EXP-042</a> Elicitation hook</li>
+  <li><strong>PostToolUseFailure + memory_store 自動学習 hook</strong>: 詳細: <a href="hooks-mcp-policy.html#s5">hooks-mcp-policy.html §5</a></li>
 </ul>
-</div>
+</aside>
 
 <h2>§10. ADR-040 / ADR-041 / ADR-043 との整合性</h2>
 
 <ul>
   <li><strong>ADR-040 (feature-dev spawn gate)</strong>: user 明示依頼許可ルール。tool-* の起動承認 SSoT として継承。tool-architect / tool-project / tool-sandbox-runner いずれも user 明示 (slash command) が起動条件</li>
   <li><strong>ADR-041 (部分 Superseded)</strong>: spawn-controller.sh 統合は廃止、新 spec では tmux new-window 直接呼び出し (<code>spawn-tmux.sh</code> ~30 行) に簡素化。「user 明示依頼許可」原則は保全</li>
-  <li><strong>ADR-043 (本 spec 正典)</strong>: tool-* 3 件構成を Decision section に明記、過去 dig 結果 (3 tool + L1-L5 多層防御 + 7-phase PR cycle + sandbox catalog) を反映 (ADR-043 未起票、Phase 4-5 で再検討)</li>
+  <li><strong>ADR-043 (本 spec 正典)</strong>: tool-* 3 件構成を Decision section に明記、過去 dig 結果 (3 tool + L1-L5 多層防御 + 7-phase PR cycle + sandbox catalog) を反映。ADR-043 file の起票は別 change package で扱う</li>
 </ul>
 
 <h2>§11. 関連 spec ファイル + 関連 EXP</h2>
