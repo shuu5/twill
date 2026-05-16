@@ -425,7 +425,7 @@ components:
   # 第 4 弾 dig 確定: tool-architect / tool-project / tool-sandbox-runner
   # Phase 2 dual-stack で詳細 entry 追加
 
-  # === specialist-spec-* (5 件、tool-architect 7-phase PR cycle 用、2026-05-16 Phase 1 PoC で追加) ===
+  # === specialist-spec-* (6 件、tool-architect 7-phase PR cycle 用、change 001-spec-purify (2026-05-16) で Phase F 3 → 4 軸拡張時に temporal 追加) ===
   - name: specialist-spec-explorer
     role: specialist
     file: agents/specialist-spec-explorer.md

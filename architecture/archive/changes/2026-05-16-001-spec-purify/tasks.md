@@ -33,13 +33,16 @@
 
 ## Phase 6: Quality Review
 
-- [x] **F1-F6**: 3 並列 code-reviewer findings 対応 (CRITICAL 3 件 + WARNING 5 件 + INFO 3 件、CRITICAL 全件 fix で本 commit)
+- [x] **F1-F6**: 3 並列 code-reviewer findings 対応 (CRITICAL 3 件 + WARNING 5 件 + INFO 3 件、CRITICAL 全件 fix で 5c576f45 commit)
+- [x] **F7**: tool-architecture.html を本 wave 実装と整合化 (cross-file consistency 漏れ後追い fix、~253 行追加、§2.7 / §3.2.2 / §3.6.1 / §3.7.3.4 / §3.9 / §3.10 / §11.1 新設)
+- [x] **F8**: bats `changes-dir-structure.bats` を R-17 archive 移動に追従 (9 件 → 10 件、5 件 fail → 全 PASS)
+- [x] **F9-F15**: Phase 6 4 並列 review (vocabulary/structure/ssot/temporal、本 wave で新規) findings CRITICAL 15 + WARNING 11 一括 fix (前 wave からの cross-file 漏れ 8 件 + R-14 declarative 改善 5 件 + EXP-029 SSoT update + ADR-0013 References + tool-architecture.html 内部矛盾 5 件 + experiment-verified → deduced 降格 4 件 + registry.yaml comment + SKILL.md archive path)
 
 ## Phase 7: Summary
 
-- [ ] **G1**: changelog.html entry 追加 (本 wave 完遂 marker、Phase G)
-- [ ] **G2**: archive/changes/2026-05-16-001-spec-purify/ に移動 (R-17 lifecycle)
-- [ ] **G3**: working-memory.md 退避 + doobidoo memory store (lesson 永続化)
+- [x] **G1**: changelog.html entry 追加 (本 wave 完遂 marker、Phase G、151e9e04)
+- [x] **G2**: archive/changes/2026-05-16-001-spec-purify/ に移動 (R-17 lifecycle 完遂、151e9e04)
+- [x] **G3**: working-memory.md 退避 + doobidoo memory store (lesson 永続化)
 
 ## 検証 (各 commit 後 MUST)
 

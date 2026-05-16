@@ -45,6 +45,23 @@
     INFO 3 件 (aside 入れ子 robustness / extract_frontmatter delimiter / handler status field) は現状実害なしで defer。
   </li>
   <li><strong>Phase 7 Summary (本 entry、G1-G3)</strong>: changelog 反映 + changes/001-spec-purify/ → archive/changes/2026-05-16-001-spec-purify/ 移動 (R-17 lifecycle 完遂) + working-memory.md 退避 + doobidoo memory store。</li>
+  <li><strong>Phase 6 漏れ continuation fix (F7-F15、本 entry に追記)</strong>: 完遂宣言後の cross-file consistency 漏れを段階修正:
+    <ul>
+      <li>F7: <code>tool-architecture.html</code> を本 wave 実装と整合化 (~253 行追加、§2.7 MCP tool 統合 / §3.2.2 L1-L5 多層防御 / §3.6.1 R-1〜R-20 規律一覧 / §3.7.3.4 specialist-spec-review-temporal sub-section / §3.9 OpenSpec+steering+ReSpec 採用 / §3.10 業界 BP transposition 根拠 / §11.1 references 拡充)</li>
+      <li>F8: bats <code>changes-dir-structure.bats</code> を R-17 archive 移動に追従 (5 件 fail → 10 件 全 PASS、archive/changes/2026-05-16-001-spec-purify/ 配下を verify)</li>
+      <li>F9-F15: Phase 6 4 並列 review (本 wave で新規 = vocabulary/structure/ssot/temporal、cross-file consistency check MUST 注入) findings CRITICAL 15 + WARNING 11 一括 fix:
+        <ul>
+          <li>前 wave からの cross-file 漏れ 8 件 fix (boundary-matrix.html ×2 / glossary.html ×3 / overview.html / registry-schema.html / failure-analysis.html: 旧 <code>specialist-spec-review</code> 単数表記 → <code>specialist-spec-review-{vocabulary,structure,ssot,temporal}</code> 4 並列)</li>
+          <li><code>SKILL.md</code> archive path (changes/ → archive/changes/) + <code>registry.yaml</code> comment (5 件 → 6 件) + <code>tasks.md</code> F1-F6 → F1-F7+F8 同期</li>
+          <li>R-14 declarative 改善: tool-architecture.html 内「本 wave」transient 表現 5 箇所を date marker / declarative に置換 (line 156/178/239/269/622)、retrospective narration 2 箇所 (line 529/538) 削除</li>
+          <li>tool-architecture.html 内部矛盾 fix: F1-F6 vs F1-F7+F8 不整合、§3.3 表 line 316 「3 軸」残存、§3.7.3 共通 dt 「3 軸共通」+ category listing から spec-temporal 欠落</li>
+          <li>experiment-verified → deduced 降格 4 件: §3.3 / §11.1 / §2.7 / §3.7.3.4 で smoke 未実施分の 4-state lattice 整合性確保 (smoke 完遂で再昇格)</li>
+          <li>SSoT 同期: <code>ADR-0013</code> §References 「5 agent」→「6 agent」、<code>experiment-index.html</code> EXP-029 「3 並列 + 3 回 fix loop」→「4 並列 + scope-based SLA」</li>
+        </ul>
+      </li>
+    </ul>
+    教訓: 前 wave Phase 6 reviewer 3 並列が cross-file consistency check まで確認していなかったため defer された。本 wave の 4 軸目 temporal + cross-file consistency check MUST 注入で同型 drift を予防する。
+  </li>
 </ol>
 
 <h3>核心 deliverables</h3>

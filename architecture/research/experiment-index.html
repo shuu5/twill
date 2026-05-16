@@ -434,13 +434,13 @@
 </div>
 
 <div class="exp-block" id="EXP-029">
-  <h3>EXP-029: specialist-spec-review agent の 3 回 fix loop 収束 / escalate</h3>
+  <h3>EXP-029: specialist-spec-review-* 4 並列 agent が scope-based fix loop で収束 / escalate</h3>
   <dl>
-    <dt>status</dt><dd><span class="vs inferred">inferred</span> (本 dig で新規、PR cycle 軽量化検証)</dd>
-    <dt>verify 対象</dt><dd>tool-architect の軽量 PR cycle が (a) review PASS で 1〜2 回で完了、(b) review FAIL で 3 回 fix → escalate to user、(c) 3 回後も FAIL で AskUserQuestion 起動</dd>
-    <dt>分類</dt><dd>smoke (sandbox 環境で実 PR 作成、review agent spawn)</dd>
-    <dt>期待結果</dt><dd>fix loop 3 回 max で必ず収束 (PASS or escalate)、無限 loop なし</dd>
-    <dt>関連 spec</dt><dd><a href="../spec/tool-architecture.html">tool-architecture.html</a> §3.3</dd>
+    <dt>status</dt><dd><span class="vs inferred">inferred</span> (本 dig で新規、PR cycle 検証。change 001-spec-purify (2026-05-16) で Phase F 3 → 4 軸拡張、scope-based SLA 確定、本 smoke 未実施)</dd>
+    <dt>verify 対象</dt><dd>tool-architect の 7-phase PR cycle Phase F (4 並列 specialist-spec-review-{vocabulary,structure,ssot,temporal} opus 固定) が (a) review PASS で 1〜2 回で完了、(b) scope-based SLA (small=3 / medium=5 / large=user 個別判断) で収束 or escalate、(c) SLA 到達後も FAIL で AskUserQuestion 起動</dd>
+    <dt>分類</dt><dd>smoke (sandbox 環境で実 PR 作成、4 並列 review agent spawn)</dd>
+    <dt>期待結果</dt><dd>scope-based fix loop で必ず収束 (PASS or escalate)、無限 loop なし</dd>
+    <dt>関連 spec</dt><dd><a href="../spec/tool-architecture.html">tool-architecture.html</a> §3.3 / §3.7.3 / §3.8</dd>
   </dl>
 </div>
 

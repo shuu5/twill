@@ -238,7 +238,7 @@
 <tbody>
 <tr><td>(none) → Idea</td><td>GitHub Actions add-to-project</td><td>Issue opened</td></tr>
 <tr><td>Idea → Explored</td><td><code>phaser-explore</code></td><td>LLM: 探索完了 (explore-summary 完備)</td></tr>
-<tr><td>Explored → Refined</td><td><code>phaser-refine</code></td><td>LLM: AC 完備判定 + <code>Agent(specialist-spec-review)</code></td></tr>
+<tr><td>Explored → Refined</td><td><code>phaser-refine</code></td><td>LLM: AC 完備判定 + <code>Agent(specialist-spec-review-{vocabulary,structure,ssot,temporal})</code> 4 並列</td></tr>
 <tr><td>Refined → Implementing</td><td><code>phaser-impl</code></td><td>atomic 4-phase post-verify: test 充足 + green PASS</td></tr>
 <tr><td>Implementing → PR Reviewed</td><td><code>phaser-pr</code></td><td>atomic 4-phase post-verify: all-pass-check 通過</td></tr>
 <tr><td>PR Reviewed → Merged</td><td>GitHub Actions auto-merge</td><td>branch protection (LLM 判断不要)</td></tr>

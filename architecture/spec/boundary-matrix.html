@@ -50,7 +50,7 @@
       <td><code>phaser</code> + tool-architect / tool-sandbox-runner (限定、ADR-040 gate)</td>
       <td>workflow / atomic (<code>Skill</code>) + specialist (<code>Agent</code>)</td>
       <td>specialist は tmux session spawn 禁止 (公式制約 <span class="vs verified">verified</span>)、workflow/atomic は <code>Skill</code> chain 続行 + <code>Agent(specialist-*)</code> 1 階層内 spawn 可</td>
-      <td>tmux session spawn 禁止 (ただし tool-architect は <code>Agent(specialist-spec-review)</code> を 1 階層内 spawn 可、軽量 PR cycle 用)</td>
+      <td>tmux session spawn 禁止 (ただし tool-architect は <code>Agent(specialist-spec-review-{vocabulary,structure,ssot,temporal})</code> 4 並列を 1 階層内 spawn 可、7-phase PR cycle Phase F 用)</td>
       <td>—</td>
     </tr>
     <tr>
@@ -176,7 +176,7 @@
   <dt>verification framework</dt><dd>利用しない (status と無関係)</dd>
   <dt>gate hook</dt><dd>対象外 (status と無関係、ADR-040 gate が SSoT)。<strong>例外</strong>: tool-architect は別系統で spec edit boundary hook (<code>pre-tool-use-spec-write-boundary.sh</code>) を保持し、tool-architect / user 以外の Edit/Write を deny</dd>
   <dt>audit 出力</dt><dd><code>.audit/&lt;run-id&gt;/tools/{architect,project,sandbox-runner}/</code> 配下</dd>
-  <dt>自律 verify</dt><dd>tool-architect は 2 層 verify (SKILL.md MUST + PostToolUse hook <code>verify-coverage.sh</code> warn) で 4-state status の漏れを catch、軽量 PR cycle で changelog 漏れを <code>specialist-spec-review</code> agent が検出 (3 回 fix loop 上限)</dd>
+  <dt>自律 verify</dt><dd>tool-architect は L1〜L5 多層防御 (SKILL.md MUST + bats + hook + MCP tool + pre-commit + CI、<a href="tool-architecture.html#s3-2-2">tool-architecture.html §3.2.2</a>) で 4-state status / R-14〜R-20 の漏れを catch、7-phase PR cycle Phase F で <code>specialist-spec-review-{vocabulary,structure,ssot,temporal}</code> 4 並列 agent が cross-file consistency を含む findings を検出 (scope-based fix loop、<a href="tool-architecture.html#s3-8">§3.8</a>)</dd>
 </dl>
 
 <h2>cross-entity 通信 (禁止 + 許可)</h2>
