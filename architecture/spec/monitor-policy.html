@@ -2,17 +2,16 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>twill plugin rebuild — Monitor primitive 規定 (Phase I 2026-05-15 確定)</title>
+<title>twill plugin rebuild — Monitor primitive 規定</title>
 <link rel="stylesheet" href="common.css">
 </head>
 <body>
 <header class="doc-header">
   <a class="back-link" href="README.html">← spec index</a>
-  <h1>Monitor primitive 規定 — actor / signal / composite / lifecycle (Phase I 2026-05-15 確定)</h1>
+  <h1>Monitor primitive 規定 — actor / signal / composite / lifecycle</h1>
 </header>
 
-<div class="info"><strong>(2026-05-13) Round 1 (Phase I 2026-05-15)</strong> で確定。User 懸念「Monitor は administrator が使う予定だがその使い方に考察の余地」への dig 4 件結果を SSoT 化。<br>
-旧 <code>.supervisor/events/</code> ファイル signal (existence / mtime / JSON body 混在) は <strong>(2026-05-13) Round 10 で完全廃止済</strong>、mailbox JSON event に一元化。</div>
+<div class="info">Monitor primitive の使い方を 4 軸 (actor scope / signal primary / composite event / daemon lifecycle) で SSoT 化。signal source は <code>.mailbox/&lt;recipient&gt;/inbox.jsonl</code> JSON event に一元化、<code>.supervisor/events/</code> 方式 (file existence / mtime / JSON body 混在) は採用しない。</div>
 
 <h2 id="s1">§1. Monitor primitive 公式仕様 (Claude Code Sonnet 4.6 / Opus 4.7、<span class="vs verified">verified</span>)</h2>
 
@@ -32,7 +31,7 @@
   </tbody>
 </table>
 
-<h2 id="s2">§2. actor scope (Phase I dig Q1 確定)</h2>
+<h2 id="s2">§2. actor scope</h2>
 
 <p>Monitor primitive 使用権限を持つ actor: <strong>administrator (L0) + phaser (L1)</strong> のみ。specialist / workflow / atomic / tool-* は使用不可。</p>
 
@@ -42,9 +41,9 @@
   <dt>specialist / workflow / atomic / tool-*</dt><dd><strong>使用禁止</strong>。run-to-completion 型のため Monitor 不要、blocking exit code + mail emit で十分。</dd>
 </dl>
 
-<h2 id="s3">§3. signal primary strategy (Phase I dig Q2 確定)</h2>
+<h2 id="s3">§3. signal primary strategy</h2>
 
-<p>Monitor pattern の signal source は <strong>mailbox JSON event 単一化</strong>。旧 <code>.supervisor/events/</code> ファイル方式 (existence / mtime / JSON body 混在) は <strong>(2026-05-13) Round 10 で廃止済</strong>。</p>
+<p>Monitor pattern の signal source は <strong>mailbox JSON event 単一化</strong>。<code>.supervisor/events/</code> ファイル方式 (existence / mtime / JSON body 混在) は採用しない。</p>
 
 <h3>3.1 canonical Monitor pattern</h3>
 
@@ -69,13 +68,13 @@ tail -F .mailbox/administrator/inbox.jsonl 2&gt;/dev/null \
 <h3>3.3 forbidden patterns (Inv T 強化)</h3>
 
 <ul>
-  <li><code>.supervisor/events/&lt;event-name&gt;-*</code> ファイル存在検知 (廃止済)</li>
-  <li><code>.supervisor/events/&lt;event-name&gt;-*</code> mtime polling (廃止済)</li>
+  <li><code>.supervisor/events/&lt;event-name&gt;-*</code> ファイル存在検知</li>
+  <li><code>.supervisor/events/&lt;event-name&gt;-*</code> mtime polling</li>
   <li>JSON body を Monitor pattern で複雑 parse (jq は許容、Python/awk による複雑 logic は禁止)</li>
   <li>他 actor の mailbox tail (channel isolation: admin は <code>administrator/</code>、phaser は <code>&lt;own-phaser-name&gt;/</code> のみ)</li>
 </ul>
 
-<h2 id="s4">§4. composite event policy (Phase I dig Q3 確定)</h2>
+<h2 id="s4">§4. composite event policy</h2>
 
 <p>Monitor primitive の制約 (regex 単一 / line=1 event) のため、composite condition (AND / OR / threshold / debounce) は <strong>mail emitter side で評価</strong>。Monitor は <strong>1 mail = 1 composite event</strong> として受信。</p>
 
@@ -89,7 +88,7 @@ tail -F .mailbox/administrator/inbox.jsonl 2&gt;/dev/null \
 
 <h3>4.2 例: IDLE-COMPLETED composite event</h3>
 
-<p>旧 cld-observe-any LLM evaluator (debounce 60s + pane content + mtime + completion phrase regex の 4 AND) を mail emitter pattern に置換:</p>
+<p>composite condition (debounce 60s + pane content + mtime + completion phrase regex の 4 AND) は mail emitter side で評価し、成立時に 1 mail emit する:</p>
 
 <pre><code># administrator polling cycle 内で composite check (admin-cycle.sh)
 check_idle_completed {
@@ -105,7 +104,7 @@ check_idle_completed {
   local debounce_passed=$((last_mail_age &gt;= debounce_sec))
 
   if [[ "$pane_state" == "0" &amp;&amp; "$phrase_match" -ge 1 &amp;&amp; "$debounce_passed" == "1" ]]; then
-    # composite condition 成立 → 1 mail emit (Phase 6 review CRITICAL-2 fix: mailbox_emit 関数を使用)
+    # composite condition 成立 → 1 mail emit (mailbox_emit 関数を使用)
     source plugins/twl/scripts/lib/mailbox.sh
     mailbox_emit "$target_window" "administrator" "idle-completed" \
       "$(jq -nc '{debounce_passed: true, pane_state: "idle", phrase_matched: true}')"
@@ -120,13 +119,13 @@ tail -F .mailbox/administrator/inbox.jsonl \
 
 # Monitor 側は composite logic を持たない、emit された 1 mail だけ受信</code></pre>
 
-<h2 id="s5">§5. Monitor daemon lifecycle (Phase I dig Q4 確定)</h2>
+<h2 id="s5">§5. Monitor daemon lifecycle</h2>
 
 <h3>5.1 plugin-managed daemon (canonical)</h3>
 
 <p><strong>primary 方式</strong>: <code>plugins/twl/monitors.json</code> entry で Plugin loader が plugin load 時に background process を自動起動・cleanup する。</p>
 
-<pre><code>// plugins/twl/monitors.json (Phase 1 PoC で新規作成)
+<pre><code>// plugins/twl/monitors.json
 {
   "monitors": [
     {
@@ -179,16 +178,16 @@ fi</code></pre>
   }
 }</code></pre>
 
-<h2 id="s6">§6. defer items (Phase 2 以降検討)</h2>
+<h2 id="s6">§6. defer items</h2>
 
 <table>
   <thead>
     <tr><th>item</th><th>defer 理由</th></tr>
   </thead>
   <tbody>
-    <tr><td>200ms batch window への対応 (hidden latency)</td><td>critical path 検証なし、Phase G EXP で empirical 確認後判定</td></tr>
-    <tr><td>per-channel timeout declarative policy (<code>MONITOR_TIMEOUT_SEC</code> 環境変数化)</td><td>monitors.json schema で吸収予定、Phase 1 PoC scope 外</td></tr>
-    <tr><td>stderr sink の per-daemon 分離 (<code>monitor-stderr-&lt;daemon&gt;.log</code>)</td><td>monitors.json schema に <code>stderr_sink</code> field を含めることで対応、実装は Phase 1 PoC</td></tr>
+    <tr><td>200ms batch window への対応 (hidden latency)</td><td>critical path 検証なし、EXP で empirical 確認後判定 (本 spec scope 外)</td></tr>
+    <tr><td>per-channel timeout declarative policy (<code>MONITOR_TIMEOUT_SEC</code> 環境変数化)</td><td>monitors.json schema 拡張で対応 (本 spec scope 外)</td></tr>
+    <tr><td>stderr sink の per-daemon 分離 (<code>monitor-stderr-&lt;daemon&gt;.log</code>)</td><td>monitors.json schema に <code>stderr_sink</code> field を含めて対応</td></tr>
   </tbody>
 </table>
 
@@ -199,18 +198,17 @@ fi</code></pre>
   <li><a href="boundary-matrix.html">boundary-matrix.html</a> (phaser §responsibility に Monitor 使用権限明示)</li>
   <li><a href="atomic-verification.html">atomic-verification.html</a> §3 (atomic Step 3 mail emit 形式、Monitor consumable schema)</li>
   <li><a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> Inv T (mailbox atomic write)、Inv V (per-specialist scope)</li>
-  <li><a href="../migration/deletion-inventory.html">deletion-inventory.html</a> §monitors.json (Phase 1 PoC 新規)</li>
-  <li>EXP-009 (Plugin Monitor stdout、Phase H smoke 予定)</li>
+  <li><a href="../migration/deletion-inventory.html">deletion-inventory.html</a> §monitors.json</li>
+  <li>EXP-009 (Plugin Monitor stdout)</li>
 </ul>
 
 <h2 id="s8">§8. verify source</h2>
 
 <ul>
-  <li><strong>Claude Code Monitor Tool: Stop Polling, Start Reacting</strong>: <a href="https://claudefa.st/blog/guide/mechanics/monitor">claudefa.st/blog/guide/mechanics/monitor</a> (Phase I 2026-05-15 WebFetch verified)</li>
+  <li><strong>Claude Code Monitor Tool: Stop Polling, Start Reacting</strong>: <a href="https://claudefa.st/blog/guide/mechanics/monitor">claudefa.st/blog/guide/mechanics/monitor</a> (WebFetch verified)</li>
   <li><strong>Implementation Patterns &amp; Best Practices</strong>: <a href="https://www.mindstudio.ai/blog/claude-code-monitor-tool-background-processes">mindstudio.ai (verified)</a></li>
   <li><strong>File-Based Signaling Patterns</strong>: <a href="https://www.mindstudio.ai/blog/claude-code-monitor-tool-background-processes-2">mindstudio.ai/blog (verified)</a></li>
   <li><strong>Claude Code Plugins Reference</strong>: <a href="https://code.claude.com/docs/en/plugins-reference">code.claude.com/docs/en/plugins-reference</a></li>
-  <li><strong>Phase I dig (過去 session)</strong>: agent 2 (claude-code-guide) cross-AI bias 低減 audit、4 件 judgment 確定</li>
 </ul>
 
 </body>
