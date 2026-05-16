@@ -26,9 +26,17 @@ teardown() {
   echo "$FRONTMATTER" | grep -qE '^type:\s*tool'
 }
 
-@test "tool-architect SKILL.md allowed-tools includes Agent" {
+@test "tool-architect SKILL.md allowed-tools includes Agent (single-line or list format)" {
   FRONTMATTER="$(sed -n '/^---$/,/^---$/p' "$SKILL_MD")"
-  echo "$FRONTMATTER" | grep -qE 'allowed-tools.*Agent|Agent.*allowed-tools'
+  # 単行 format (allowed-tools: [Bash, Agent]) または list format (allowed-tools: \n  - Agent) のどちらも accept
+  # single-line: 'allowed-tools' と 'Agent' が同一行で OK
+  # list: 'allowed-tools:' 行以降、次の non-indented field まで Agent が listing されている
+  if echo "$FRONTMATTER" | grep -qE '^allowed-tools:.*Agent'; then
+    return 0  # single-line で hit
+  fi
+  # list format: allowed-tools: の次の indented section に Agent
+  ALLOWED_TOOLS_SECTION="$(echo "$FRONTMATTER" | awk '/^allowed-tools:/{flag=1; next} /^[a-z]/{flag=0} flag')"
+  echo "$ALLOWED_TOOLS_SECTION" | grep -qE '\bAgent\b'
 }
 
 @test "tool-architect SKILL.md has 7-phase section heading" {
