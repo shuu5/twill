@@ -86,3 +86,92 @@ print(r['exit_code'])
 @test "Finding category is spec-temporal" {
   grep -qE 'category.*spec-temporal' "$TOOLS_SPEC"
 }
+
+@test "false positive fix: CSS class 'pending' is NOT flagged (R-14 inside <style>)" {
+  cd "$TWILL_ROOT"
+  TMP_FILE="$(mktemp --suffix=.html)"
+  cat > "$TMP_FILE" <<'HTML'
+<!DOCTYPE html>
+<html>
+<head><style>.pending { color: red; }</style></head>
+<body><p>本仕様は declarative である。</p></body>
+</html>
+HTML
+  OUT=$(python3 -c "
+import sys
+sys.path.insert(0, 'cli/twl/src')
+from twl.mcp_server.tools_spec import twl_spec_content_check_handler
+r = twl_spec_content_check_handler('$TMP_FILE', check_types=['declarative'])
+findings = r.get('findings', [])
+pending_hits = [f for f in findings if 'pending' in f.get('message', '')]
+print(len(pending_hits))
+")
+  rm -f "$TMP_FILE"
+  [ "$OUT" = "0" ]
+}
+
+@test "false positive fix: date marker '(2026-05-16)' is NOT flagged (legitimate change identifier)" {
+  cd "$TWILL_ROOT"
+  TMP_FILE="$(mktemp --suffix=.html)"
+  cat > "$TMP_FILE" <<'HTML'
+<!DOCTYPE html>
+<html><body>
+<p>change 001-spec-purify (2026-05-16) で確定した規律を本 spec が反映する。</p>
+</body></html>
+HTML
+  OUT=$(python3 -c "
+import sys
+sys.path.insert(0, 'cli/twl/src')
+from twl.mcp_server.tools_spec import twl_spec_content_check_handler
+r = twl_spec_content_check_handler('$TMP_FILE', check_types=['past_narration'])
+print(len(r.get('findings', [])))
+")
+  rm -f "$TMP_FILE"
+  [ "$OUT" = "0" ]
+}
+
+@test "false positive fix: <pre> without data-status is INFO (not WARNING)" {
+  cd "$TWILL_ROOT"
+  TMP_FILE="$(mktemp --suffix=.html)"
+  cat > "$TMP_FILE" <<'HTML'
+<!DOCTYPE html>
+<html><body>
+<pre><code>{"id": "example-schema", "type": "json"}</code></pre>
+</body></html>
+HTML
+  OUT=$(python3 -c "
+import sys
+sys.path.insert(0, 'cli/twl/src')
+from twl.mcp_server.tools_spec import twl_spec_content_check_handler
+r = twl_spec_content_check_handler('$TMP_FILE', check_types=['demo_code'])
+findings = r.get('findings', [])
+warn = [f for f in findings if f['severity'] == 'WARNING']
+info = [f for f in findings if f['severity'] == 'INFO']
+print(f'WARN={len(warn)} INFO={len(info)}')
+")
+  rm -f "$TMP_FILE"
+  [ "$OUT" = "WARN=0 INFO=1" ]
+}
+
+@test "regression: shebang inside <pre> is still flagged as WARNING (R-15 howto code)" {
+  cd "$TWILL_ROOT"
+  TMP_FILE="$(mktemp --suffix=.html)"
+  cat > "$TMP_FILE" <<'HTML'
+<!DOCTYPE html>
+<html><body>
+<pre><code>#!/usr/bin/env bash
+echo "howto example"</code></pre>
+</body></html>
+HTML
+  OUT=$(python3 -c "
+import sys
+sys.path.insert(0, 'cli/twl/src')
+from twl.mcp_server.tools_spec import twl_spec_content_check_handler
+r = twl_spec_content_check_handler('$TMP_FILE', check_types=['demo_code'])
+findings = r.get('findings', [])
+warn_count = sum(1 for f in findings if f['severity'] == 'WARNING' and 'howto' in f.get('message', '').lower())
+print(warn_count)
+")
+  rm -f "$TMP_FILE"
+  [ "$OUT" = "1" ]
+}

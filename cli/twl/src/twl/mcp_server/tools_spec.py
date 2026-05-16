@@ -26,15 +26,15 @@ from typing import Any, Optional
 # regex 解釈: regexp2 lookahead 対応 (Vale rule と同期、styles/TwillSpec/PastTense.yml 参照)
 
 PAST_NARRATION_PATTERNS = [
-    re.compile(r"\(\s*\d{4}-\d{1,2}-\d{1,2}\s*\)"),  # ISO date in parens
-    re.compile(r"\d{4}年\d{1,2}月\d{1,2}日"),         # Japanese date
-    re.compile(r"Phase \d+ で"),                       # Phase N reference
-    re.compile(r"以前は"),
-    re.compile(r"を確認した"),
-    re.compile(r"により実施した"),
-    re.compile(r"を行った"),
-    re.compile(r"であった"),
-    re.compile(r"していた"),
+    # 過去動詞 pattern のみ (date marker は change identifier として legitimate のため除外)
+    # 例: 「change 001-spec-purify (2026-05-16)」は reference marker、narration ではない
+    re.compile(r"Phase \d+ で"),                       # Phase N reference (歴史的 phase 言及)
+    re.compile(r"以前は"),                              # 過去比較
+    re.compile(r"を確認した"),                          # 過去完了動詞
+    re.compile(r"により実施した"),                       # 過去完了動詞
+    re.compile(r"を行った"),                            # 過去完了動詞
+    re.compile(r"であった"),                            # 過去断定
+    re.compile(r"していた"),                            # 過去継続
 ]
 
 # 未完了マーカー (R-14 補足、未確定状態 declarative violation)
@@ -92,6 +92,8 @@ class _SpecHTMLParser(HTMLParser):
         self.in_example: bool = False  # <aside class="example"> 内か
         self.in_ednote: bool = False   # <aside class="ednote"> 内か (除外)
         self.in_meta: bool = False     # <div class="meta"> 内か (除外)
+        self.in_style: bool = False    # <style> tag 内か (除外、CSS class 名の false positive 防止)
+        self.in_script: bool = False   # <script> tag 内か (除外、同上)
         self.current_pre: dict[str, Any] = {}
         self.pre_blocks: list[dict[str, Any]] = []
         self.text_blocks: list[dict[str, Any]] = []
@@ -126,6 +128,10 @@ class _SpecHTMLParser(HTMLParser):
             cls = attr_dict.get("class", "")
             if cls and "meta" in cls:
                 self.in_meta = True
+        elif tag == "style":
+            self.in_style = True
+        elif tag == "script":
+            self.in_script = True
 
     def handle_endtag(self, tag: str):
         if tag == "pre" and self.in_pre:
@@ -137,12 +143,17 @@ class _SpecHTMLParser(HTMLParser):
             self.in_ednote = False
         elif tag == "div":
             self.in_meta = False
+        elif tag == "style":
+            self.in_style = False
+        elif tag == "script":
+            self.in_script = False
 
     def handle_data(self, data: str):
         line = self.getpos()[0]
         if self.in_pre:
             self.current_pre["content"] += data
-        elif not self.in_ednote and not self.in_meta:
+        elif not self.in_ednote and not self.in_meta and not self.in_style and not self.in_script:
+            # <style> / <script> 内 content は text_blocks から除外 (CSS class 名 / JS variable 名による false positive 防止)
             self.text_blocks.append({
                 "line": line,
                 "content": data,
@@ -184,17 +195,17 @@ def check_demo_code(parser: _SpecHTMLParser, file_path: str) -> list[Finding]:
         status = pre.get("data-status")
         in_example = pre.get("parent_aside_example", False)
 
-        # data-status 属性チェック
+        # data-status 属性チェック (R-18 best practice suggestion、INFO level)
+        # 真の R-15 violation (架空 howto code) は HOWTO_CODE_PATTERNS で別途検出 (下記 WARNING)
         if status is None and not in_example:
             findings.append(Finding(
-                severity="WARNING",
-                confidence=80,
+                severity="INFO",
+                confidence=70,
                 file=file_path,
                 line=line,
                 message=(
-                    "R-15 違反 candidate: <pre> タグに data-status 属性なし、"
-                    "<aside class=\"example\"> 外。schema/table/ABNF/mermaid のみ許容、"
-                    "howto code は research/ へ移動 + link only。"
+                    "R-18 suggestion: <pre> タグに data-status 属性 + <aside class=\"example\"> wrap で意図明示推奨。"
+                    "schema/JSON/ABNF/mermaid は legitimate、howto code (shebang/prompt/install) のみ R-15 違反として別途検出。"
                 ),
             ))
         elif status and status not in DATA_STATUS_ENUM:
