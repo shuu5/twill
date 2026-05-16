@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>experiment-index — 全 EXP 一覧 + status + 結果 (EXP-001〜038)</title>
+<title>experiment-index — 全 EXP 一覧 + status + 結果 (EXP-001〜044)</title>
 <link rel="stylesheet" href="../spec/common.css">
 <style>
   header.doc-header { border-bottom: 3px solid var(--brand); }
@@ -17,7 +17,7 @@
 <body>
 
 <header class="doc-header">
-  <h1>experiment-index — 全 EXP 一覧 (EXP-001〜042)</h1>
+  <h1>experiment-index — 全 EXP 一覧 (EXP-001〜044)</h1>
   <div class="meta">draft-v4 (2026-05-15、Phase I 反映) &middot; 42 EXP planned (2026-05-13 dig で 13 件追加 EXP-019〜031、2026-05-13 dig で 7 件追加 EXP-032〜038、Phase I で 4 件追加 EXP-039〜042) &middot; status は過去 session 時点 (実行前は <span class="vs verified">verified</span> / <span class="vs deduced">deduced</span> / <span class="vs inferred">inferred</span> 併存、実行で <span class="vs experiment-verified">experiment-verified</span> 化)</div>
 </header>
 
@@ -640,6 +640,19 @@ $ bash experiments/run-all.sh
     <dt>verify_checks</dt><dd>JSON schema: <code>{template_expanded: bool, recorded_command: string, recorded_error: string, recorded_error_type: string, recorded_tool_name: string}</code></dd>
     <dt>Phase 1 PoC 関連</dt><dd>Phase 1 PoC C1 (2026-05-15) で Stage A (command hook) 実装、本 EXP の verify 後に Stage C (mcp_tool hook 直接) に migrate</dd>
     <dt>関連 spec</dt><dd><a href="../spec/hooks-mcp-policy.html#s5">hooks-mcp-policy.html §5.2 Stage 戦略</a></dd>
+  </dl>
+</div>
+
+<div class="exp-block" id="EXP-044">
+  <h3>EXP-044: twl_spec_content_check MCP tool 実機 invoke smoke (tool-architect Phase E 統合 verify)</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs inferred">inferred</span> (本 wave で起票、smoke 実装 + 実機 invoke 後に <span class="vs experiment-verified">experiment-verified</span> 化)</dd>
+    <dt>verify 対象</dt><dd>tool-architect Phase E で <code>twl_spec_content_check</code> MCP tool が実機 MCP server invoke 経由で実行され、past_narration / demo_code / declarative / changes_lifecycle / respec_markup の 5 check_types に対し JSON findings を返すか empirical verify。<a href="../spec/tool-architecture.html#s2-7">tool-architecture.html §2.7</a> の R-20 義務の機械検証根拠</dd>
+    <dt>verify source</dt><dd>未 (smoke 実装 + 実機 invoke 後に log hash + verify_checks JSON 記録)</dd>
+    <dt>分類</dt><dd>smoke (<code>experiments/EXP-044-spec-content-check-mcp-invoke.smoke.sh</code>、Phase 2 で実装)</dd>
+    <dt>期待結果</dt><dd>(a) tool-architect skill から <code>twl_spec_content_check</code> invoke、(b) 全 5 check_types で JSON findings 返却、(c) known violation pattern (過去 narration / demo code) で WARNING 確実検出、(d) clean spec で findings 0 件。<strong>experiment-verified upgrade 条件 = (b) AND (c) AND (d) 全成功</strong></dd>
+    <dt>verify_checks</dt><dd>JSON schema: <code>{invoke_success: bool, check_types_executed: array&lt;string&gt;, findings_returned: int, known_violation_detected: bool, clean_spec_zero: bool}</code></dd>
+    <dt>関連 spec</dt><dd><a href="../spec/tool-architecture.html#s2-7">tool-architecture.html §2.7</a> (R-20 機械検証) + <a href="../spec/tool-architecture.html#s3-2-2">tool-architecture.html §3.2.2</a> (L1-L5 多層防御 L3 layer)</dd>
   </dl>
 </div>
 
