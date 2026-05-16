@@ -16,12 +16,13 @@ teardown() {
   common_teardown
 }
 
-@test "all 5 specialist-spec-* agent files exist" {
+@test "all 6 specialist-spec-* agent files exist (4 review + explorer + architect)" {
   [ -f "$AGENTS_DIR/specialist-spec-explorer.md" ]
   [ -f "$AGENTS_DIR/specialist-spec-architect.md" ]
   [ -f "$AGENTS_DIR/specialist-spec-review-vocabulary.md" ]
   [ -f "$AGENTS_DIR/specialist-spec-review-structure.md" ]
   [ -f "$AGENTS_DIR/specialist-spec-review-ssot.md" ]
+  [ -f "$AGENTS_DIR/specialist-spec-review-temporal.md" ]
 }
 
 @test "SKILL.md allowed-tools includes Agent (for invoking 5 specialists)" {
@@ -33,13 +34,13 @@ teardown() {
   grep -qE 'refs/spec-management-rules\.md' "$SKILL_MD"
 }
 
-@test "5 specialist-spec-* entries in registry.yaml components" {
+@test "6 specialist-spec-* entries in registry.yaml components (change 001-spec-purify: temporal 追加)" {
   python3 -c "
 import yaml
 data = yaml.safe_load(open('$REGISTRY'))
 names = [c['name'] for c in data.get('components', [])]
 spec_specialists = [n for n in names if n.startswith('specialist-spec-')]
-assert len(spec_specialists) == 5, f'expected 5, got {spec_specialists}'
+assert len(spec_specialists) == 6, f'expected 6, got {spec_specialists}'
 "
 }
 
@@ -61,8 +62,8 @@ for c in data.get('components', []):
   grep -qE '^## R-13:' "$RULES_MD"
 }
 
-@test "3 review agents (vocabulary/structure/ssot) all have model=opus (R-13)" {
-  for axis in vocabulary structure ssot; do
+@test "4 review agents (vocabulary/structure/ssot/temporal) all have model=opus (R-13)" {
+  for axis in vocabulary structure ssot temporal; do
     AGENT="$AGENTS_DIR/specialist-spec-review-$axis.md"
     FRONTMATTER="$(extract_frontmatter "$AGENT")"
     echo "$FRONTMATTER" | grep -qE '^model:\s*opus'

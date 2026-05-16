@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
-# registry-yaml-specialists.bats - registry.yaml の 5 specialist-spec-* entry 検証 (10 test cases、C7、R-11 enforcement)
+# registry-yaml-specialists.bats - registry.yaml の 6 specialist-spec-* entry 検証 (change 001-spec-purify C10、R-11 enforcement、temporal 追加で 5→6)
 
 load '../helpers/common'
 
@@ -65,23 +65,32 @@ assert 'specialist-spec-review-ssot' in names, names
 "
 }
 
-@test "registry.yaml 5 specialist-spec-* entries exist" {
+@test "registry.yaml components has specialist-spec-review-temporal (change 001-spec-purify)" {
+  python3 -c "
+import yaml
+data = yaml.safe_load(open('$REGISTRY'))
+names = [c['name'] for c in data.get('components', [])]
+assert 'specialist-spec-review-temporal' in names, names
+"
+}
+
+@test "registry.yaml 6 specialist-spec-* entries exist (change 001-spec-purify: temporal 追加で 5→6)" {
   python3 -c "
 import yaml
 data = yaml.safe_load(open('$REGISTRY'))
 names = [c['name'] for c in data.get('components', [])]
 spec_specialists = [n for n in names if n.startswith('specialist-spec-')]
-assert len(spec_specialists) == 5, f'expected 5, got {len(spec_specialists)}: {spec_specialists}'
+assert len(spec_specialists) == 6, f'expected 6, got {len(spec_specialists)}: {spec_specialists}'
 "
 }
 
-@test "registry.yaml glossary.specialist.examples contains specialist-spec-* entries" {
+@test "registry.yaml glossary.specialist.examples contains 6 specialist-spec-* entries" {
   python3 -c "
 import yaml
 data = yaml.safe_load(open('$REGISTRY'))
 examples = data.get('glossary', {}).get('specialist', {}).get('examples', [])
 spec_examples = [e for e in examples if 'specialist-spec' in e]
-assert len(spec_examples) >= 5, f'expected >= 5 specialist-spec-* examples, got {len(spec_examples)}: {spec_examples}'
+assert len(spec_examples) >= 6, f'expected >= 6 specialist-spec-* examples, got {len(spec_examples)}: {spec_examples}'
 "
 }
 

@@ -55,8 +55,50 @@ teardown() {
   grep -A 30 '^## R-13:' "$RULES_MD" | grep -qE 'sonnet.*downgrade|downgrade.*sonnet|sonnet.*禁止'
 }
 
-@test "All R-1 through R-13 headings present" {
-  for i in 1 2 3 4 5 6 7 8 9 10 11 12 13; do
+@test "spec-management-rules.md has R-14 heading (change 001-spec-purify)" {
+  grep -qE '^## R-14:' "$RULES_MD"
+}
+
+@test "spec-management-rules.md has R-15 heading" {
+  grep -qE '^## R-15:' "$RULES_MD"
+}
+
+@test "spec-management-rules.md has R-16 heading" {
+  grep -qE '^## R-16:' "$RULES_MD"
+}
+
+@test "spec-management-rules.md has R-17 heading" {
+  grep -qE '^## R-17:' "$RULES_MD"
+}
+
+@test "spec-management-rules.md has R-18 heading" {
+  grep -qE '^## R-18:' "$RULES_MD"
+}
+
+@test "spec-management-rules.md has R-19 heading" {
+  grep -qE '^## R-19:' "$RULES_MD"
+}
+
+@test "spec-management-rules.md has R-20 heading" {
+  grep -qE '^## R-20:' "$RULES_MD"
+}
+
+@test "R-14 mentions 現在形 declarative" {
+  grep -A 10 '^## R-14:' "$RULES_MD" | grep -qE '現在形.*declarative|declarative'
+}
+
+@test "R-17 mentions proposal design tasks 3 文書" {
+  grep -A 50 '^## R-17:' "$RULES_MD" | grep -q 'proposal'
+  grep -A 50 '^## R-17:' "$RULES_MD" | grep -q 'design'
+  grep -A 50 '^## R-17:' "$RULES_MD" | grep -q 'tasks'
+}
+
+@test "R-18 mentions ReSpec markup" {
+  grep -A 10 '^## R-18:' "$RULES_MD" | grep -qE 'ReSpec'
+}
+
+@test "All R-1 through R-20 headings present" {
+  for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
     grep -qE "^## R-$i:" "$RULES_MD"
   done
 }

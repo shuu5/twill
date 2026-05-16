@@ -30,10 +30,15 @@ teardown() {
   grep -qE 'specialist-spec-review-ssot' "$SCHEMA_MD"
 }
 
-@test "schema category enum includes spec-vocabulary/spec-structure/spec-ssot" {
+@test "schema category enum includes spec-vocabulary/spec-structure/spec-ssot/spec-temporal" {
   grep -qE 'spec-vocabulary' "$SCHEMA_MD"
   grep -qE 'spec-structure' "$SCHEMA_MD"
   grep -qE 'spec-ssot' "$SCHEMA_MD"
+  grep -qE 'spec-temporal' "$SCHEMA_MD"
+}
+
+@test "schema lists specialist-spec-review-temporal as opus example (change 001-spec-purify)" {
+  grep -qE 'specialist-spec-review-temporal' "$SCHEMA_MD"
 }
 
 @test "schema mentions confidence >= 80 merge-gate filter" {
