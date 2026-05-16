@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>registry.yaml schema — (2026-05-13) 新規 SSoT 基盤</title>
+<title>registry.yaml schema — SSoT 基盤</title>
 <link rel="stylesheet" href="common.css">
 <style>
   header.doc-header { border-bottom: 3px solid var(--focus); }
@@ -16,11 +16,11 @@
 
 <header class="doc-header">
   <h1>registry.yaml schema — twill plugin 統合 Authority SSoT</h1>
-  <div class="meta">draft-v1 (2026-05-13、(2026-05-13) 新規) &middot; 10 role × concern matrix + vocabulary 6 field schema + Authority/Reference/Derived 階層図 &middot; 他 spec file の参照基盤</div>
+  <div class="meta">status: <span class="badge done">done</span> &middot; 10 role × concern matrix + vocabulary 6 field schema + Authority/Reference/Derived 階層図 &middot; 他 spec file の参照基盤</div>
 </header>
 
 <div class="info">
-  <strong>本 file は他 spec file の参照基盤として機能する。</strong> (2026-05-13) (Round 1-10、<a href="../archive/research/dig-report-ssot-2026-05-13.html">dig-report-ssot-2026-05-13.html</a>) で確定した「registry.yaml 統合 SSoT」「10 role 体系」「vocabulary 6 field schema」「Authority / Reference / Derived 階層」を一元化。spec edit 時は本 file の各節を参照することで「1 entity = 1 name」ルールが担保される。
+  <strong>本 file は他 spec file の参照基盤として機能する。</strong> 「registry.yaml 統合 SSoT」「10 role 体系」「vocabulary 6 field schema」「Authority / Reference / Derived 階層」を一元化する (詳細根拠: <a href="../archive/research/dig-report-ssot-2026-05-13.html">dig-report-ssot-2026-05-13.html</a>)。spec edit 時は本 file の各節を参照することで「1 entity = 1 name」ルールが担保される。
 </div>
 
 <h2 id="s1">§1. 本ファイルの役割と参照基盤 contract</h2>
@@ -45,7 +45,7 @@
 
 <h2 id="s1-5">§1.5. 全 SSoT 完全 enumeration</h2>
 
-<div class="info">本節は <a href="#s5">§5 階層図</a> の Authority/Reference/Derived 3 段階分類を <strong>1 table で systematic 列挙</strong>。各 SSoT の場所 / 状態 / 依存関係 / 言及 file 数を一元化することで、SSoT 間の重複・矛盾 audit を容易にする。Phase 5 検証時点 (2026-05-13) の snapshot。</div>
+<div class="info">本節は <a href="#s5">§5 階層図</a> の Authority/Reference/Derived 3 段階分類を <strong>1 table で systematic 列挙</strong>する。各 SSoT の場所 / 状態 / 依存関係 / 言及 file 数を一元化することで、SSoT 間の重複・矛盾 audit を容易にする。</div>
 
 <h3>1.5.1 Authority SSoT (原典、人または合意が author)</h3>
 
@@ -58,7 +58,7 @@
       <td><code>registry.yaml</code></td>
       <td><code>plugins/twl/registry.yaml</code></td>
       <td>vocabulary + components + chains + hooks/monitors + integrity_rules + token_thresholds の 6 section 統合</td>
-      <td><span class="vs inferred">未作成 (過去 dig で schema 確定、Phase 1 PoC で実体作成)</span></td>
+      <td><span class="vs inferred">PoC で実体作成 (schema 確定済)</span></td>
       <td>13 / 27</td>
       <td>types.py fallback、README/CLAUDE.md listing が Derived として参照</td>
     </tr>
@@ -98,16 +98,16 @@
       <td><strong>ADR-045</strong></td>
       <td>同上</td>
       <td>命名 policy + vocabulary 6 field schema + 10 role 体系の formal ADR 化</td>
-      <td><span class="vs verified">Accepted (2026-05-14、Step 2 完遂で前提充足)</span></td>
+      <td><span class="vs verified">Accepted</span></td>
       <td>5 / 27</td>
       <td>registry-schema.html §4 §8 の formal 化</td>
     </tr>
   </tbody>
 </table>
 
-<p style="margin-top: 0.5em; font-size: 0.9em;"><em>※ <strong>Authority SSoT 6 件</strong> (本 §1.5.1 table、Phase B 2026-05-14 確定)。Phase B で 18→15 統合 (Authority 6 + Reference 6 + Derived 3) の一環として以下を本 table から除外:</em></p>
+<p style="margin-top: 0.5em; font-size: 0.9em;"><em>※ <strong>Authority SSoT 6 件</strong> (本 §1.5.1 table)。18→15 統合 (Authority 6 + Reference 6 + Derived 3) の一環として以下を本 table から除外する:</em></p>
 <ul style="margin-top: 0.5em; font-size: 0.9em;">
-  <li><strong>ADR-044 (Withdrawn 2026-05-14)</strong>: 案 3 step.sh framework は不採用化、SSoT カウント外 (history は ADR-044 file + adr-fate-table.html 新 table で保存)</li>
+  <li><strong>ADR-044 (Withdrawn)</strong>: 案 3 step.sh framework は不採用化、SSoT カウント外 (history は ADR-044 file + adr-fate-table.html 新 table で保存)</li>
   <li><strong><code>registry.yaml §6 token_thresholds</code></strong>: 独立 SSoT から registry.yaml 内部 subsection 扱いに変更、§1.5.5 で可視化保持</li>
   <li><strong>各実 file (SKILL.md / agents/specialist-*.md)</strong>: Implementation 扱いとして SSoT hierarchy から除外。registry.yaml components が「Authority of file location + frontmatter shape」、実 file は実装、EXP-034 で機械検証</li>
 </ul>
@@ -123,7 +123,7 @@
       <td><code>experiment-index.html</code></td>
       <td>architecture/spec/</td>
       <td>EXP-001〜038 結果集約 + status badge + 関連 spec link</td>
-      <td><span class="vs verified">(2026-05-13) 反映完了 (EXP-032〜038 追加)</span></td>
+      <td><span class="vs verified">反映完了 (EXP-032〜038 含む)</span></td>
     </tr>
     <tr>
       <td><code>ref-pitfalls-catalog.md</code></td>
@@ -230,7 +230,7 @@
 
 <h3 id="s1-5-5">1.5.5 registry.yaml sub-section listing (Authority SSoT の内部構造可視化)</h3>
 
-<div class="info">registry.yaml 自体が Authority であり、内部 6 section (glossary / components / chains / hooks-monitors / integrity_rules / token_thresholds) は sub-Authority ではなく、Authority の構成部品として扱う。各 sub-section の concern と Phase 1 PoC seed 状況を明示。Phase B 2026-05-14 確定: token_thresholds を §1.5.1 から本 subsection 化、SSoT カウント単一化。</div>
+<div class="info">registry.yaml 自体が Authority であり、内部 6 section (glossary / components / chains / hooks-monitors / integrity_rules / token_thresholds) は sub-Authority ではなく、Authority の構成部品として扱う。各 sub-section の concern と PoC seed 状況を明示する。token_thresholds は §1.5.1 から本 subsection に統合し、SSoT カウントを単一化する。</div>
 
 <table>
   <thead>
@@ -239,15 +239,15 @@
   <tbody>
     <tr>
       <td><code>§1. glossary</code></td>
-      <td>vocabulary table (10 role + 11 non-role + 1 deprecated = 22 entity core seed、ADR-045 §1 由来、Phase F 2026-05-14 で verify-status 追加)</td>
-      <td><span class="vs verified">実装済 (Phase A で 21 entity 確定 + Phase F で verify-status 追加 = 22 entity、co-autopilot deprecated 含む)</span></td>
+      <td>vocabulary table (10 role + 11 non-role + 1 deprecated = 22 entity core seed、ADR-045 §1 由来、verify-status entity 含む)</td>
+      <td><span class="vs verified">実装済 (22 entity、co-autopilot deprecated 含む)</span></td>
       <td>registry.yaml Authority の構成部品、独立 SSoT ではない</td>
     </tr>
     <tr>
       <td><code>§2. components</code></td>
       <td>全 file listing (role/path/concern/depends/next、Phase 1 PoC で core 5 component のみ seed)</td>
       <td><span class="vs deduced">Phase 1 PoC seed に administrator + phaser-{explore,refine,impl,pr} 5 件のみ</span></td>
-      <td>Authority の構成部品、Phase 2 で workflow/atomic/specialist/tool/reference/script/hook/monitor を完全 listing</td>
+      <td>Authority の構成部品。dual-stack stage で workflow/atomic/specialist/tool/reference/script/hook/monitor を完全 listing する</td>
     </tr>
     <tr>
       <td><code>§3. chains</code></td>
@@ -269,9 +269,9 @@
     </tr>
     <tr>
       <td><code>§6. token_thresholds</code></td>
-      <td>token budget warning/critical 閾値 (6 role 分、旧 cli/twl/types.yaml の token_target を統合)</td>
-      <td><span class="vs verified">Phase 1 PoC seed に 6 role subsection 実装済 (administrator/phaser/tool/workflow/atomic/specialist)</span></td>
-      <td>Authority の構成部品。§1.5.1 (Phase 5.5 で追加した独立 SSoT) から本 §1.5.5 sub-section listing に Phase B 2026-05-14 移行 (SSoT カウント単一化)。types.py <code>_FALLBACK_TOKEN_THRESHOLDS</code> が Derived として参照</td>
+      <td>token budget warning/critical 閾値 (6 role 分、<code>cli/twl/types.yaml</code> の <code>token_target</code> を統合)</td>
+      <td><span class="vs verified">PoC seed に 6 role subsection 実装済 (administrator/phaser/tool/workflow/atomic/specialist)</span></td>
+      <td>Authority の構成部品。§1.5.1 (独立 SSoT) から本 §1.5.5 sub-section listing に統合し、SSoT カウントを単一化する。<code>types.py</code> の <code>_FALLBACK_TOKEN_THRESHOLDS</code> が Derived として参照する</td>
     </tr>
   </tbody>
 </table>
@@ -280,7 +280,7 @@
 
 <h2 id="s2">§2. registry.yaml 全体 schema と 6 section</h2>
 
-<div class="info">本節は <a href="ssot-design.html">ssot-design.html §4</a> の中核仕様。<code>plugins/twl/registry.yaml</code> 1 file が 6 section を保有する (Phase B 2026-05-14 確定: token_thresholds を §6 として正式 listing)。</div>
+<div class="info">本節は <a href="ssot-design.html">ssot-design.html §4</a> の中核仕様。<code>plugins/twl/registry.yaml</code> 1 file が 6 section を保有する (token_thresholds は §6 として正式 listing)。</div>
 
 <pre><code># plugins/twl/registry.yaml
 # twill plugin の Authority SSoT (旧 deps.yaml v3.0 + types.yaml + chain.py CHAIN_STEPS を統合)
@@ -558,7 +558,7 @@ token_thresholds:
   </tbody>
 </table>
 
-<h3>core 22 entity seed (Phase 1 PoC で registry.yaml に書き込む初期値: 10 role + 11 non-role + 1 deprecated、Phase F 2026-05-14 で verify-status 追加)</h3>
+<h3>core 22 entity seed (registry.yaml 初期 seed: 10 role + 11 non-role + 1 deprecated)</h3>
 
 <pre><code># plugins/twl/registry.yaml の glossary section
 glossary:
@@ -748,7 +748,7 @@ glossary:
 
 <h3 id="s4-5">4.5 concern canonical list (no_duplicate_concern 検証 source)</h3>
 
-<div class="info">registry.yaml components の各 entry が宣言する <code>concern</code> field の canonical list を本節で定義。integrity rule <code>no_duplicate_concern</code> (severity: critical) は本 list に対し component 間の重複を critical 検出する。Phase B 2026-05-14 確定 (MINOR 1 解消)。</div>
+<div class="info">registry.yaml components の各 entry が宣言する <code>concern</code> field の canonical list を本節で定義する。integrity rule <code>no_duplicate_concern</code> (severity: critical) は本 list に対し component 間の重複を critical 検出する。</div>
 
 <table>
   <thead>
@@ -866,12 +866,12 @@ glossary:
   </thead>
   <tbody>
     <tr><td>11</td><td><code>vocabulary_check</code></td><td><code>vocabulary_forbidden_use</code></td><td>warning</td><td>—</td><td>forbidden 語の word boundary 検出 (skills/+agents/+refs/、<code>--scan-spec</code> 時は spec/+ADR/ も)</td></tr>
-    <tr><td>11</td><td><code>vocabulary_check</code></td><td><code>official_name_collision</code></td><td>warning</td><td><span class="vs deduced">stub</span></td><td>公式名 (Agent/Skill/Tool) を backtick なしで twl entity として使用 (Phase 2 で実装)</td></tr>
+    <tr><td>11</td><td><code>vocabulary_check</code></td><td><code>official_name_collision</code></td><td>warning</td><td><span class="vs deduced">stub</span></td><td>公式名 (Agent/Skill/Tool) を backtick なしで twl entity として使用</td></tr>
     <tr><td>12</td><td><code>registry_integrity</code></td><td><code>no_duplicate_concern</code></td><td>critical</td><td>—</td><td>同じ concern を複数 role で保有してはならない</td></tr>
     <tr><td>12</td><td><code>registry_integrity</code></td><td><code>prefix_role_match</code></td><td>critical</td><td>—</td><td>file prefix と role が一致 (phaser-* file は role phaser)</td></tr>
-    <tr><td>12</td><td><code>registry_integrity</code></td><td><code>ssot_authority_unique</code></td><td>warning</td><td><span class="vs deduced">stub</span></td><td>Authority SSoT は concern ごとに 1 つのみ (Phase 2 で Authority field 追加と組み合わせて実装)</td></tr>
-    <tr><td>12</td><td><code>registry_integrity</code></td><td><code>derived_drift_check</code></td><td>warning</td><td><span class="vs deduced">stub</span></td><td>types.py fallback の drift 検出 (Phase 2 で実装)</td></tr>
-    <tr><td>12</td><td><code>registry_integrity</code></td><td><code>description_required_consistency</code></td><td>warning</td><td><span class="vs deduced">stub</span></td><td>description_required 真偽値と実 frontmatter の整合 (Phase 2 で実装)</td></tr>
+    <tr><td>12</td><td><code>registry_integrity</code></td><td><code>ssot_authority_unique</code></td><td>warning</td><td><span class="vs deduced">stub</span></td><td>Authority SSoT は concern ごとに 1 つのみ (Authority field 追加と組み合わせて実装)</td></tr>
+    <tr><td>12</td><td><code>registry_integrity</code></td><td><code>derived_drift_check</code></td><td>warning</td><td><span class="vs deduced">stub</span></td><td>types.py fallback の drift 検出</td></tr>
+    <tr><td>12</td><td><code>registry_integrity</code></td><td><code>description_required_consistency</code></td><td>warning</td><td><span class="vs deduced">stub</span></td><td>description_required 真偽値と実 frontmatter の整合</td></tr>
     <tr><td>既存 1-10</td><td>各 section name</td><td>—</td><td>—</td><td>—</td><td>controller_size / chain_integrity / cross_layer_consistency 等の既存 audit</td></tr>
   </tbody>
 </table>
@@ -925,14 +925,14 @@ glossary:
   </thead>
   <tbody>
     <tr><td>canonical name</td><td>英語 hyphen-kebab、lowercase letters + numbers + hyphens のみ、<code>_</code> 不可</td><td>公式 skill name 制約 <span class="vs verified">verified</span> (skills docs verbatim「Lowercase letters, numbers, and hyphens only」)</td></tr>
-    <tr><td>description / 説明文</td><td>日本語可、ただし entity 参照時は backtick + 英語 canonical</td><td>(2026-05-13) Round 7 合意</td></tr>
+    <tr><td>description / 説明文</td><td>日本語可、ただし entity 参照時は backtick + 英語 canonical</td><td>ADR-045 §3</td></tr>
     <tr><td>既存日本語表記 (「不変条件」「遷移」)</td><td>spec 説明文として OK、registry.yaml canonical は英語 (<code>invariant</code> / <code>status-transition</code>)</td><td>同上</td></tr>
   </tbody>
 </table>
 
 <h3>8.3 role 1 語化</h3>
 
-<p>false positive audit リスクを下げるため、複合 role 名 (<code>pilot-phase</code> 試案) ではなく <strong>1 語 role 体系</strong> で uniform: <code>phaser</code> / <code>administrator</code> / <code>tool</code> / <code>workflow</code> / <code>atomic</code> / <code>specialist</code> / <code>reference</code> / <code>script</code> / <code>hook</code> / <code>monitor</code>。(2026-05-13) Round 9 確定。</p>
+<p>false positive audit リスクを下げるため、複合 role 名 (<code>pilot-phase</code> 試案) ではなく <strong>1 語 role 体系</strong> で uniform: <code>phaser</code> / <code>administrator</code> / <code>tool</code> / <code>workflow</code> / <code>atomic</code> / <code>specialist</code> / <code>reference</code> / <code>script</code> / <code>hook</code> / <code>monitor</code>。詳細根拠は ADR-045 §3 参照。</p>
 
 <h3>8.4 隠れ重複 SSoT の系統的解消</h3>
 
@@ -953,7 +953,7 @@ glossary:
 
 <h3 id="s8-5">8.5 registry.yaml 内部 meta entity の命名 (name field vs canonical)</h3>
 
-<div class="info">registry.yaml §3 chains / §4 hooks-monitors の <code>name</code> field は metadata key であり、glossary entry (vocabulary table 登録 entity) ではない。vocabulary audit (Section 11) は本 metadata key に対して forbidden 検出を実行しない。Phase B 2026-05-14 確定。</div>
+<div class="info">registry.yaml §3 chains / §4 hooks-monitors の <code>name</code> field は metadata key であり、glossary entry (vocabulary table 登録 entity) ではない。vocabulary audit (Section 11) は本 metadata key に対して forbidden 検出を実行しない。</div>
 
 <table>
   <thead>
@@ -969,14 +969,14 @@ glossary:
   </tbody>
 </table>
 
-<p style="margin-top: 0.5em; font-size: 0.9em;"><em>※ <strong>結論</strong>: chains / hooks / monitors の name field は metadata key、vocabulary audit の対象外。canonical entity = 10 role + 11 non-role + 1 deprecated = 22 entity (registry.yaml §1 glossary、ADR-045 §3 由来、Phase F 2026-05-14 で verify-status 追加)。本節は MINOR 2 (chains-monitors meta entity 処理の明文化) として Phase B で追加。</em></p>
+<p style="margin-top: 0.5em; font-size: 0.9em;"><em>※ <strong>結論</strong>: chains / hooks / monitors の name field は metadata key、vocabulary audit の対象外。canonical entity = 10 role + 11 non-role + 1 deprecated = 22 entity (registry.yaml §1 glossary、ADR-045 §3 由来、verify-status entity 含む)。</em></p>
 
 <h2 id="s9">§9. 変更管理と将来計画</h2>
 
 <h3>9.1 vocabulary table 拡張 schedule</h3>
 
 <ul>
-  <li><strong><code>Phase 1 PoC</code> seed</strong>: core 22 entity = 10 role + 11 non-role (status / status-transition / mailbox / inbox / mail / event / migration-stage / sandbox / EXP / lesson + <strong>verify-status</strong> [Phase F 2026-05-14 追加]) + 1 deprecated entity (co-autopilot、Phase 3 cutover で削除予定)</li>
+  <li><strong><code>Phase 1 PoC</code> seed</strong>: core 22 entity = 10 role + 11 non-role (status / status-transition / mailbox / inbox / mail / event / migration-stage / sandbox / EXP / lesson + <strong>verify-status</strong>) + 1 deprecated entity (co-autopilot、Phase 3 cutover で削除予定)</li>
   <li><strong><code>Phase 2 dual-stack</code></strong>: 隠れ重複追加 entity (orchestrator/controller/supervisor 等の「旧 type」明示、Strangler Fig migration-stage 詳細)</li>
   <li><strong><code>Phase 3 cutover</code></strong>: 全 spec entity (50+ 件) の vocabulary 登録</li>
 </ul>
@@ -1004,11 +1004,11 @@ glossary:
 
 <h3 id="s9-5">9.5 命名 policy ADR (ADR-045) — Accepted (2026-05-14)</h3>
 
-<p>本 file の Round 7-10 結果を formal ADR 化。(2026-05-13) での「1 entity = 1 name + vocabulary 6 field schema + 10 role 体系 + 公式名衝突回避」を ADR-045 として正式化、Step 2 完遂 (registry.yaml glossary 22 entity [Phase F で verify-status 追加] + ref-invariants.md A-X 24 件 + Step 3 audit Section 11/12) で前提充足し Accepted 化。</p>
+<p>本 file (registry-schema) の vocabulary policy を formal ADR 化したのが ADR-045。「1 entity = 1 name + vocabulary 6 field schema + 10 role 体系 + 公式名衝突回避」を ADR として正式化し、Step 2 (registry.yaml glossary 22 entity + ref-invariants.md A-X 24 件 + Step 3 audit Section 11/12) の前提充足を条件に Accepted 化する。</p>
 
 <h2 id="s10">§10. verify status defining criteria (4-state lattice)</h2>
 
-<div class="meta">Phase F 2026-05-14 確定 (Phase A-E audit で「AI 自己申告 false positive」を構造的に潰す目的) &middot; spec 内 <code>&lt;span class="vs ..."&gt;</code> 4 値 (<code>inferred</code> / <code>deduced</code> / <code>verified</code> / <code>experiment-verified</code>) の defining criteria を本節で SSoT 化</div>
+<div class="meta">「AI 自己申告 false positive」を構造的に潰す目的で、spec 内 <code>&lt;span class="vs ..."&gt;</code> 4 値 (<code>inferred</code> / <code>deduced</code> / <code>verified</code> / <code>experiment-verified</code>) の defining criteria を本節で SSoT 化する</div>
 
 <h3>10.1 4 status の defining criteria</h3>
 
@@ -1056,9 +1056,9 @@ glossary:
   <li><strong>跳躍禁止 (default)</strong>: <code>deduced → experiment-verified</code> のような中間 skip は default 禁止。必ず verified を経由する (公式明記なしで実機検証だけは矛盾)</li>
 </ul>
 
-<h4 id="s10-2-multi-stage">10.2.1 multi-stage upgrade pattern (Phase G 2026-05-14 追記)</h4>
+<h4 id="s10-2-multi-stage">10.2.1 multi-stage upgrade pattern</h4>
 
-<p><strong>Phase F-4 実装で発生した 5 件跳躍 case</strong> (EXP-019/020/021/022/023 の <code>inferred → experiment-verified</code>、delta=3) を踏まえ、以下の <strong>multi-stage upgrade pattern</strong> を user 判断下で例外的に許容する:</p>
+<p>実装で発生し得る複数段昇格 case (例: EXP-019/020/021/022/023 の <code>inferred → experiment-verified</code>、delta=3) を踏まえ、以下の <strong>multi-stage upgrade pattern</strong> を user 判断下で例外的に許容する:</p>
 
 <ol>
   <li><strong>1 commit で 2-3 段上げる multi-stage upgrade</strong>: 各段階の evidence (verified の verify_source URL reachable + experiment-verified の smoke pass=true + log_hash + verify_checks 全 pass) が<strong>同 commit 内で完成する</strong>場合に限り、commit message + experiment-index.html status 注釈で<strong>各段階の evidence を明示</strong>することで、跳躍 commit を許容する</li>
@@ -1069,7 +1069,7 @@ glossary:
 
 <p><strong>commit message annotation 例</strong>: <code>"EXP-019: multi-stage upgrade (inferred → verified → experiment-verified, 1 commit): verify_source reachable + smoke pass=true + log_hash + verify_checks 全 pass で 2 段階同時 evidence"</code></p>
 
-<h3>10.3 status と必要 audit infrastructure (Phase F-3)</h3>
+<h3>10.3 status と必要 audit infrastructure</h3>
 
 <ul>
   <li><strong>verified の audit</strong>: <code>experiments/verify-source-check.py</code> で manifest.json の <code>verify_source</code> URL を <code>HTTP HEAD 200 OK + domain whitelist</code> で検証。架空 URL を構造的に排除</li>
@@ -1077,11 +1077,11 @@ glossary:
   <li><strong>status transition log</strong>: <code>experiments/audit-status-log.py</code> (Phase G) で experiment-index.html の status edit を git diff として記録、 result JSON pass=true と乖離した手動 upgrade を検出</li>
 </ul>
 
-<h3>10.4 schema 静的 check / mock 単体は verified 止まり (Phase F-2 確定)</h3>
+<h3>10.4 schema 静的 check / mock 単体は verified 止まり</h3>
 
 <p>bats unit test で <strong>JSON schema fixture 検証</strong> / <strong>script ローカル動作確認</strong> を行っても、実機 hook fire / Claude runtime 統合まで検証していなければ <strong>experiment-verified ではない</strong>。schema check は「公式 docs の claim を fixture で再表現できた」レベル (= verified の root evidence と同等) であり、empirical evidence (実機動作確認 + log) が揃って初めて experiment-verified に昇格する。</p>
 
-<p>Phase A-E (2026-05-14 完了) で 17 件 bats unit を実装した結果、audit で以下の re-classify が実施された:</p>
+<p>17 件 bats unit 実装 audit の結果として、以下の re-classify rule を適用する:</p>
 
 <ul>
   <li><strong>experiment-verified 5 件</strong>: EXP-014 (bash nameref) / EXP-016/017 (tmux 実機動作) / EXP-018 (fastmcp empirical) / EXP-038 (vocabulary regex empirical)</li>
@@ -1100,7 +1100,7 @@ glossary:
 <h2>§11. 関連 spec / EXP</h2>
 
 <ul>
-  <li><a href="../archive/research/dig-report-ssot-2026-05-13.html">dig-report-ssot-2026-05-13.html</a> ((2026-05-13) 独立 artifact、10 round + 33+ question + 921 行、本 file の origin)</li>
+  <li><a href="../archive/research/dig-report-ssot-2026-05-13.html">dig-report-ssot-2026-05-13.html</a> (独立 dig artifact、10 round + 33+ question + 921 行、本 file の origin)</li>
   <li><a href="glossary.html">glossary.html</a> (本 file §4 を 6 field schema として実装する用語集)</li>
   <li><a href="ssot-design.html">ssot-design.html</a> (案 4 registry.yaml 統合 SSoT 設計、本 file §2 と §5 を core 仕様化)</li>
   <li><a href="tool-architecture.html">tool-architecture.html</a> (tool-* 3 件 + 10 role 適用、本 file §3 を参照)</li>
@@ -1110,7 +1110,7 @@ glossary:
   <li><a href="../research/experiment-index.html">experiment-index.html</a> (EXP-032〜038、本 file §6 と §2 を実機検証)</li>
   <li><a href="../migration/rebuild-plan.html">rebuild-plan.html</a> (Strangler Fig 4 phase migration、本 file §9.1 vocabulary 拡張 schedule と整合)</li>
   <li>architecture/decisions/ 配下 ADR 群 (命名 policy + registry.yaml 統合 SSoT)</li>
-  <li>plugins/twl/architecture/decisions/ADR-045-naming-policy.md (Accepted 2026-05-14、本 file の formal ADR 化)</li>
+  <li>plugins/twl/architecture/decisions/ADR-045-naming-policy.md (Accepted、本 file の formal ADR 化)</li>
 </ul>
 
 </body>
