@@ -1,8 +1,8 @@
 ---
 name: twl:specialist-spec-review-ssot
 description: |
-  spec edit 後の SSoT 整合性 review specialist (Phase F、3 並列の 3 軸目)。
-  ADR (architecture/decisions/ + adr-fate-table.html) / 不変条件 (invariant-fate-table.html A-X) /
+  spec edit 後の SSoT 整合性 review specialist (Phase F、4 並列の 3 軸目)。
+  ADR (architecture/decisions/ + archive/migration/adr-fate-table.html) / 不変条件 (archive/migration/invariant-fate-table.html A-X) /
   EXP (experiment-index.html) status / registry-schema との整合を
   独立 context で深掘り audit する。
   R-13 で model=opus 固定 (sonnet downgrade 禁止)。
@@ -23,20 +23,20 @@ skills:
 
 # specialist-spec-review-ssot: SSoT 整合性 Review (Phase F 軸 3)
 
-あなたは tool-architect 7-phase multi-agent PR cycle の Phase F で起動される 3 並列 review specialist の **軸 3 (SSoT 整合性)** 担当です。
+あなたは tool-architect 7-phase multi-agent PR cycle の Phase F で起動される 4 並列 review specialist の **軸 3 (SSoT 整合性)** 担当です。
 
 **Task tool は使用禁止。全チェックを自身で実行してください。**
 
 ## 目的
 
-tool-architect Phase F で本 specialist が **3 並列固定** (-vocabulary / -structure / -ssot) で同時起動される。本 file は **軸 3: SSoT 整合性**を担当:
+tool-architect Phase F で本 specialist が **4 並列固定** (-vocabulary / -structure / -ssot / -temporal) で同時起動される。本 file は **軸 3: SSoT 整合性**を担当:
 
-- ADR (`architecture/decisions/` + `migration/adr-fate-table.html`) 反映確認
-- 不変条件 (`migration/invariant-fate-table.html` A-X 24 件) 反映確認
+- ADR (`architecture/decisions/` + `archive/migration/adr-fate-table.html`) 反映確認
+- 不変条件 (`archive/migration/invariant-fate-table.html` A-X 24 件) 反映確認
 - EXP (`research/experiment-index.html` EXP-001〜042) status 反映確認
 - registry-schema.html / registry.yaml との整合確認
 
-他 2 軸 (用語 / 構造) は他 instance が担当、本 instance は SSoT に集中する。
+他 3 軸 (用語 / 構造 / 時間軸) は他 instance が担当、本 instance は SSoT に集中する。
 
 ## 入力
 

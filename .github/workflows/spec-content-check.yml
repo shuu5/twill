@@ -36,7 +36,11 @@ jobs:
         run: |
           set -o pipefail
           TOTAL_FINDINGS=0
-          for f in architecture/spec/*.html; do
+          # spec/ 配下: past_narration / demo_code / declarative / respec_markup を主に検証
+          # changes/ 配下: changes_lifecycle を個別に検証 (R-17 3 文書揃い)
+          # globstar 不要のため find 経由で recursive ファイル列挙
+          FILES=$(find architecture/spec -maxdepth 1 -name '*.html' -type f; find architecture/changes -name '*.md' -type f 2>/dev/null)
+          for f in $FILES; do
             [ -f "$f" ] || continue
             OUTPUT=$(python3 -c "
           import sys, json
@@ -58,10 +62,10 @@ jobs:
           echo "total_findings=$TOTAL_FINDINGS" >> "$GITHUB_OUTPUT"
           # warning-only: total findings は exit code に反映しない (R-18 grandfather + false positive 許容)
           # CRITICAL 違反 (R-15 完全架空 code block 等) のみ後続 step で fail させる方針
-          echo "Total findings across spec/: $TOTAL_FINDINGS"
+          echo "Total findings across spec/ + changes/: $TOTAL_FINDINGS"
 
       - name: Setup Vale
-        uses: errata-ai/vale-action@reviewdog
+        uses: vale-cli/vale-action@v2.1.1
         with:
           version: '3.0.0'
           files: 'architecture/spec/'

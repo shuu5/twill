@@ -431,7 +431,7 @@ tool-architect 7-phase multi-agent PR cycle (architecture/spec/tool-architecture
 - registry.yaml の `integrity_rules.prefix_role_match` が file prefix と role field の整合性を機械的に audit (CRITICAL)
 - `specialist-spec-*` prefix で「spec edit 専用 specialist」と他 specialist を機械的に区別 (search 効率、命名 ambiguity 解消)
 - agents/ directory への配置は公式 subagent 仕様に準拠 (変更不可)
-- registry.yaml glossary.specialist.examples に `specialist-spec-*` 5 件全列挙
+- registry.yaml glossary.specialist.examples に `specialist-spec-*` 6 件全列挙
 
 ### 違反例
 - `plugins/twl/agents/spec-review.md` (`specialist-` prefix なし) → prefix_role_match 違反
@@ -447,11 +447,12 @@ tool-architect 7-phase multi-agent PR cycle (architecture/spec/tool-architecture
 | `agents/specialist-spec-review-vocabulary.md` | F 軸 1 | 用語整合性 (vocabulary forbidden synonym) | opus |
 | `agents/specialist-spec-review-structure.md` | F 軸 2 | 構造整合性 (cross-ref + R-1/R-2) | opus |
 | `agents/specialist-spec-review-ssot.md` | F 軸 3 | SSoT 整合性 (ADR + 不変条件 + EXP) | opus |
+| `agents/specialist-spec-review-temporal.md` | F 軸 4 | 時間軸整合性 (R-14 過去日付 + R-15 demo code + R-17 changes lifecycle) | opus |
 
 ### 機械検証
 - registry.yaml `integrity_rules.prefix_role_match` (`twl audit --registry`)
-- `tests/bats/structure/registry-yaml-specialists.bats` (5 entry 存在確認)
-- `tests/bats/integration/tool-architect-deployment.bats` (5 agent file 全存在確認 + name と file path 一致)
+- `tests/bats/structure/registry-yaml-specialists.bats` (6 entry 存在確認)
+- `tests/bats/integration/tool-architect-deployment.bats` (6 agent file 全存在確認 + name と file path 一致)
 
 ## R-12: 7-phase Phase C / Phase F は MUST NOT SKIP (2026-05-16 追加)
 
@@ -463,12 +464,12 @@ tool-architecture.html §3.3 7-phase multi-agent PR cycle の Phase C (Clarifyin
 - Phase D は structural change なし時のみ optional (architect 案選択不要なため)
 
 ### 違反例
-- edit request が「1 行の誤字修正」でも Phase F 3 並列 specialist を skip → R-12 違反 (small scope でも用語 forbidden は発生しうる)
+- edit request が「1 行の誤字修正」でも Phase F 4 並列 specialist を skip → R-12 違反 (small scope でも用語 forbidden は発生しうる)
 - Phase C で user が "whatever you think is best" と回答した場合に AskUserQuestion なしで進む → R-12 違反 (推奨案を明示 + approve 取得 MUST)
 
 ### MUST NOT SKIP の実装ルール
 - **Phase C**: AskUserQuestion で曖昧点を listing、user 回答必須 (回答が "whatever you think is best" でも推奨案提示 + approve 取得 MUST)
-- **Phase F**: 3 agent (specialist-spec-review-vocabulary / -structure / -ssot) を並列 spawn、findings 0 件 (全 PASS) でも実行証跡を Phase G Summary に記録
+- **Phase F**: 4 agent (specialist-spec-review-vocabulary / -structure / -ssot / -temporal) を並列 spawn、findings 0 件 (全 PASS) でも実行証跡を Phase G Summary に記録
 
 ### 機械検証
 - SKILL.md 本文記述 (LLM 規律、`tests/bats/skills/tool-architect-7phase.bats` で Phase C/F 記述存在 grep)
@@ -477,7 +478,7 @@ tool-architecture.html §3.3 7-phase multi-agent PR cycle の Phase C (Clarifyin
 
 ## R-13: Phase F specialist は model: opus 固定 (2026-05-16 追加)
 
-specialist-spec-review-vocabulary / -structure / -ssot の 3 agent は `model: opus` を MUST、sonnet / haiku へ downgrade 禁止。
+specialist-spec-review-vocabulary / -structure / -ssot / -temporal の 4 agent は `model: opus` を MUST、sonnet / haiku へ downgrade 禁止。
 
 ### rationale
 - **実績根拠**: 2026-05-15 Q3 refactoring (8 file / 100+ 行) で 3 並列 opus reviewer が CRITICAL 14 件検出。sonnet では深部 drift (語彙境界の微妙な violation / ADR 未反映 / cross-file SSoT ずれ) を見落とすレベルの問題が含まれていた
@@ -487,12 +488,12 @@ specialist-spec-review-vocabulary / -structure / -ssot の 3 agent は `model: o
 
 ### 違反例
 - `specialist-spec-review-vocabulary.md` の frontmatter に `model: sonnet` を記述 → R-13 違反 (cost 削減目的でも不可)
-- Phase F を 1 agent の sonnet で実行して「Quality Review 完了」と宣言 → R-13 違反 (3 並列固定 + opus 固定の両方違反)
+- Phase F を 1 agent の sonnet で実行して「Quality Review 完了」と宣言 → R-13 違反 (4 並列固定 + opus 固定の両方違反)
 
 ### 機械検証
-- agent frontmatter: `model: opus` MUST (`tests/bats/agents/specialist-spec-review-{vocabulary,structure,ssot}.bats` で model=opus grep 検証)
+- agent frontmatter: `model: opus` MUST (`tests/bats/agents/specialist-spec-review-{vocabulary,structure,ssot,temporal}.bats` で model=opus grep 検証)
 - registry.yaml components entry に `model: opus` assertion (Phase 2 以降の `twl audit --registry` で enforce)
-- `tests/bats/integration/tool-architect-deployment.bats` test 7: 3 review agent 全て model=opus 確認
+- `tests/bats/integration/tool-architect-deployment.bats` test 7: 4 review agent 全て model=opus 確認
 
 ### 参照
 - `ref-specialist-output-schema.md` Model 割り当て表 (2026-05-16 update: opus = deep audit specialist 用途を明記)

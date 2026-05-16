@@ -6,34 +6,34 @@
 
 ### Foundation (rule + skill 確立)
 
-- [x] **C1**: changes/001-spec-purify/ change package 作成 (proposal + design + tasks + spec-delta/MODIFIED.md + spec-delta/ADDED.md + changes/README.md) — **本 commit**
-- [ ] **C2**: R-14〜R-17 spec-management-rules.md 追記
-- [ ] **C3**: R-18〜R-20 spec-management-rules.md 追記 + SKILL.md 更新 (Phase F 4 軸目 mention + R-14〜R-20 サマリ table)
-- [ ] **C4**: ADR-0013-spec-clean-architecture 新規 (decisions/)
-- [ ] **C5**: steering/ (product/tech/structure.md) 新設
-- [ ] **C6**: ReSpec markup HTML template 追加 (spec-management-rules.md)
+- [x] **C1**: changes/001-spec-purify/ change package 作成 (proposal + design + tasks + spec-delta/MODIFIED.md + spec-delta/ADDED.md + changes/README.md) — 1fafc33e
+- [x] **C2**: R-14〜R-17 spec-management-rules.md 追記 — 9220d132
+- [x] **C3**: R-18〜R-20 spec-management-rules.md 追記 + SKILL.md 更新 (Phase F 4 軸目 mention + R-14〜R-20 サマリ table) — 79996184
+- [x] **C4**: ADR-0013-spec-clean-architecture 新規 (decisions/) — 75175cda
+- [x] **C5**: steering/ (product/tech/structure.md) 新設 — e46259bd
+- [x] **C6**: ReSpec markup HTML template 追加 (spec-management-rules.md) — ee559df5
 
 ### Specialist + Tool 実装
 
-- [ ] **C7**: 新 specialist `specialist-spec-review-temporal.md` 作成 + registry.yaml update (specialist entry + glossary.specialist.examples) + ref-specialist-output-schema.md (spec-temporal category enum 追加) + ref-specialist-spec-review-constraints.md (4 軸目言及)
-- [ ] **C8**: Vale config (.vale.ini + styles/TwillSpec/{PastTense, DeclarativeOnly, CodeBlock}.yml) + textlint config (.textlintrc)
-- [ ] **C9**: 新 MCP tool `twl_spec_content_check` 実装 (cli/twl/src/twl/mcp_server/tools_spec.py + tools.py 登録) + hook 拡張 (pre-tool-use-spec-write-boundary.sh に時系列パターン soft warn 追加)
-- [ ] **C10**: bats 新規 4 file (tool-architect-temporal.bats + specialist-spec-review-temporal.bats + twl-spec-content-check.bats + changes-dir-structure.bats) + 既存 2 file update (tool-architect-rules.bats + tool-architect-deployment.bats)
+- [x] **C7**: 新 specialist `specialist-spec-review-temporal.md` 作成 + registry.yaml update (specialist entry + glossary.specialist.examples) + ref-specialist-output-schema.md (spec-temporal category enum 追加) + ref-specialist-spec-review-constraints.md (4 軸目言及) — 7f9f9e61
+- [x] **C8**: Vale config (.vale.ini + styles/TwillSpec/{PastTense, DeclarativeOnly, CodeBlock}.yml) + textlint config (.textlintrc) — 758a8967
+- [x] **C9**: 新 MCP tool `twl_spec_content_check` 実装 (cli/twl/src/twl/mcp_server/tools_spec.py + tools.py 登録) + hook 拡張 (pre-tool-use-spec-write-boundary.sh に時系列パターン soft warn 追加) — ce760e13 + fbc6440b
+- [x] **C10**: bats 新規 4 file (tool-architect-temporal.bats + specialist-spec-review-temporal.bats + twl-spec-content-check.bats + changes-dir-structure.bats) + 既存 2 file update (tool-architect-rules.bats + tool-architect-deployment.bats) — a2acc4e5
 
 ### spec/ 18 file refactor
 
-- [ ] **C11**: spec/ refactor group A (orientation 3 file: README + overview + failure-analysis)
-- [ ] **C12**: spec/ refactor group B (core 8 file: boundary-matrix + spawn-protocol + crash-failure-mode + gate-hook + monitor-policy + hooks-mcp-policy + admin-cycle + atomic-verification)
-- [ ] **C13**: spec/ refactor group C (policy/auxiliary 7 file: tool-architecture + twl-mcp-integration + ssot-design + glossary + registry-schema + architecture-graph + changelog 一部)
+- [x] **C11**: spec/ refactor group A (orientation 3 file: README + overview + failure-analysis) — 38ca96cc (overview + failure-analysis) + f4f67825 (README + 新 dir entry)
+- [x] **C12**: spec/ refactor group B (core 8 file: boundary-matrix + spawn-protocol + crash-failure-mode + gate-hook + monitor-policy + hooks-mcp-policy + admin-cycle + atomic-verification) — 2649a90e〜1fd6c3a7 (8 commit)
+- [x] **C13**: spec/ refactor group C (policy/auxiliary 7 file: tool-architecture + twl-mcp-integration + ssot-design + glossary + registry-schema + architecture-graph + changelog 一部) — 106ae64c〜768ae16e (7 commit)
 
 ### Archive + CI
 
-- [ ] **C14**: archive/migration/ 移動 + R-4 inbound link 全更新 (D3 / Z1 適用)
-- [ ] **C15**: L5 CI 新規 (.github/workflows/spec-content-check.yml + spec-respec-build.yml) + spec-link-check.yml paths 拡張
+- [x] **C14**: archive/migration/ 移動 + R-4 inbound link 全更新 (D3 / Z1 適用) — 9bf251b0
+- [x] **C15**: L5 CI 新規 (.github/workflows/spec-content-check.yml + spec-respec-build.yml) + spec-link-check.yml paths 拡張 — 4ea27b26
 
 ## Phase 6: Quality Review
 
-- [ ] **F1〜Fn**: 3 並列 code-reviewer findings 対応 (CRITICAL 1 件以上で本 wave 留め置き、N は finding 件数依存)
+- [x] **F1-F6**: 3 並列 code-reviewer findings 対応 (CRITICAL 3 件 + WARNING 5 件 + INFO 3 件、CRITICAL 全件 fix で本 commit)
 
 ## Phase 7: Summary
 

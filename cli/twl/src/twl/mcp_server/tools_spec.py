@@ -263,14 +263,26 @@ def check_declarative(parser: _SpecHTMLParser, file_path: str) -> list[Finding]:
 
 
 def check_changes_lifecycle(file_path: str) -> list[Finding]:
-    """R-17 changes/ lifecycle 整合確認 (3 文書揃い)。"""
-    findings: list[Finding] = []
-    match = re.search(r"architecture/changes/(\d+-[a-z-]+)/", file_path)
-    if not match:
-        return findings
+    """R-17 changes/ lifecycle 整合確認 (3 文書揃い)。
 
-    package_name = match.group(1)
-    package_dir = Path("architecture/changes") / package_name
+    Note: file_path が相対 path の場合 `Path(...).resolve()` で absolute 化してから
+    package_dir を抽出する。MCP server プロセスの CWD がリポジトリルートでなくても
+    file_path 自身が package を指していれば correct に解決される。
+    """
+    findings: list[Finding] = []
+    # resolve() で absolute 化したうえで architecture/changes/NNN-slug/ prefix を抽出
+    abs_path = str(Path(file_path).resolve())
+    match = re.search(r"^(.+?/architecture/changes/(\d+-[a-z-]+))/", abs_path)
+    if not match:
+        # 相対 path で resolve() しても prefix を持たない場合: file_path の string 表現で再 match
+        match = re.search(r"^(.*?architecture/changes/(\d+-[a-z-]+))/", file_path)
+        if not match:
+            return findings
+        package_dir = Path(match.group(1))
+    else:
+        package_dir = Path(match.group(1))
+
+    package_name = match.group(2)
 
     required = ["proposal.md", "design.md", "tasks.md"]
     for f in required:
