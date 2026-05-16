@@ -41,7 +41,7 @@
     <tr>
       <td><strong>tool-architect</strong></td>
       <td>co-architect rebrand</td>
-      <td>HTML spec 対話的維持 + 自律 verify (2 層) + 軽量 PR cycle</td>
+      <td>HTML spec 対話的維持 + L1-L5 多層防御 (§3.2.2) + 7-phase PR cycle (§3.3)</td>
       <td>無関係 (本 spec 自体も tool-architect で作成可能、recursive PR OK)</td>
     </tr>
     <tr>
@@ -1049,7 +1049,7 @@ spawn_tmux \
 <ul>
   <li><strong>ADR-040 (feature-dev spawn gate)</strong>: user 明示依頼許可ルール。tool-* の起動承認 SSoT として継承。tool-architect / tool-project / tool-sandbox-runner いずれも user 明示 (slash command) が起動条件</li>
   <li><strong>ADR-041 (部分 Superseded)</strong>: spawn-controller.sh 統合は廃止、新 spec では tmux new-window 直接呼び出し (<code>spawn-tmux.sh</code> ~30 行) に簡素化。「user 明示依頼許可」原則は保全</li>
-  <li><strong>ADR-043 (本 spec 正典)</strong>: tool-* 3 件構成を Decision section に明記、過去 dig 結果 (3 tool + 自律 verify + 軽量 PR cycle + sandbox catalog) を反映 (ADR-043 (未起票、Phase 4-5 で再検討))</li>
+  <li><strong>ADR-043 (本 spec 正典)</strong>: tool-* 3 件構成を Decision section に明記、過去 dig 結果 (3 tool + L1-L5 多層防御 + 7-phase PR cycle + sandbox catalog) を反映 (ADR-043 未起票、Phase 4-5 で再検討)</li>
 </ul>
 
 <h2>§11. 関連 spec ファイル + 関連 EXP</h2>

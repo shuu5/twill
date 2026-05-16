@@ -167,7 +167,7 @@
 <p>詳細は <a href="tool-architecture.html">tool-architecture.html</a> §2-§5 + <a href="../archive/research/dig-report-tools-2026-05-13.html">dig-report-tools-2026-05-13.html</a> §1-§3 参照。要約:</p>
 
 <dl class="inv-row" style="display: grid; grid-template-columns: 160px 1fr; gap: 6px 14px; margin: 12px 0;">
-  <dt>3 tool 構成</dt><dd><code>tool-architect</code> (HTML spec 維持 + 軽量 PR cycle) / <code>tool-project</code> (GitHub Project + template + verify の 3 軽 scope) / <code>tool-sandbox-runner</code> (sandbox × feature matrix + Idea Issue 起票)。<code>tool-utility</code> は採用しない (commands は他 3 tool + administrator inline に再分配)</dd>
+  <dt>3 tool 構成</dt><dd><code>tool-architect</code> (HTML spec 維持 + 7-phase PR cycle、L1-L5 多層防御) / <code>tool-project</code> (GitHub Project + template + verify の 3 軽 scope) / <code>tool-sandbox-runner</code> (sandbox × feature matrix + Idea Issue 起票)。<code>tool-utility</code> は採用しない (commands は他 3 tool + administrator inline に再分配)</dd>
   <dt>spawn 元</dt><dd>user 明示 (slash command <code>/twl:tool-architect &lt;args&gt;</code>) または administrator (tool-architect / tool-sandbox-runner のみ、ADR-040 gate 通過後)</dd>
   <dt>spawn 先</dt><dd>spawn 禁止 (内部 <code>Agent(specialist-*)</code> は可、1 階層)</dd>
   <dt>status 遷移</dt><dd>無関係 (MUST NOT 触れる)</dd>

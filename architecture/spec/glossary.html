@@ -87,7 +87,7 @@
     <tr><th>用語</th><th>定義</th></tr>
   </thead>
   <tbody>
-    <tr><td><strong>tool-architect</strong></td><td>feature-dev workflow (architecture spec 作成 + PR)、user/admin 直接 invoke、status 遷移と無関係 (forbidden: co-architect)</td></tr>
+    <tr><td><strong>tool-architect</strong></td><td><code>feature-dev:feature-dev</code> 型 7-phase PR cycle + L1-L5 多層防御 (<a href="tool-architecture.html#s3-2-2">tool-architecture.html §3.2.2</a>) で architecture spec (<code>architecture/spec/</code> 配下) 作成 + PR、R-14〜R-20 規律 + ADR-0013 (<a href="../decisions/ADR-0013-spec-clean-architecture.md">spec clean architecture</a>) に従う唯一の HTML spec author、user/admin 直接 invoke、status 遷移と無関係 (forbidden: co-architect)</td></tr>
     <tr><td><strong>tool-project</strong></td><td>クロスリポジトリ管理 (twill-ecosystem Board、create/migrate/snapshot/plugin-create/prompt-audit)、user 直接 invoke (forbidden: co-project)</td></tr>
     <tr><td><strong>tool-sandbox-runner</strong></td><td>sandbox × feature matrix で twill 自身 + 他 project を一気通貫テスト、log 全層 (administrator/phaser/specialist) 収集 + LLM 分析 + doobidoo 重複 check + Idea Issue 起票 (severity=critical のみ)、user/admin 直接 invoke (forbidden: co-self-improve)</td></tr>
     <tr><td><strong>sandbox catalog</strong></td><td><code>plugins/twl/sandboxes/&lt;name&gt;/{sandbox.yaml, setup.sh, features.yaml}</code> 形式の sandbox 環境定義 directory 群</td></tr>
@@ -101,6 +101,12 @@
     <tr><td><strong>twl_validate_project_setup</strong></td><td>tool-project 用 新規 twl MCP tool。<code>cli/twl/src/twl/validation/project_setup.py</code> (~80 行)</td></tr>
     <tr><td><strong>4-state verification status</strong></td><td>spec 内 claim の信頼度 4 段階: inferred → deduced → verified → experiment-verified</td></tr>
     <tr><td><strong>EXP-id</strong></td><td><code>experiment-index.html#EXP-NNN</code> に飛ぶ hyperlink、EXP-001〜038 listing</td></tr>
+    <tr><td><strong>changes/</strong></td><td><code>architecture/changes/&lt;NNN&gt;-&lt;slug&gt;/</code> 配下の進行中 structural change package (proposal.md + design.md + tasks.md + spec-delta/)。OpenSpec lifecycle 採用 (R-17)、完遂後に <code>archive/changes/YYYY-MM-DD-NNN-slug/</code> へ移動 MUST</td></tr>
+    <tr><td><strong>steering/</strong></td><td><code>architecture/steering/{product,tech,structure}.md</code> の 3 文書、GitHub Spec Kit transposition (<a href="tool-architecture.html#s3-9-2">tool-architecture.html §3.9.2</a>)。spec governance の大局 entry point、新規 contributor の navigation 入口</td></tr>
+    <tr><td><strong>OpenSpec lifecycle</strong></td><td>Anthropic OpenSpec の change lifecycle pattern を transposition (R-17)。<code>changes/NNN-slug/</code> で start → 完遂 → <code>archive/changes/YYYY-MM-DD-NNN-slug/</code> に移動。3 文書 (proposal/design/tasks) 揃い MUST</td></tr>
+    <tr><td><strong>ReSpec semantic markup</strong></td><td>W3C ReSpec の semantic markup pattern を採用 (R-18)。<code>&lt;section class="normative|informative"&gt;</code> / <code>&lt;aside class="example|ednote"&gt;</code> / <code>&lt;pre data-status="proposed|implemented|deprecated"&gt;</code> で規範度 + 例示 + status を構造化</td></tr>
+    <tr><td><strong>L1-L5 多層防御</strong></td><td>tool-architect の spec governance 多層 hook chain (R-19、<a href="tool-architecture.html#s3-2-2">tool-architecture.html §3.2.2</a>)。L1=skill (SKILL.md MUST) / L2=bats / L3=hook + MCP tool / L4=pre-commit (Vale + textlint、defer) / L5=CI workflow</td></tr>
+    <tr><td><strong>twl_spec_content_check</strong></td><td>tool-architect 専用 twl MCP tool (R-20、<a href="tool-architecture.html#s2-7">tool-architecture.html §2.7</a>)。handler 配置 <code>cli/twl/src/twl/mcp_server/tools_spec.py</code>、5 check_types (past_narration / demo_code / declarative / changes_lifecycle / respec_markup) で機械検証</td></tr>
   </tbody>
 </table>
 
