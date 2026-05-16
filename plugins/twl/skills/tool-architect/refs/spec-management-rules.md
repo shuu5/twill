@@ -313,9 +313,9 @@ Q7: ADR (新 architecture decision record) か?
 - [ ] caller marker unset
 - [ ] commit + push
 
-## HTML template
+## HTML template (R-18 ReSpec semantic markup 必須、2026-05-16 update)
 
-新 spec file の standard template (実 spec file 構造に合わせて簡潔化):
+新 spec file の standard template。ReSpec markup を全面採用、新規 section は **必ず** `<section class="normative">` / `<section class="informative">` で囲む。
 
 ```html
 <!DOCTYPE html>
@@ -334,6 +334,7 @@ Q7: ADR (新 architecture decision record) か?
 <header class="doc-header">
   <h1>{file-title}</h1>
   <div class="meta">draft-vN ({YYYY-MM-DD}) &middot; {short-description}</div>
+  <!-- meta 内の draft-vN 日付は R-14 例外 (structural metadata) -->
 </header>
 
 <div class="info">
@@ -342,18 +343,85 @@ Q7: ADR (新 architecture decision record) か?
   <strong>関連</strong>: <a href="{related1}.html">{related1}</a> / <a href="{related2}.html">{related2}</a>
 </div>
 
-<h2 id="s1">セクション 1</h2>
-<p>...</p>
+<!-- ===== Normative section (規範的要件、MUST/SHALL/MUST NOT を含む) ===== -->
+<section class="normative" id="s1">
+  <h2>セクション 1 (規範)</h2>
+  <p>...現在形 declarative 記述 (R-14 準拠)。「MUST/SHALL」等 RFC 2119 keyword を normative 区分で使用。</p>
 
-<h2 id="s2">セクション 2</h2>
-<p>...</p>
+  <!-- Code block (R-15 準拠: schema/table/ABNF/mermaid のみ) -->
+  <pre data-status="verified" data-experiment="experiment-index.html#exp-NNN"><code>
+  {
+    "field": "value",
+    "type": "json-schema"
+  }
+  </code></pre>
+
+  <!-- mermaid diagram (R-15 推奨形式) -->
+  <pre class="mermaid" data-status="deduced"><code>
+  sequenceDiagram
+    actor User
+    User->>Tool: invoke
+    Tool-->>User: response
+  </code></pre>
+</section>
+
+<!-- ===== Informative section (参考情報、命令禁止) ===== -->
+<section class="informative" id="s2">
+  <h2>セクション 2 (参考、informative)</h2>
+  <p>背景説明 / rationale / example。命令 (MUST/SHALL) を含まない。</p>
+
+  <!-- Example code (illustrative、normative 扱いではない) -->
+  <aside class="example">
+    <p><strong>例</strong>: 以下の bash snippet は説明用。実装は <a href="../research/experiment-index.html#exp-NNN">EXP-NNN</a> を参照。</p>
+    <pre data-status="inferred"><code>
+    # 説明用 pseudocode、実コードと一致しない可能性あり
+    export TWL_TOOL_CONTEXT=tool-architect
+    </code></pre>
+  </aside>
+
+  <!-- Editor note (現状の決定保留事項) -->
+  <aside class="ednote">
+    <p><strong>Editor note</strong>: 本 section の 〇〇 は <a href="../decisions/ADR-XXXX-...">ADR-XXXX</a> で議論中。</p>
+  </aside>
+</section>
+
+<!-- ===== Table 例 (HTML table、R-15 許容形式) ===== -->
+<section class="normative" id="s3">
+  <h2>セクション 3 (table)</h2>
+  <table>
+    <thead>
+      <tr><th>field</th><th>type</th><th>required</th><th>desc</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>foo</code></td><td>string</td><td>MUST</td><td>...</td></tr>
+    </tbody>
+  </table>
+</section>
 
 </body>
 </html>
 ```
 
+### ReSpec semantic markup 規約 (R-18 詳細)
+
+| element / attribute | 用途 | 適用範囲 |
+|---|---|---|
+| `<section class="normative">` | 規範的内容 (MUST/SHALL/MUST NOT を含む) | 新規 section MUST |
+| `<section class="informative">` | 参考情報 (例示・背景説明) | 新規 section MUST |
+| `<aside class="example">` | 具体例 (実行可能 code / 設定例) | R-15 実行可能コード囲み MUST |
+| `<aside class="ednote">` | 編集者注 (現状の決定保留 / TODO) | 未確定事項の明示に RECOMMENDED |
+| `<pre data-status="verified">` | 信頼度 label: 実機検証済 | 既存 `<span class="vs verified">` と整合 |
+| `<pre data-status="experiment-verified">` | 信頼度 label: EXP 経由実機検証済 | `data-experiment` 属性 MUST 併用 |
+| `<pre data-status="deduced">` | 信頼度 label: 型/docs から推論 | mermaid / 型定義に適用 |
+| `<pre data-status="inferred">` | 信頼度 label: 推測のみ | 例示 pseudocode に限定 |
+| `<pre data-experiment="experiment-index.html#exp-NNN">` | EXP 参照 (experiment-verified 時) | experiment-verified 時 MUST |
+
+### 既存 section の grandfather (R-18 例外)
+
+既存 18 file の既存 section は遡及適用なし。**新規追加 section のみ MUST**。本 change 001-spec-purify では C11/C12/C13 の refactor で新規 section に markup を付与、既存 section は content quality (R-14/R-15) のみ修正。
+
 ### badge convention
-R-5 の「badge 識別基準」section 参照。
+R-5 の「badge 識別基準」section 参照。badge は ReSpec markup と独立 (twill 独自の status label)。
 
 ## R-11: agent file 配置・命名規約 (Phase 1 PoC、2026-05-16 追加)
 
