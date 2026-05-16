@@ -21,6 +21,59 @@
   <strong>関連</strong>: <a href="README.html">README</a> / <a href="architecture-graph.html">architecture-graph</a>
 </div>
 
+<h2 id="2026-05-16-spec-purify-wide-audit">2026-05-16: architecture/spec/ 全体整合化 wave (change 001-spec-purify 後の Phase A-G、4 commit + Phase F 4 並列 review)</h2>
+
+<h3>核心成果</h3>
+
+<p>ユーザー指示「新しい tool-architect を使って architecture 全体を整理。新規律 (R-14〜R-20 / Phase F 4 並列 / L1-L5 / OpenSpec / steering / ReSpec / MCP tool) に整合する修正を端から順に」を契機に、tool-architect 7-phase PR cycle (Phase A-G、Phase B 3 並列 spec-explorer + Phase F 4 並列 spec-review-* + scope-based fix loop) で architecture/spec/ 全 18 file の整合化を完遂。<strong>4 commit 累積 (f7fd2b46 → 79a81ab7 → 2bc0668e → 543ebd0a)、Phase F findings CRITICAL 7 + WARNING 18 + INFO 2 を全 CRITICAL + WARNING fix</strong>。</p>
+
+<ol>
+  <li><strong>Phase A Discovery (簡易 grep audit)</strong>: 18 file 列挙 + R-14〜R-20 適用状況 grep ベース概観 (R-15 9 file の <code>&lt;pre&gt;&lt;code&gt;</code> 検出、R-17/R-18 言及 3 file のみ、新規律言及 12 file で 0-1 件)。</li>
+  <li><strong>Phase B Spec Exploration (3 並列 spec-explorer)</strong>: role / history / impact 3 focus 分担。**HIGH 15 + MED 14 + LOW 4 = 33 findings** を検出 (旧称 4 file、SVG cluster 旧構造、ReSpec markup 欠落 5 section、架空 script 3 件、旧 changes path 4 件、twl_spec_content_check 未反映、specialist-spec-explorer 旧 path、stale bats refs)。</li>
+  <li><strong>Phase C Clarifying (MUST NOT SKIP、R-12)</strong>: AskUserQuestion 4 問 (fix scope / SVG re-layout / Phase F 戦略 / commit 戦略)。<strong>「HIGH + MED 全件 / SVG 本 wave / Phase F 4 並列 / 3 commit 分割」</strong>採択。</li>
+  <li><strong>Phase D 省略</strong>: SVG re-layout は 1 案で確定、structural change 案比較不要 (architect agent skip)。</li>
+  <li><strong>Phase E Implementation (3 commit 分割)</strong>:
+    <ul>
+      <li><strong>Commit 1 (f7fd2b46、7 file、+16/-9)</strong>: 旧称「軽量 PR cycle」「自律 verify 2 層」一掃 (boundary-matrix / README / tool-architecture / admin-cycle cross-ref) + glossary §5 新規 6 用語 (changes/, steering/, OpenSpec, ReSpec, L1-L5, twl_spec_content_check) + overview §8 ADR-0013 反映 + registry-schema specialist examples 拡張 + overview specialist-spec-* 6 件 listing。</li>
+      <li><strong>Commit 2 (79a81ab7、4 file、+167/-69)</strong>: architecture-graph.html SVG 5→7 cluster 再配置 (viewBox 940→1080、changes/ + steering/ + ADR-0013 node 新規追加、legend 底部 horizontal layout、cat-chg/cat-stg css) + overview.html SVG specialist-spec-review boxes 3→4 軸拡張 + twl-mcp-integration §1.2 に twl_spec_content_check 追加 + tool-architecture §3.2.2/§3.6.1/§3.7.3.4/§3.9/§3.10 の 5 section に ReSpec normative/informative markup 適用。</li>
+      <li><strong>Commit 3 (2bc0668e、7 file、+55/-514)</strong>: monitor-policy / admin-cycle の架空 bash 3 件 (`check_idle_completed` / `record-detection-gap.sh` / Python pseudo) を schema table + `<aside class="ednote" data-status="proposed">` に置換 + ADR-0013 / steering/{product,structure}.md の旧 changes path → archive/changes/2026-05-16-001-spec-purify/ 同期 + specialist-spec-explorer.md L78/L133 旧 architecture/migration/ path → archive/migration/ + stale bats `architecture-documents.test.sh` (実在しない architecture/migration/component-mapping.md / scope-boundary.md 参照、~440 行) 削除。</li>
+    </ul>
+  </li>
+  <li><strong>Phase F Quality Review (4 並列 specialist-spec-review-{vocabulary,structure,ssot,temporal}、opus 固定、R-13)</strong>: 4 並列で diff audit、**CRITICAL 7 + WARNING 18 + INFO 2 findings**:
+    <ul>
+      <li>vocabulary FAIL: CRITICAL 3 (spawn-protocol §6 message heading / README L244, L485 co-architect) + WARNING 8 (tool-architecture rebrand backtick / gate-hook phase / admin-cycle controller + step / crash-failure-mode state / tool-architecture step.sh)</li>
+      <li>structure FAIL: CRITICAL 3 (overview SVG specialist-5 architecture mixin / SVG box x 座標 overlap / spec-management-rules R-10 Q-tree gap) + WARNING 2 (architecture-graph L96 「5 dir」残存 / README L23 「6 top-level」表記揺れ)</li>
+      <li>ssot WARN: WARNING 2 (registry-schema / glossary specialist examples で specialist-exp-reviewer 漏れ)</li>
+      <li>temporal WARN: WARNING 6 (「本 wave」transient marker 6 箇所) + INFO 1 (未来形「実装予定」)</li>
+    </ul>
+  </li>
+  <li><strong>Commit 4 (543ebd0a、11 file、+60/-55、Phase F fix 一括)</strong>: CRITICAL 7 全件 + WARNING 18 全件 fix。spec-management-rules R-10 Q-tree 拡張 (Q8 steering / Q9 changes、Q4 archive/migration/ 統一) + spawn-protocol §6 mail rename + README co-architect backtick + 旧明示 + tool-architecture rebrand backtick + gate-hook phase → status-transition/phaser-* + admin-cycle controller / Step Capital + crash-failure-mode state → status + tool-architecture step.sh backtick + temporal transient marker 6 件 → change ref + date marker。overview SVG layout 再配置 + R-10 拡張は scope-based SLA large の判断で本 commit 統合。INFO 2 件は次 wave defer。</li>
+</ol>
+
+<h3>核心 deliverables</h3>
+
+<ul>
+  <li><strong>architecture-graph.html SVG 7 dir cluster</strong>: spec/ + archive/migration/ + research/ + archive/ + changes/ + steering/ + decisions/ (35+ node、viewBox 1080、6 sub-category color、cross-cluster edge 7 本追加、底部 horizontal legend)</li>
+  <li><strong>tool-architecture.html ReSpec markup 5 section</strong>: §3.2.2 L1-L5 normative / §3.6.1 R-1〜R-20 normative / §3.7.3.4 temporal agent normative / §3.9 業界 BP 採用 normative / §3.10 transposition 根拠 informative</li>
+  <li><strong>twl_spec_content_check MCP tool 反映</strong>: twl-mcp-integration §1.2 spec content 検証系 + §1.3 MUST list tool-* 専用 MCP tool 規律</li>
+  <li><strong>架空 script 3 件除去</strong>: monitor-policy / admin-cycle で schema table + ReSpec aside ednote data-status="proposed" 化</li>
+  <li><strong>R-10 decision tree 拡張</strong>: Q8 steering / Q9 changes 追加、新 dir 配置 logic を機械的に補完</li>
+  <li><strong>cross-file consistency 完全整合</strong>: tool-architecture / spec-management-rules / SKILL.md / registry.yaml / ADR-0013 / steering で「Phase F 4 並列」「6 agent listing」「R-14〜R-20」「category 名」全 SSoT 整合</li>
+  <li><strong>vocabulary 厳密化</strong>: glossary §11 forbidden synonym exception (backtick + 「旧」明示) を 12 箇所で適用、canonical (`phaser` / `status-transition` / `tool-architect` / `mail` / `status` / `Step N`) と forbidden (`controller` / `phase` / `co-architect` / `co-project` / `co-self-improve` / `message` / `state` / `step` lowercase) を境界明確化</li>
+</ul>
+
+<h3>defer items (次 wave 検討)</h3>
+
+<ul>
+  <li>INFO temporal-1: registry-schema.html L774 未来形「実装予定」→ 現在形 declarative</li>
+  <li>INFO vocabulary-1: glossary.html L35 canonical entry self-reference meta 問題</li>
+  <li>MED-i2 (Phase B 検出、本 wave defer): hooks-mcp-policy / monitor-policy への L3 hook chain × MCP tool 連携 section 追加</li>
+  <li>HIGH defer (前 wave 継承): Vale + textlint pre-commit hook 設置 (L4 mechanization、ADR-0013 §References 参照)</li>
+  <li>MED defer: EXP-029 + EXP-039 smoke 実施 (deduced → experiment-verified 昇格)</li>
+</ul>
+
+<hr>
+
 <h2 id="2026-05-16-spec-purify">2026-05-16: spec clean architecture 導入 (change 001-spec-purify、案 F: R-14〜R-20 + OpenSpec + steering + ReSpec + Vale + MCP tool)</h2>
 
 <h3>核心成果</h3>
