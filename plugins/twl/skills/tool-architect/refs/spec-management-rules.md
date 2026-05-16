@@ -430,6 +430,173 @@ specialist-spec-review-vocabulary / -structure / -ssot の 3 agent は `model: o
 - `ref-specialist-output-schema.md` Model 割り当て表 (2026-05-16 update: opus = deep audit specialist 用途を明記)
 - `architecture/spec/tool-architecture.html` §3.7.3 (opus 採用の Q3 実績根拠詳述)
 
+## R-14: spec/ content 現在形 declarative MUST (2026-05-16 追加、change 001-spec-purify)
+
+`architecture/spec/*.html` の散文は現在形 declarative ("〜する" / "〜である" / "MUST" / "MUST NOT") のみで記述。過去 narration ("〜した" / "〜だった" / "確認した" / "(YYYY-MM-DD) に追加した" 等) は禁止。
+
+### rationale
+- **Living document 化** (Martin Fowler / Cyrille Martraire 2019): spec は「現在の設計」を宣言、過去は git history と ADR / changelog に委ねる
+- 過去メモが散在すると現状仕様の判別が困難、読み手 (人間 + AI agent) が「これは現在か過去か」を判定するコストが増大
+- AI agent (tool-architect) が新規編集時、既存の過去メモ混在を model にして drift を増幅する負の feedback loop
+- Agent A audit (Phase 2、2026-05-16) で worst 5 file (registry-schema 74 件 / glossary 56 件 / tool-architecture 55 件 / changelog 35 件 / README 33 件) の過去メモ密集を確認
+
+### 例外
+- `changelog.html` 自身 (history 専用 file、Diátaxis 外コンテンツ)
+- `<div class="meta">` 内の draft date (structural metadata、build-time stamp)
+- `<aside class="ednote">` 内 (editor note は historical 記述 OK、ReSpec 慣行)
+- ADR 内の Status 履歴 (Proposed / Accepted / Superseded の lifecycle 記録、ADR は decision history を扱う)
+
+### 違反例
+- `architecture/spec/registry-schema.html` 内に `(2026-05-13) 新規追加` というメモ → R-14 違反
+- `architecture/spec/tool-architecture.html` 内に `Phase 5 で確定した` という過去確定記述 → R-14 違反
+- `architecture/spec/spawn-protocol.html` 内に `以前は $ARGUMENTS[session] を使用していた` という過去比較 → R-14 違反 (旧記法 backtick + 「旧」明示なし)
+
+### 機械検証
+- L3 PreToolUse hook: `pre-tool-use-spec-write-boundary.sh` に時系列パターン検出 logic 追加 (regex: `\d{4}-\d{2}-\d{2}` / `Phase \d+ で` / `以前は` / `未作成` / `stub` / `TODO`)、deny ではなく `additionalContext` で warning 通知
+- L4 pre-commit: Vale `Twill.PastTense` rule + `Twill.DeclarativeOnly` rule (`existence` rule type で日本語・ISO 両対応 regex pattern)
+- Phase F 4 軸目 (specialist-spec-review-temporal、Step 2: 時系列マーカー検出)
+- 新規 bats: `tests/bats/skills/tool-architect-temporal.bats` (R-14 grep 検証)
+
+### 業界 BP 参照
+- Living Documentation (Cyrille Martraire, 2019, Pearson)
+- ionocom.com "Writing Technical Specifications in Present Tense"
+- Diátaxis Reference (https://diataxis.fr/reference/): "describe, don't instruct"
+
+## R-15: spec/ code block は schema/table/ABNF/mermaid のみ (2026-05-16 追加、change 001-spec-purify)
+
+`architecture/spec/*.html` の `<pre>` / `<code>` block には以下のみ許容:
+
+- JSON Schema (`{`, `"$schema": "..."` 等)
+- ABNF (RFC 5234) 文法定義
+- mermaid 図 (sequence / state machine / flowchart)
+- HTML table (inline、spec 内表現)
+- 型定義 (TypeScript / Python type hint 等の宣言型)
+
+**禁止**:
+- bash/python/js 実行可能コード (shebang `#!/`、prompt `$ `、`npm install`、`pip install`、`apt-get` 等)
+- インストール手順、設定具体例
+- pseudocode (実装詳細の illustrative)
+
+**許容例外**:
+- `<aside class="example">` で囲まれた illustrative code (ReSpec informative 区分)
+- `<pre data-status="experiment-verified" data-experiment="experiment-index.html#exp-NNN">` 属性付きの verified code block (EXP 経由で実機検証済み)
+
+### rationale
+- **デモコード drift**: spec/ 内の実行可能コードは実装と乖離しやすい。Agent A audit (2026-05-16) で 57 件中 19 件が **架空コード** (実コード照合不能、phase-gate.sh / twl_phase_gate_check / administrator/SKILL.md 等の不在 file を参照)
+- **論理表現優位**: table / schema / mermaid は機械検証可能 (bats mmdc syntax check)、code sample より drift しにくい
+- **SSoT 一元化**: 実行可能 code は `architecture/research/experiment-index.html` の EXP として実機検証 + link で参照、spec/ 内で重複定義しない
+
+### 適用方法
+- pseudocode が必要な場合: `<aside class="example">` で囲み、`<pre data-status="inferred">` 属性付きで informative 扱いとする
+- howto 例示が必要な場合: `architecture/research/howto-*.html` (新設候補) または既存 EXP page に move し、spec/ からは link only
+- bash 動作説明: mermaid sequence diagram に置換 (実コードと独立した論理表現)
+- HTTP/protocol 文法: ABNF (RFC 5234) で declarative 記述
+
+### 違反例
+- `architecture/spec/gate-hook.html` 内に `#!/bin/bash` で始まる phase-gate.sh 実装 (40 行) → R-15 違反 (架空コード + 実装乖離)
+- `architecture/spec/spawn-protocol.html` 内に `spawn-tmux.sh` の bash pseudocode (100 行) → R-15 違反 (実装詳細を spec で重複)
+- `architecture/spec/monitor-policy.html` 内に `administrator/SKILL.md` の完全な内容 (50 行) → R-15 違反 (架空 SKILL.md content の重複定義)
+
+### 機械検証
+- L3 MCP tool: `twl_spec_content_check` の `demo_code` check (HTML parse + content 種別判定)
+- L2 bats: `<pre>` grep + content 種別判定 (`tool-architect-temporal.bats` 内)
+- Phase F 4 軸目 (specialist-spec-review-temporal、Step 3: code block 正当性検証)
+- L4 pre-commit: Vale `Twill.CodeBlock` rule (`<pre>` タグ警告)
+
+### 業界 BP 参照
+- W3C QA Framework Good Practice 6 "include examples for each behavior" — verified examples must link to test
+- IETF code traceability (RFC 6982 Implementation Status section)
+- TypeSpec 1.0 `@example` decorator (declarative example、verified URL: https://typespec.io/docs/language-basics/documentation/)
+- Diátaxis Reference: "describe, don't instruct" (https://diataxis.fr/reference/)
+
+## R-16: 過去 narration は archive/ or changes/archive/ へ (2026-05-16 追加、change 001-spec-purify)
+
+spec/ に蓄積された過去 narration (デモコード、メモ、時系列記述) は spec/ から削除し、`architecture/archive/` または `architecture/changes/archive/` に移動すること。R-4 (link 全更新) と連動。
+
+### rationale
+- **物理分離による drift 防止**: 移動先が物理的に違えば、新規編集時に「ここは過去」と一目で判別可能
+- **rollback 参照保持**: 削除ではなく archive 移動で、必要な場合の rollback / 過去経緯確認を可能に
+- **migration/ → archive/migration/ 統合**: D3 / Z1 確定 (change package 001-spec-purify C14 で実装)
+
+### 適用方法
+
+**case 1: spec/*.html 内の過去 section 移動**
+1. `architecture/archive/spec-historical/` 新設 (必要な場合、case-by-case)
+2. 過去 section 抜き出し → archive 配下に file 作成
+3. spec/ 内の該当 section 削除
+4. R-4: 他 file からの該当 section anchor link を archive 配下 file に更新
+5. R-1: README に archive entry 追加 (該当する section table、archive/ section 拡張時)
+
+**case 2: 過去 dir 全体の移動 (D3 / Z1 実装、change 001-spec-purify C14)**
+1. `git mv architecture/migration/ architecture/archive/migration/`
+2. R-4: 全 inbound link (23 箇所、Agent A audit verified) を `../migration/` → `../archive/migration/` に更新
+3. R-1: README の migration/ section table を archive/ section に統合
+4. R-2: architecture-graph.html の migration/ cluster を archive cluster に統合
+5. 機械検証: `spec-anchor-link-check.py --check-orphan` で broken 0 + orphan 0
+
+### 違反例
+- spec/*.html 内の過去 narration を削除のみ (移動なし) → 過去経緯が失われ rollback 不可
+- migration/ 7 file を削除のみ (archive 不在) → R-16 違反 (必要な過去資産の物理削除)
+- archive/ 配下に新規追加 (本来 spec/ に置くべき content を misplace) → R-16 violation (archive は move only)
+
+### 機械検証
+- L2 bats: migration/ 相対 path 残存 grep (`grep -r '\.\./migration/' architecture/spec/` で hit 0 件)
+- 機械検証 (R-8): broken 0 + orphan 0 で link 整合性確認
+- Phase F 4 軸目 (specialist-spec-review-temporal、Step 4: archive 移動確認)
+
+### 業界 BP 参照
+- OpenSpec `archive/` pattern (`changes/archive/` for completed change packages、verified URL: https://openspec.dev/)
+- Living Documentation: "git history is the source of past changes" (Martraire 2019)
+- Diátaxis: archive ≠ deprecated reference (Diátaxis 4 象限外コンテンツとして独立扱い)
+
+## R-17: changes/ lifecycle (proposal → spec → archive) MUST (2026-05-16 追加、change 001-spec-purify)
+
+spec 変更は `architecture/changes/<NNN>-<slug>/` change package として管理。lifecycle: proposal.md 作成 → spec/ 反映 → `archive/changes/YYYY-MM-DD-NNN-<slug>/` 移動 の 3 段階を経る。
+
+各 change package は以下を必須:
+
+- `proposal.md`: scope 宣言 (what / why / acceptance criteria)
+- `design.md`: 技術選択根拠 + trade-off
+- `tasks.md`: 実装 checklist
+- `spec-delta/`: ADDED/MODIFIED/REMOVED セクション別差分 (任意、scope 大なら推奨)
+
+### rationale
+- **変更の証跡永続化**: 「何をなぜ変えたか」が git log + change package で 2 重保証
+- **review unit**: 1 change package = 1 logical PR review unit (cross-file refactor の atomic 性)
+- **lifecycle clear**: 進行中 (`changes/`) vs 完了 (`archive/changes/`) が物理的に分離、混在不可能
+
+### 命名規則
+- `NNN`: 3 桁連番 (001, 002, ...)、global 連番 (twill モノリポ全体で一意、`architecture/changes/` + `architecture/archive/changes/` で共通)
+- `<slug>`: kebab-case 20 文字以内、scope を簡潔に表現 (例: `spec-purify`, `adr-migration`, `phaser-spawn-fix`)
+- archive 時 prefix: `YYYY-MM-DD-` (実装完了日、PR merge 日)
+
+### 違反例
+- spec/ 直接 edit で proposal.md なし → R-17 違反 (証跡 missing、small fix 例外なし)
+- changes/ に proposal.md のみ (design/tasks.md なし) → R-17 違反 (incomplete package)
+- 完了後 archive 移動せず changes/ に残存 → R-17 違反 (lifecycle 不履行)
+- `changes/001-spec-purify/` と `changes/001-adr-migration/` の番号衝突 → R-17 違反 (連番 unique 不履行)
+
+### 機械検証
+- L3 MCP tool: `twl_spec_content_check` の `changes_lifecycle` check (changes/ dir 構造確認)
+- L2 bats: `tests/bats/structure/changes-dir-structure.bats` (新規、3 文書揃い確認 + NNN unique + slug format)
+- Phase F 4 軸目 (specialist-spec-review-temporal、Step 5: changes/ lifecycle 整合確認)
+
+### Lifecycle 図 (mermaid)
+
+```mermaid
+stateDiagram-v2
+    [*] --> Proposal: change package 作成
+    Proposal --> Implementing: design + tasks 完成
+    Implementing --> Reflecting: tasks 全完了
+    Reflecting --> Archived: archive/changes/ 移動 (R-17 lifecycle)
+    Archived --> [*]
+```
+
+### 業界 BP 参照
+- OpenSpec native lifecycle (verified URL: https://openspec.dev/) — `changes/` (進行中) と `changes/archive/` (完了) の 2 階層
+- GitHub Spec Kit `.specify/specs/NNN-feature/` 構造 (verified URL: https://github.com/github/spec-kit)
+- AWS Kiro requirements/design/tasks 3 文書分離 (verified URL: https://kiro.dev/docs/specs/)
+
 ## CI gate 一覧
 
 ### 実装済み CI gate (機械的強制)
