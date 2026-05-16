@@ -69,14 +69,16 @@
     font-size: 11px;
     fill: var(--gray-900);
   }
-  /* 5 dir base color + spec/ 4 sub-intensity (Okabe-Ito colorblind-safe palette) */
+  /* 7 dir base color + spec/ 4 sub-intensity (Okabe-Ito colorblind-safe palette) */
   .cat-spec-ori { fill: #aedfd9; }     /* brand-light、orientation */
   .cat-spec-core { fill: #5ac8b8; }    /* brand、core */
   .cat-spec-pol { fill: #8edcd0; }     /* brand-medium、policy */
   .cat-spec-aux { fill: #d4f0ed; }     /* brand-lightest、auxiliary */
-  .cat-mig { fill: #56B4E9; }          /* Okabe-Ito sky blue、migration */
+  .cat-mig { fill: #56B4E9; }          /* Okabe-Ito sky blue、archive/migration */
   .cat-res { fill: #F0E442; }          /* Okabe-Ito yellow、research */
   .cat-arc { fill: #b0b8c0; }          /* neutral gray、archive */
+  .cat-chg { fill: #CC79A7; }          /* Okabe-Ito reddish purple、changes (本 wave 新規) */
+  .cat-stg { fill: #E69F00; }          /* Okabe-Ito orange、steering (本 wave 新規) */
   .cat-dec { fill: #D55E00; }          /* Okabe-Ito vermillion、decisions */
 </style>
 </head>
@@ -84,7 +86,7 @@
 
 <header class="doc-header">
   <h1>twill plugin rebuild — architecture-graph (interactive navigation hub)</h1>
-  <div class="meta">31 node / 5 dir cluster (spec / migration / research / archive / decisions) &middot; click node → file 遷移、hover で circle 強調</div>
+  <div class="meta">35+ node / 7 dir cluster (spec / archive/migration / research / archive / changes / steering / decisions) &middot; click node → file 遷移、hover で circle 強調。change 001-spec-purify (2026-05-16) で changes/ + steering/ + ADR-0013 を新設、migration/ → archive/migration/ 統合済</div>
 </header>
 
 <nav style="margin: 1em 0;"><a href="README.html">← README に戻る</a></nav>
@@ -96,9 +98,9 @@
 </div>
 
 <div class="graph-container">
-<svg class="graph-svg" viewBox="0 0 940 880" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" aria-labelledby="graph-svg-title graph-svg-desc">
+<svg class="graph-svg" viewBox="0 0 1080 880" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" aria-labelledby="graph-svg-title graph-svg-desc">
   <title id="graph-svg-title">twill plugin rebuild architecture graph</title>
-  <desc id="graph-svg-desc">31 file を 5 dir cluster (spec / migration / research / archive / decisions) に分類した interactive navigation。spec/ は orientation / core / policy / auxiliary の 4 sub-category。各 node を click で対応 file へ遷移、cross-dir edge は dir 間連携を示す。</desc>
+  <desc id="graph-svg-desc">35+ file を 7 dir cluster (spec / archive/migration / research / archive / changes / steering / decisions) に分類した interactive navigation。spec/ は orientation / core / policy / auxiliary の 4 sub-category。各 node を click で対応 file へ遷移、cross-dir edge は dir 間連携を示す。change 001-spec-purify (2026-05-16) で archive/migration への統合 + changes/ + steering/ 新設を反映。</desc>
 
   <!-- ===== cluster background rect ===== -->
   <!-- spec/ cluster (orientation/core/policy/auxiliary を含む) -->
@@ -106,10 +108,10 @@
         fill="#5ac8b8" stroke="#5ac8b8" />
   <text class="cluster-label" x="160" y="55" fill="#3d9e8f">spec/</text>
 
-  <!-- migration/ cluster -->
+  <!-- archive/migration/ cluster (旧 migration/ を archive 統合済、change 001-spec-purify C14 で実装) -->
   <rect class="cluster-bg" x="310" y="60" width="100" height="600" rx="12"
         fill="#56B4E9" stroke="#56B4E9" />
-  <text class="cluster-label" x="360" y="55" fill="#0072B2">migration/</text>
+  <text class="cluster-label" x="360" y="55" fill="#0072B2">archive/migration/</text>
 
   <!-- research/ cluster -->
   <rect class="cluster-bg" x="440" y="60" width="100" height="260" rx="12"
@@ -121,10 +123,20 @@
         fill="#b0b8c0" stroke="#b0b8c0" />
   <text class="cluster-label" x="620" y="55" fill="#5e666e">archive/</text>
 
-  <!-- decisions/ cluster -->
-  <rect class="cluster-bg" x="700" y="60" width="100" height="100" rx="12"
+  <!-- changes/ cluster (change 001-spec-purify で新設、OpenSpec lifecycle 採用) -->
+  <rect class="cluster-bg" x="700" y="60" width="100" height="180" rx="12"
+        fill="#CC79A7" stroke="#CC79A7" />
+  <text class="cluster-label" x="750" y="55" fill="#8b4d76">changes/</text>
+
+  <!-- steering/ cluster (change 001-spec-purify で新設、GitHub Spec Kit 採用) -->
+  <rect class="cluster-bg" x="830" y="60" width="100" height="260" rx="12"
+        fill="#E69F00" stroke="#E69F00" />
+  <text class="cluster-label" x="880" y="55" fill="#a06f00">steering/</text>
+
+  <!-- decisions/ cluster (本 wave で ADR-0013 追加、合計 2 node) -->
+  <rect class="cluster-bg" x="960" y="60" width="100" height="180" rx="12"
         fill="#D55E00" stroke="#D55E00" />
-  <text class="cluster-label" x="750" y="55" fill="#a04500">decisions/</text>
+  <text class="cluster-label" x="1010" y="55" fill="#a04500">decisions/</text>
 
   <!-- ===== spec/ orientation sub-column (cx=90、3 node、cy=100/180/260) ===== -->
   <a xlink:href="README.html"><title>README.html — spec index (本 file)</title>
@@ -323,11 +335,51 @@
     </g>
   </a>
 
-  <!-- ===== decisions/ cluster (cx=750、1 node、cy=100) ===== -->
+  <!-- ===== changes/ cluster (cx=750、2 node、cy=100/180) ===== -->
+  <a xlink:href="../changes/"><title>architecture/changes/ — 進行中 structural change package (OpenSpec lifecycle、R-17)</title>
+    <g class="node">
+      <circle class="cat-chg" cx="750" cy="100" r="22" />
+      <text x="750" y="103">changes/</text>
+    </g>
+  </a>
+  <a xlink:href="../archive/changes/2026-05-16-001-spec-purify/"><title>archive/changes/2026-05-16-001-spec-purify/ — 完遂済 change package (本 SKILL 確立、R-17 lifecycle)</title>
+    <g class="node">
+      <circle class="cat-chg" cx="750" cy="180" r="22" />
+      <text x="750" y="183" font-size="9">001-archive</text>
+    </g>
+  </a>
+
+  <!-- ===== steering/ cluster (cx=880、3 node、cy=100/180/260) ===== -->
+  <a xlink:href="../steering/product.md"><title>steering/product.md — product vision + 利用者 (GitHub Spec Kit transposition)</title>
+    <g class="node">
+      <circle class="cat-stg" cx="880" cy="100" r="22" />
+      <text x="880" y="103">product</text>
+    </g>
+  </a>
+  <a xlink:href="../steering/tech.md"><title>steering/tech.md — 採用 stack + 制約</title>
+    <g class="node">
+      <circle class="cat-stg" cx="880" cy="180" r="22" />
+      <text x="880" y="183">tech</text>
+    </g>
+  </a>
+  <a xlink:href="../steering/structure.md"><title>steering/structure.md — 大局 architecture + dir 配置 principle</title>
+    <g class="node">
+      <circle class="cat-stg" cx="880" cy="260" r="22" />
+      <text x="880" y="263">structure</text>
+    </g>
+  </a>
+
+  <!-- ===== decisions/ cluster (cx=1010、2 node、cy=100/180) ===== -->
   <a xlink:href="../decisions/ADR-0012-administrator-rebrand.md"><title>ADR-0012-administrator-rebrand.md — su-* → admin-* rebrand (Proposed)</title>
     <g class="node">
-      <circle class="cat-dec" cx="750" cy="100" r="22" />
-      <text x="750" y="103">ADR-0012</text>
+      <circle class="cat-dec" cx="1010" cy="100" r="22" />
+      <text x="1010" y="103">ADR-0012</text>
+    </g>
+  </a>
+  <a xlink:href="../decisions/ADR-0013-spec-clean-architecture.md"><title>ADR-0013-spec-clean-architecture.md — spec clean architecture (R-14〜R-20 + L1-L5 + OpenSpec + steering + ReSpec、Accepted、2026-05-16)</title>
+    <g class="node">
+      <circle class="cat-dec" cx="1010" cy="180" r="22" />
+      <text x="1010" y="183">ADR-0013</text>
     </g>
   </a>
 
@@ -355,17 +407,24 @@
   <line class="edge cross-dir" x1="90" y1="420" x2="360" y2="340" />   <!-- ssot-design → deletion -->
 
   <!-- spec/ core → decisions/ -->
-  <line class="edge cross-dir" x1="210" y1="500" x2="750" y2="100" />  <!-- admin-cycle → ADR-0012 -->
-  <line class="edge cross-dir" x1="210" y1="740" x2="750" y2="100" />  <!-- monitor → ADR-0012 -->
+  <line class="edge cross-dir" x1="210" y1="500" x2="1010" y2="100" />  <!-- admin-cycle → ADR-0012 -->
+  <line class="edge cross-dir" x1="210" y1="740" x2="1010" y2="100" />  <!-- monitor → ADR-0012 -->
+  <line class="edge cross-dir" x1="210" y1="580" x2="1010" y2="180" />  <!-- tool-arch → ADR-0013 (本 spec の根拠 ADR) -->
 
-  <!-- migration/ → research/ -->
+  <!-- spec/ core → changes/ + steering/ (本 wave 新規 cluster) -->
+  <line class="edge cross-dir" x1="210" y1="580" x2="750" y2="180" />  <!-- tool-arch → 001-archive (本 SKILL 確立 change) -->
+  <line class="edge cross-dir" x1="210" y1="580" x2="880" y2="260" />  <!-- tool-arch → steering/structure (大局 entry) -->
+
+  <!-- archive/migration/ → research/ -->
   <line class="edge cross-dir" x1="360" y1="420" x2="490" y2="260" />  <!-- rebuild → exp-index -->
 
   <!-- README hub edges (dir 間 navigation) -->
   <line class="edge cross-dir" x1="90" y1="100" x2="360" y2="420" />   <!-- README → rebuild-plan -->
   <line class="edge cross-dir" x1="90" y1="100" x2="490" y2="260" />   <!-- README → exp-index -->
   <line class="edge cross-dir" x1="90" y1="100" x2="620" y2="100" />   <!-- README → draft-v1 -->
-  <line class="edge cross-dir" x1="90" y1="100" x2="750" y2="100" />   <!-- README → ADR-0012 -->
+  <line class="edge cross-dir" x1="90" y1="100" x2="750" y2="100" />   <!-- README → changes/ (本 wave 新規) -->
+  <line class="edge cross-dir" x1="90" y1="100" x2="880" y2="100" />   <!-- README → steering/product (本 wave 新規) -->
+  <line class="edge cross-dir" x1="90" y1="100" x2="1010" y2="100" />  <!-- README → ADR-0012 -->
 
   <!-- within-cluster edges (gray、cluster 内構造) -->
   <!-- spec/ orientation (vertical chain) -->
@@ -405,55 +464,68 @@
   <!-- archive/ vertical chain -->
   <line class="edge" x1="620" y1="100" x2="620" y2="180" />
 
+  <!-- changes/ vertical chain -->
+  <line class="edge" x1="750" y1="100" x2="750" y2="180" />
+
+  <!-- steering/ vertical chain -->
+  <line class="edge" x1="880" y1="100" x2="880" y2="180" />
+  <line class="edge" x1="880" y1="180" x2="880" y2="260" />
+
+  <!-- decisions/ vertical chain -->
+  <line class="edge" x1="1010" y1="100" x2="1010" y2="180" />
+
   <!-- ===== legend ===== -->
-  <g class="legend" transform="translate(810, 230)">
-    <rect x="0" y="0" width="130" height="370" fill="var(--surface-primary)" rx="6" />
-    <text x="65" y="20" style="font-weight: 700; text-anchor: middle;">凡例</text>
+  <g class="legend" transform="translate(40, 760)">
+    <rect x="0" y="0" width="480" height="110" fill="var(--surface-primary)" rx="6" />
+    <text x="240" y="20" style="font-weight: 700; text-anchor: middle;">凡例 (7 dir cluster + edge + node size)</text>
 
-    <!-- dir cluster 凡例 -->
+    <!-- dir cluster 凡例 (horizontal layout、9 entries) -->
     <text x="6" y="42" style="font-size: 10px; font-weight: 600;">dir cluster:</text>
-    <rect class="cat-spec-core" x="10" y="52" width="14" height="14" />
-    <text x="30" y="63">spec/ core</text>
-    <rect class="cat-spec-ori" x="10" y="72" width="14" height="14" />
-    <text x="30" y="83">spec/ orient</text>
-    <rect class="cat-spec-pol" x="10" y="92" width="14" height="14" />
-    <text x="30" y="103">spec/ policy</text>
-    <rect class="cat-spec-aux" x="10" y="112" width="14" height="14" />
-    <text x="30" y="123">spec/ aux</text>
-    <rect class="cat-mig" x="10" y="132" width="14" height="14" />
-    <text x="30" y="143">migration/</text>
-    <rect class="cat-res" x="10" y="152" width="14" height="14" />
-    <text x="30" y="163">research/</text>
-    <rect class="cat-arc" x="10" y="172" width="14" height="14" />
-    <text x="30" y="183">archive/</text>
-    <rect class="cat-dec" x="10" y="192" width="14" height="14" />
-    <text x="30" y="203">decisions/</text>
+    <rect class="cat-spec-core" x="70" y="32" width="12" height="12" />
+    <text x="86" y="42" style="font-size: 9px;">spec/core</text>
+    <rect class="cat-spec-ori" x="138" y="32" width="12" height="12" />
+    <text x="154" y="42" style="font-size: 9px;">spec/orient</text>
+    <rect class="cat-spec-pol" x="212" y="32" width="12" height="12" />
+    <text x="228" y="42" style="font-size: 9px;">spec/policy</text>
+    <rect class="cat-spec-aux" x="282" y="32" width="12" height="12" />
+    <text x="298" y="42" style="font-size: 9px;">spec/aux</text>
+    <rect class="cat-mig" x="342" y="32" width="12" height="12" />
+    <text x="358" y="42" style="font-size: 9px;">archive/migration/</text>
 
-    <!-- edge 凡例 -->
-    <text x="6" y="228" style="font-size: 10px; font-weight: 600;">edge:</text>
-    <line class="edge cross-dir" x1="10" y1="246" x2="40" y2="246" />
-    <text x="46" y="250">cross-dir</text>
-    <line class="edge" x1="10" y1="266" x2="40" y2="266" />
-    <text x="46" y="270">within</text>
+    <rect class="cat-res" x="70" y="56" width="12" height="12" />
+    <text x="86" y="66" style="font-size: 9px;">research/</text>
+    <rect class="cat-arc" x="138" y="56" width="12" height="12" />
+    <text x="154" y="66" style="font-size: 9px;">archive/</text>
+    <rect class="cat-chg" x="212" y="56" width="12" height="12" />
+    <text x="228" y="66" style="font-size: 9px;">changes/</text>
+    <rect class="cat-stg" x="282" y="56" width="12" height="12" />
+    <text x="298" y="66" style="font-size: 9px;">steering/</text>
+    <rect class="cat-dec" x="342" y="56" width="12" height="12" />
+    <text x="358" y="66" style="font-size: 9px;">decisions/</text>
 
-    <!-- node size 凡例 (regular vs hub) -->
-    <text x="6" y="290" style="font-size: 10px; font-weight: 600;">node size:</text>
-    <circle class="cat-spec-core" cx="20" cy="312" r="11" stroke="var(--gray-700)" stroke-width="1" />
-    <text x="40" y="316">regular (r=22)</text>
-    <circle class="cat-spec-core" cx="20" cy="346" r="14" stroke="var(--gray-700)" stroke-width="1" />
-    <text x="40" y="350">hub (r=28)</text>
+    <!-- edge 凡例 + node size 凡例 -->
+    <text x="6" y="86" style="font-size: 10px; font-weight: 600;">edge:</text>
+    <line class="edge cross-dir" x1="70" y1="82" x2="100" y2="82" />
+    <text x="106" y="86" style="font-size: 9px;">cross-dir</text>
+    <line class="edge" x1="170" y1="82" x2="200" y2="82" />
+    <text x="206" y="86" style="font-size: 9px;">within</text>
+    <text x="260" y="86" style="font-size: 10px; font-weight: 600;">node size:</text>
+    <circle class="cat-spec-core" cx="330" cy="82" r="6" stroke="var(--gray-700)" stroke-width="1" />
+    <text x="342" y="86" style="font-size: 9px;">regular (r=22)</text>
+    <circle class="cat-spec-core" cx="408" cy="82" r="8" stroke="var(--gray-700)" stroke-width="1" />
+    <text x="422" y="86" style="font-size: 9px;">hub (r=28)</text>
   </g>
 </svg>
 </div>
 
-<h2 id="structure">構造解説 (5 dir cluster)</h2>
+<h2 id="structure">構造解説 (7 dir cluster)</h2>
 
 <dl>
-  <dt><strong>spec/</strong> (新 twill 仕様 SSoT、18 node + common.css)</dt>
+  <dt><strong>spec/</strong> (現状の正式仕様 SSoT、18 node + common.css)</dt>
   <dd>4 sub-category: <strong>orientation</strong> (最初に読む 3 file) / <strong>core</strong> (新 architecture 詳細 10 file) / <strong>policy</strong> (既存接続 2 file) / <strong>auxiliary</strong> (navigation/用語/履歴 3 file + common.css)</dd>
 
-  <dt><strong>migration/</strong> (旧→新 移行計画、7 node)</dt>
-  <dd>fate audit (旧資産処遇 3 file) + 実行計画 (削除・rebuild 4 file)</dd>
+  <dt><strong>archive/migration/</strong> (旧→新 移行計画 archive 統合、7 node、change 001-spec-purify C14 で実装)</dt>
+  <dd>fate audit (旧資産処遇 3 file) + 実行計画 (削除・rebuild 4 file)。旧 <code>architecture/migration/</code> から <code>archive/migration/</code> へ git mv + 81 inbound link 全更新</dd>
 
   <dt><strong>research/</strong> (調査・実験、3 node)</dt>
   <dd>research-findings (verified 集約) + sandbox-experiment (4-state status + EXP-id) + experiment-index (hub、全 EXP listing)</dd>
@@ -461,8 +533,14 @@
   <dt><strong>archive/</strong> (旧資産 rollback 保持、2 node)</dt>
   <dd>draft-v1 (spec 原案) + changelog-impl (実装作業 log)。MD 群 (archive/decisions/ ADR-0006〜0011a/0011b + TWiLL DDD 資産 + dig artifact MD/HTML 版) は graph では非表示</dd>
 
-  <dt><strong>decisions/</strong> (新 architecture ADR、1 node)</dt>
-  <dd>ADR-0012 (administrator rebrand、Proposed) + ADR-0013 (spec clean architecture、Accepted)</dd>
+  <dt><strong>changes/</strong> (進行中 structural change package、OpenSpec lifecycle、R-17、change 001-spec-purify C1 で新設)</dt>
+  <dd>各 change を <code>NNN-slug/</code> package (proposal/design/tasks/spec-delta) で start、完遂後に <code>archive/changes/YYYY-MM-DD-NNN-slug/</code> へ移動 MUST。本 graph では entry point (changes/) と完遂例 (001-archive) を表示</dd>
+
+  <dt><strong>steering/</strong> (project-wide 規約 SSoT、GitHub Spec Kit transposition、change 001-spec-purify C5 で新設)</dt>
+  <dd>product.md (vision + 利用者) + tech.md (採用 stack + 制約) + structure.md (大局 architecture + dir 配置)。spec/ governance の大局 entry point、新規 contributor の navigation 入口</dd>
+
+  <dt><strong>decisions/</strong> (architecture ADR、2 node)</dt>
+  <dd>ADR-0012 (administrator rebrand、Proposed) + ADR-0013 (spec clean architecture、Accepted、2026-05-16、R-14〜R-20 + L1-L5 確定)</dd>
 </dl>
 
 <h2 id="hub-files">hub file (大型 r=28 で表示、regular r=22 との 6px 差で視認性向上)</h2>
@@ -478,15 +556,19 @@
 
 <p>新 file 追加時の手順は <code>plugins/twl/skills/tool-architect/refs/spec-management-rules.md</code> R-1 〜 R-10 (decision tree 含む) で規定。本 graph への node + edge 追加は R-2 で MUST、R-9 (手動 maintenance) で運用中。中期で auto-gen 化検討。</p>
 
-<p>5 dir cluster の coord 規約:</p>
+<p>7 dir cluster の coord 規約:</p>
 <ul>
   <li>spec/ orientation/policy/auxiliary: cx=90、cy=100/180/260/340/420/500/580/660 (8 row 80px 間隔)</li>
   <li>spec/ core: cx=210、cy=100〜820 (10 row)</li>
-  <li>migration/: cx=360、cy=100〜580 (7 row)</li>
+  <li>archive/migration/: cx=360、cy=100〜580 (7 row、旧 migration/ から rename)</li>
   <li>research/: cx=490、cy=100〜260 (3 row)</li>
   <li>archive/: cx=620、cy=100〜180 (2 row)</li>
-  <li>decisions/: cx=750、cy=100〜 (1+ row)</li>
+  <li>changes/: cx=750、cy=100〜180 (2 row、本 wave 新規)</li>
+  <li>steering/: cx=880、cy=100〜260 (3 row、本 wave 新規)</li>
+  <li>decisions/: cx=1010、cy=100〜180 (2 row、ADR-0013 追加)</li>
 </ul>
+
+<p>viewBox は 940→1080 に拡張、legend は右側 panel から底部 horizontal layout に変更 (新規 cluster 用 column 確保のため)。</p>
 
 </body>
 </html>
