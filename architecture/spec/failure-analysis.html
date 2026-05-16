@@ -19,11 +19,11 @@
 
 <header class="doc-header">
   <h1>失敗 analysis — 既存 twill plugin の 9 件 P0 bug 深掘り</h1>
-  <div class="meta">status: <span class="badge done">done</span> &middot; draft-v3 (2026-05-15、F-4 追記 + Q3 整合化反映) &middot; verified root cause + 横断要因 F-1/F-2/F-3/F-4 + MUST 15 件抽出</div>
+  <div class="meta">status: <span class="badge done">done</span> &middot; draft-v4 &middot; verified root cause + 横断要因 F-1/F-2/F-3/F-4 + MUST 15 件抽出</div>
 </header>
 
 <div class="info">
-  <strong>目的</strong>: 既存 twill plugin で本セッション (2026-05-12) に発見された 9 件 P0 bug の root cause を 1 件ずつ verified に深掘りし、新 spec の MUST / SHOULD として体系化する。横断要因 3 種を抽出し、新 architecture で構造的不能化を実現する。<br>
+  <strong>目的</strong>: 既存 twill plugin で発見された 9 件 P0 bug の root cause を 1 件ずつ verified に深掘りし、新 spec の MUST / SHOULD として体系化する。横断要因 4 種を抽出し、新 architecture で構造的不能化を実現する。<br>
   <br>
   <strong>source</strong>: 全件 verified (commit hash / file:line / 該当 PR 確認済) または deduced (現コードからの逆算)。各 bug の confidence を明示。
 </div>
@@ -55,7 +55,7 @@
 </div>
 
 <div class="factor-block">
-  <h3>F-4: 用語 SSoT 不在による drift (2026-05-13 追加)</h3>
+  <h3>F-4: 用語 SSoT 不在による drift</h3>
   <p><strong>症状</strong>: 同一 entity を別語で参照する drift が多重に発生。旧 plugin では <code>pilot</code>/<code>phase</code>/<code>controller</code> の 5 重多義、<code>worker</code> の 5 重多義 (workflow/atomic/specialist と統合)、<code>step</code> の 5 重多義、<code>state</code>/<code>status</code> の 2 重、<code>mail</code>/<code>message</code> の 3 重等。role 名混乱で audit 不能、命名衝突で公式 Claude Code 名 (<code>Tool</code>/<code>Skill</code>) と区別困難。</p>
   <p><strong>lesson (MUST)</strong>:</p>
   <ul>
@@ -268,7 +268,7 @@
 <h2>audit source</h2>
 
 <ul>
-  <li>本セッション (2026-05-12) feature-dev workflow <code>Phase 2</code> で 3 code-explorer agent 並列調査</li>
+  <li>feature-dev workflow <code>Phase 2</code> で 3 code-explorer agent 並列調査による発見</li>
   <li>各 bug の verified 根拠: commit hash + file:line + 関連 PR / ADR 引用</li>
   <li>doobidoo Memory MCP hash <code>6ef844e9</code> / <code>74b7cdf7</code> / <code>7727b59f</code> に lesson 集約済 (本 audit はそれらの拡張版)</li>
 </ul>

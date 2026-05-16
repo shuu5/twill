@@ -12,7 +12,7 @@
 
 <header class="doc-header">
   <h1>twill plugin rebuild — overview</h1>
-  <div class="meta">status: <span class="badge done">done</span> &middot; draft-v4 (2026-05-15、Q3 整合化反映) &middot; 全体把握 + 新原則 10 条 + 10 role architecture &middot; 詳細は各 sub-spec へリンク</div>
+  <div class="meta">status: <span class="badge done">done</span> &middot; draft-v5 &middot; 全体把握 + 新原則 10 条 + 10 role architecture &middot; 詳細は各 sub-spec へリンク</div>
 </header>
 
 <h2>1. 目的</h2>
@@ -25,12 +25,12 @@
   <li>plugin file 数 1177、bash orchestration 5175 lines</li>
   <li>ADR 43 件、不変条件 19 件 (A-S、現状 snapshot。rename 計画は <a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> で A-X 24 件への拡張、Phase 4 cleanup 時に反映。<code>ref-invariants.md</code> 自身は現状 A-N 14 件のため Phase 1 PoC 実装で同期予定 = drift)</li>
   <li>9 件の P0 bug が本セッションで発見 (詳細 <a href="failure-analysis.html">failure-analysis.html</a>)</li>
-  <li>用語多重化 (pilot/phase/controller 5 重、worker 5 重、step 5 重、state 2 重、mail/event/message 3 重) — (2026-05-13) で発覚</li>
-  <li>横断要因 F-1 (並列 Wave 後付け) / F-2 (env var 限界) / F-3 (deploy/verify 分離欠如) / F-4 (用語 SSoT 不在、(2026-05-13) 追加)</li>
+  <li>用語多重化 (pilot/phase/controller 5 重、worker 5 重、step 5 重、state 2 重、mail/event/message 3 重)</li>
+  <li>横断要因 F-1 (並列 Wave 後付け) / F-2 (env var 限界) / F-3 (deploy/verify 分離欠如) / F-4 (用語 SSoT 不在)</li>
 </ul>
 </div>
 
-<h2>2. 新原則 (10 条、(2026-05-13) で 1 条追加)</h2>
+<h2>2. 新原則 (10 条)</h2>
 
 <div class="good">
 <ol>
@@ -39,15 +39,15 @@
   <li><strong>自作 script / 自作 MCP server は最小限</strong> (validate / status query の thin helper のみ)</li>
   <li><strong><code>administrator</code> (1 個、user 代理)</strong> が全体采配、Project Board status を SSoT として参照</li>
   <li><strong><code>phaser-*</code> controller は <code>administrator</code> が 1 window = 1 個ずつ spawn</strong> (context reset、純粋指令)</li>
-  <li><strong>status と <code>phaser</code> は 1:1 対応</strong> (各 <code>phaser</code> は 1 status 遷移のみ担当、(2026-05-13) で phaser 1 語化)</li>
+  <li><strong>status と <code>phaser</code> は 1:1 対応</strong> (各 <code>phaser</code> は 1 status 遷移のみ担当、phaser は canonical 1 語)</li>
   <li><strong>status gate は PreToolUse hook で機械化</strong> (前 status でない <code>phaser</code> invoke は deny)</li>
   <li><strong>twl は Claude Code 公式 plugin として正式化</strong>: <code>.claude-plugin/plugin.json</code> + skill namespace <code>/twl:*</code> + Plugin Monitor + <code>--plugin-dir</code> local test</li>
   <li><strong>各 spec claim は 4-state verification status で明示</strong>: inferred → deduced → verified → experiment-verified。experiment-id hyperlink で sandbox 実地検証へ link</li>
-  <li><strong>10 role + vocabulary 統合 SSoT ((2026-05-13) 追加)</strong>: 10 role (administrator / phaser / tool / workflow / atomic / specialist / reference / script / hook / monitor) + <code>plugins/twl/registry.yaml</code> 1 file が glossary + components + chains + hooks+monitors + integrity_rules の 5 section を保有、「1 entity = 1 name」ルールで <code>twl audit --vocabulary</code> 機械検証</li>
+  <li><strong>10 role + vocabulary 統合 SSoT</strong>: 10 role (administrator / phaser / tool / workflow / atomic / specialist / reference / script / hook / monitor) + <code>plugins/twl/registry.yaml</code> 1 file が glossary + components + chains + hooks+monitors + integrity_rules の 5 section を保有、「1 entity = 1 name」ルールで <code>twl audit --vocabulary</code> 機械検証</li>
 </ol>
 </div>
 
-<h2>3. 10 role architecture (図 1、(2026-05-13) 反映)</h2>
+<h2>3. 10 role architecture (図 1)</h2>
 
 <div class="info">role の詳細 matrix: <a href="registry-schema.html#s3">registry-schema.html §3 (10 role × concern matrix)</a></div>
 
@@ -224,7 +224,7 @@
   <li><strong>L2 <code>workflow-*</code></strong> = <code>phaser</code>/<code>tool</code> から <code>Skill</code> で呼ばれる sub-workflow、<code>atomic</code> を順次呼ぶ launcher (<code>disable-model-invocation: true</code>、context budget 外)</li>
   <li><strong>L3 <code>atomic-*</code></strong> = 最小実行単位、4-phase lifecycle (pre-check/exec/post-verify/report) を SKILL.md 本文に inline 実装、必要なら <code>Agent(specialist-*)</code> で specialist spawn</li>
   <li><strong><code>specialist-*</code></strong> (公式 <code>agents/</code> directory) = <code>Agent</code> tool 経由 sub-agent、独立 context window、subagent spawn 不可 (<span class="vs verified">verified</span>)。旧 worker-* 18 件を rename</li>
-  <li><strong><code>tool-*</code></strong> = user / admin が直接 invoke、status 遷移と無関係 (<code>tool-architect</code> / <code>tool-project</code> / <code>tool-sandbox-runner</code>、(2026-05-13) で 4→3 に)</li>
+  <li><strong><code>tool-*</code></strong> = user / admin が直接 invoke、status 遷移と無関係 (<code>tool-architect</code> / <code>tool-project</code> / <code>tool-sandbox-runner</code> の 3 件)</li>
   <li><strong>spawn 機構</strong> = phaser は tmux new-window + claude code 別 main session、workflow/atomic は <code>Skill</code> 公式機構、specialist は <code>Agent</code> 公式機構</li>
   <li><strong>通信機構</strong> = 階層型 file mailbox (4 階層 entity: mailbox &gt; inbox &gt; mail &gt; event、<code>.mailbox/&lt;session&gt;/inbox.jsonl</code> + flock atomic)、pyramid 型集約</li>
   <li><strong>status SSoT</strong> = GitHub Project Board の Status field (6-stage: Idea/Explored/Refined/Implementing/PR Reviewed/Merged、forbidden synonym: <code>state</code>)</li>
@@ -246,7 +246,7 @@
 </tbody>
 </table>
 
-<h2>6. 構造的欠陥 4 種と不能化 ((2026-05-13) で 1 種追加)</h2>
+<h2>6. 構造的欠陥 4 種と不能化</h2>
 
 <table>
 <thead><tr><th>欠陥</th><th>現状</th><th>新 spec での不能化</th><th>詳細</th></tr></thead>
@@ -254,7 +254,7 @@
 <tr><td>1. 自己申告 step</td><td><code>chain-runner.sh</code> L1873-1884: test-scaffold / green-impl / phase-review / scope-judge は record のみ</td><td><code>atomic</code> SKILL.md inline 4-phase lifecycle + post-verify 機械検証必須</td><td><a href="atomic-verification.html">atomic-verification.html</a> (旧 step-verification.html から rename)</td></tr>
 <tr><td>2. chain SSoT 三重化</td><td>chain.py / chain-steps.sh / deps.yaml.chains が独立 SSoT、同期 check 必要</td><td><code>registry.yaml</code> 統合 SSoT (案 4)、chain.py + chain-steps.sh + types.yaml + deps.yaml + step.sh framework 全廃</td><td><a href="ssot-design.html">ssot-design.html</a> (全面書き直し)</td></tr>
 <tr><td>3. 巨大化</td><td>file 1177、bash 5175 lines、ADR 43、invariant 19、skill 24</td><td>bash 700 lines (helper のみ)、skill 11-13 (10 role 内分散)、ADR 43→Superseded chain、invariant 19→fate audit</td><td><a href="../migration/deletion-inventory.html">deletion-inventory.html</a></td></tr>
-<tr><td>4. 用語 SSoT 不在 ((2026-05-13) 追加)</td><td>pilot/phase/controller 5 重、worker 5 重、step 5 重、state 2 重、mail/message 3 重、制御系 4 語多重</td><td><code>registry.yaml#glossary</code> vocabulary table (6 field schema)、「1 entity = 1 name」ルール、<code>twl audit --vocabulary</code> 機械検証</td><td><a href="registry-schema.html">registry-schema.html</a> + <a href="glossary.html">glossary.html</a></td></tr>
+<tr><td>4. 用語 SSoT 不在</td><td>pilot/phase/controller 5 重、worker 5 重、step 5 重、state 2 重、mail/message 3 重、制御系 4 語多重</td><td><code>registry.yaml#glossary</code> vocabulary table (6 field schema)、「1 entity = 1 name」ルール、<code>twl audit --vocabulary</code> 機械検証</td><td><a href="registry-schema.html">registry-schema.html</a> + <a href="glossary.html">glossary.html</a></td></tr>
 </tbody>
 </table>
 
@@ -267,14 +267,14 @@
   <li><strong>横断要因 F-1</strong>: 並列 Wave の設計が後付け (単一 Wave 前提に並列を後付け、shared state がスコープ問題を生む)</li>
   <li><strong>横断要因 F-2</strong>: env var による機械的 enforcement の限界 (型なし、スコープなし、継承 on)</li>
   <li><strong>横断要因 F-3</strong>: deploy/verify の分離欠如 (実装した ≠ deploy された、5 ヶ月 5 回再発の根本)</li>
-  <li><strong>横断要因 F-4</strong> ((2026-05-13) 追加): 用語 SSoT の不在による drift (同 entity を別語で参照、role 名混乱、audit 不能、命名衝突)</li>
+  <li><strong>横断要因 F-4</strong>: 用語 SSoT の不在による drift (同 entity を別語で参照、role 名混乱、audit 不能、命名衝突)</li>
 </ul>
 
 <h2>8. ADR / 不変条件の継承 (audit)</h2>
 
 <ul>
   <li>ADR 43 件の fate (保全 / Superseded / 削除 / 統合) は <a href="../migration/adr-fate-table.html">adr-fate-table.html</a></li>
-  <li>不変条件 19 件 (A-S → Phase 4 cleanup で A-X 24 件に拡張計画) の継承戦略は <a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> (Inv U は(2026-05-13) で「Atomic skill verification」に rename)</li>
+  <li>不変条件 19 件 (A-S → Phase 4 cleanup で A-X 24 件に拡張計画) の継承戦略は <a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> (Inv U は「Atomic skill verification」に rename 済)</li>
   <li>pitfalls-catalog の継承戦略は <a href="../migration/pitfalls-inheritance.html">pitfalls-inheritance.html</a></li>
 </ul>
 
@@ -293,10 +293,10 @@
 
 <ol>
   <li>本 overview + <a href="failure-analysis.html">failure-analysis.html</a> + <a href="crash-failure-mode.html">crash-failure-mode.html</a> + <a href="atomic-verification.html">atomic-verification.html</a> を熟読</li>
-  <li><a href="registry-schema.html">registry-schema.html</a> (新規、(2026-05-13)) + <a href="glossary.html">glossary.html</a> + <a href="ssot-design.html">ssot-design.html</a> (全面書き直し) で SSoT + vocabulary 設計を review</li>
+  <li><a href="registry-schema.html">registry-schema.html</a> + <a href="glossary.html">glossary.html</a> + <a href="ssot-design.html">ssot-design.html</a> で SSoT + vocabulary 設計を review</li>
   <li><a href="../migration/adr-fate-table.html">adr-fate-table.html</a> + <a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> で既存資産の継承戦略 review</li>
-  <li><a href="../archive/research/dig-report-ssot-2026-05-13.html">dig-report-ssot-2026-05-13.html</a> で(2026-05-13) (10 round + 33+ question) の経緯を確認</li>
-  <li>ADR-043 = supplement 全体の正典 (本 ADR で(2026-05-13) 内容を Decision section に追記済)</li>
+  <li><a href="../archive/research/dig-report-ssot-2026-05-13.html">dig-report-ssot-2026-05-13.html</a> で SSoT 設計 dig (10 round + 33+ question) の経緯を確認</li>
+  <li>ADR-043 = supplement 全体の正典 (Decision section で SSoT + vocabulary 設計を確定)</li>
   <li><code>Phase 1 PoC</code> 着手 (user 明示承認後)</li>
 </ol>
 
