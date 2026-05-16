@@ -32,7 +32,7 @@
           "message": { "type": "string" },
           "category": {
             "type": "string",
-            "enum": ["vulnerability", "bug", "coding-convention", "structure", "principles", "ac-alignment", "ac-alignment-unknown", "architecture-drift", "chain-integrity-drift", "experiment-integrity"]
+            "enum": ["vulnerability", "bug", "coding-convention", "structure", "principles", "ac-alignment", "ac-alignment-unknown", "architecture-drift", "chain-integrity-drift", "experiment-integrity", "spec-vocabulary", "spec-structure", "spec-ssot"]
           },
           "finding_target": { "type": "string", "enum": ["issue_description", "codebase_state"] }
         }
@@ -82,6 +82,9 @@ checkpoint.py の `critical_count` は confidence フィルタを持たないた
 | `architecture-drift` | worker-architecture |
 | `chain-integrity-drift` | worker-workflow-integrity |
 | `experiment-integrity` | specialist-exp-reviewer (EXP 4-state lattice + verify_source whitelist + smoke pass=true 意味的妥当性 + bats quality との clash 検出) |
+| `spec-vocabulary` | specialist-spec-review-vocabulary (Phase F 軸 1: vocabulary table forbidden synonym + glossary §11 deprecated entries + canonical name 違反) |
+| `spec-structure` | specialist-spec-review-structure (Phase F 軸 2: cross-ref + id anchor + table column + changelog timeline + R-1/R-2 適用確認) |
+| `spec-ssot` | specialist-spec-review-ssot (Phase F 軸 3: ADR + 不変条件 + EXP status + registry-schema 整合) |
 
 **co-issue specialist 用**（merge-gate specialist は使用禁止）:
 
@@ -125,5 +128,5 @@ deps.yaml で `output_schema: custom` 指定時、共通スキーマ注入をス
 | Model | 判定基準 | specialist 例 |
 |-------|---------|--------------|
 | **haiku** | 構造チェック・パターンマッチ | worker-structure, worker-env-validator, worker-data-validator, template-validator |
-| **sonnet** | コードレビュー・品質判断・コード生成 | worker-code-reviewer, worker-security-reviewer, 各 *-reviewer, autofix-loop, e2e-generate 等 |
-| **opus** | specialist には不使用 | Controller/Workflow のみ |
+| **sonnet** | コードレビュー・品質判断・コード生成 | worker-code-reviewer, worker-security-reviewer, 各 *-reviewer, autofix-loop, e2e-generate, specialist-spec-explorer, specialist-spec-architect 等 |
+| **opus** | deep audit (cross-AI bias 低減 / 深部 drift 検出 / semantic correctness) | specialist-exp-reviewer, specialist-spec-review-vocabulary, specialist-spec-review-structure, specialist-spec-review-ssot |
