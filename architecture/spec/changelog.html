@@ -21,6 +21,72 @@
   <strong>関連</strong>: <a href="README.html">README</a> / <a href="architecture-graph.html">architecture-graph</a>
 </div>
 
+<h2 id="2026-05-17-spec-residual-fix">2026-05-17: change 002-spec-residual-fix wave (R-14/R-15 残存 fix + R-21〜R-25 rule 追加、9 commit + Phase F 4 並列 review + fix loop 1 回)</h2>
+
+<h3>核心成果</h3>
+
+<p>ユーザー指示「前 wave で残ったデモコード等を fix、experiment-verified 等新 rule 適切適用、tool-architect 自身の rule gap も検討」を契機に、tool-architect 7-phase PR cycle (Phase A-G、Phase B 3 並列 spec-explorer + Phase F 4 並列 spec-review-* + scope-based fix loop) で architecture/spec/ 全 18 file の R-14/R-15 残存 78 件を 0 化、agent findings から導出した R-21〜R-25 を新規 rule として spec-management-rules.md / SKILL.md / tool-architecture.html に追加完遂。<strong>9 commit 累積 (778dcbdb → 5638c574 → 107bce40 → 8cd7fd7c → 6eb6e070 → d049f585 → 63549f19 → 7d451ffb → 本 commit)、Phase F findings 17 件 (vocabulary PASS 0 + structure 6 + ssot 1 + temporal 13、INFO 5 件は次 wave defer) を fix loop 1 回で resolve 13 件</strong>。</p>
+
+<h3>commit timeline (9 commit)</h3>
+
+<table>
+  <thead><tr><th>commit</th><th>scope</th></tr></thead>
+  <tbody>
+    <tr><td><code>778dcbdb</code></td><td>commit A: tool-architecture.html R-14/R-15 fix + EXP-044 起票 (R-15 14 件 + R-14 13 件 + L711 + L156 EXP-039 誤参照 + experiment-index.html EXP-044 block 追加 + header drift)</td></tr>
+    <tr><td><code>5638c574</code></td><td>commit B: registry-schema.html R-14/R-15 fix + 重複削除 (134 行 YAML → JSON Schema declarative + 185 行 glossary YAML 削除 + ASCII art / Python pseudocode mermaid 化、-290 行 net shrink)</td></tr>
+    <tr><td><code>107bce40</code></td><td>commit C: 8 file batch R-15/R-14 fix (monitor-policy / twl-mcp-integration / gate-hook / spawn-protocol / admin-cycle / atomic-verification / hooks-mcp-policy / ssot-design に <code>&lt;pre data-status="..."&gt;&lt;code&gt;</code> 属性付与で 24 件 R-15 + 3 件 R-14 fix)</td></tr>
+    <tr><td><code>8cd7fd7c</code></td><td>commit D: 4 file R-14 fix (architecture-graph / glossary / failure-analysis / README、(2026-05-16) annotation 3 + 過去 narration 1 + R-23 候補 6 件)</td></tr>
+    <tr><td><code>6eb6e070</code></td><td>commit E: tool-architecture.html §9 ednote 化 + ADR-043 entry fix + .pending CSS class cleanup</td></tr>
+    <tr><td><code>d049f585</code></td><td>commit F: status badge 昇格 (registry-schema.html §1.5.1 registry.yaml row inferred → deduced、evidence: plugins/twl/registry.yaml 656 lines 実在)</td></tr>
+    <tr><td><code>63549f19</code></td><td>commit G: R-21〜R-25 rule 追加 (shell 手順書 aside wrap / 日付 annotation 禁止 / incomplete marker 禁止 / verify status evidence coupling / EXP 参照 semantic correctness、spec-management-rules.md + SKILL.md)</td></tr>
+    <tr><td><code>7d451ffb</code></td><td>commit H: Phase F fix loop 1 (R-21〜R-25 reflection in tool-architecture.html §3.6.1 table + experiment-index.html L21 meta 44 EXP + registry-schema EXP count 38→44 + 4 agent file 3→4 並列 + ref-invariants.md drift fix + R-22/R-14 残存 fix)</td></tr>
+    <tr><td>本 commit (commit I)</td><td>Phase G Summary: changelog.html entry 追加 (本 9 commit + Phase F findings 実行証跡 + defer task listing)</td></tr>
+  </tbody>
+</table>
+
+<h3>Phase F 実行証跡 (R-12 MUST、findings 軸別)</h3>
+
+<table>
+  <thead><tr><th>軸 (file)</th><th>status</th><th>findings (confidence ≥80)</th><th>resolved (fix loop 1)</th><th>defer</th></tr></thead>
+  <tbody>
+    <tr><td><code>specialist-spec-review-vocabulary</code></td><td>PASS</td><td>0</td><td>—</td><td>—</td></tr>
+    <tr><td><code>specialist-spec-review-structure</code></td><td>FAIL</td><td>CRITICAL 2 + WARNING 4</td><td>6/6</td><td>changelog 本 entry (Phase G で完遂)</td></tr>
+    <tr><td><code>specialist-spec-review-ssot</code></td><td>WARN</td><td>WARNING 1</td><td>1/1</td><td>—</td></tr>
+    <tr><td><code>specialist-spec-review-temporal</code></td><td>WARN</td><td>WARNING 13 + INFO 5</td><td>11/13 (WARNING)</td><td>INFO 5 件 (R-21 grandfather 明示 / R-17 recursive 例外 / pseudocode aside wrap upgrade)</td></tr>
+  </tbody>
+</table>
+
+<h3>新規 rule 5 件 (R-21〜R-25、spec-management-rules.md + SKILL.md + tool-architecture.html §3.6.1)</h3>
+
+<ul>
+  <li><strong>R-21</strong>: shell command 手順書系 <code>&lt;pre&gt;</code> は <code>&lt;aside class="example"&gt;</code> wrap + data-status MUST (grandfather: 本 wave 既存 demo の data-status 化は許容)</li>
+  <li><strong>R-22</strong>: 日付 annotation <code>(YYYY-MM-DD)</code> は changelog / meta / ednote / ADR Status 以外で禁止 MUST</li>
+  <li><strong>R-23</strong>: incomplete marker (forbidden 単語 list は <code>spec-management-rules.md</code> R-23 参照) は spec/ 配下禁止 MUST (R-14 から独立)</li>
+  <li><strong>R-24</strong>: verify status 昇格は evidence (bats PASS / verify_source URL / EXP log_hash + verify_checks) を含む commit と同時 MUST</li>
+  <li><strong>R-25</strong>: spec から <code>experiment-index.html#EXP-NNN</code> link 時、参照先 EXP 内容と意味的一致 MUST</li>
+</ul>
+
+<h3>defer items (次 wave 検討対象)</h3>
+
+<ul>
+  <li><strong>R-21 grandfather 例外明示</strong>: spec-management-rules.md R-21 文言追加 (specialist temporal 推奨)</li>
+  <li><strong>R-17 recursive meta-PR 例外明示</strong>: spec-management-rules.md R-17 文言追加 (specialist temporal 推奨)</li>
+  <li><strong>pseudocode block の aside wrap upgrade</strong>: admin-cycle.html L158 / monitor-policy.html L50/L111 / spawn-protocol.html L166 / twl-mcp-integration.html L47 等を <code>&lt;aside class="example"&gt;</code> 化 (本 wave grandfather 温存)</li>
+  <li><strong>tools_spec.py 修正</strong>: PAST_NARRATION_PATTERNS に date annotation pattern 再追加 (R-22 enforce 強化) / UNCOMPLETED_PATTERNS の context-aware exempt (R-23 false positive 抑制、style block / backtick code 内除外)</li>
+  <li><strong>spec-anchor-link-check.py 拡張</strong>: EXP semantic correctness audit (R-25 enforce)</li>
+  <li><strong>bats tests 追加</strong>: R-21〜R-25 grep 検証</li>
+  <li><strong>experiment-verified 昇格 (smoke 待ち)</strong>: EXP-027/028/029/032/034/039/044 (smoke 実装 + 実機 fire 後)、EXP-011/012/013 (bats skip rate 高、verified 昇格には PASS rate 改善必要)</li>
+</ul>
+
+<h3>機械検証</h3>
+
+<ul>
+  <li><strong>全 18 spec file twl_spec_content_check</strong>: ok=true (78 WARNING → 0)</li>
+  <li><strong>broken link</strong>: 0</li>
+  <li><strong>orphan link</strong>: 0</li>
+  <li><strong>L5 CI workflow</strong>: 本 wave 全 commit で push:branches:[main] trigger 発火 (spec-content-check.yml + spec-respec-build.yml + spec-link-check.yml)</li>
+</ul>
+
 <h2 id="2026-05-16-spec-purify-wide-audit">2026-05-16: architecture/spec/ 全体整合化 wave (change 001-spec-purify 後の Phase A-G、4 commit + Phase F 4 並列 review)</h2>
 
 <h3>核心成果</h3>
