@@ -2329,6 +2329,21 @@ try:
         return json.dumps(twl_check_handler(plugin_root=plugin_root), ensure_ascii=False)
 
     @mcp.tool()
+    def twl_spec_content_check(file_path: str, check_types: list[str] | None = None) -> str:
+        """spec/ content semantic lint (R-14 past_narration / R-15 demo_code / R-17 changes_lifecycle / R-18 respec_markup)。
+
+        R-20 enforce: tool-architect Phase E 機械検証 step に統合 MUST。
+        HTML parse (html.parser std lib) + regex で content semantic 違反を検出。
+
+        check_types: None なら全 check 実行。許容値: past_narration / demo_code / declarative / changes_lifecycle / respec_markup
+        """
+        from .tools_spec import twl_spec_content_check_handler
+        return json.dumps(
+            twl_spec_content_check_handler(file_path=file_path, check_types=check_types),
+            ensure_ascii=False,
+        )
+
+    @mcp.tool()
     def twl_state_read(
         type_: str,
         issue: str | None = None,
