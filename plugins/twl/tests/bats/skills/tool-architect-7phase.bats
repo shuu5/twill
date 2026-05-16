@@ -17,17 +17,17 @@ teardown() {
 }
 
 @test "tool-architect SKILL.md frontmatter name=twl:tool-architect" {
-  FRONTMATTER="$(sed -n '/^---$/,/^---$/p' "$SKILL_MD")"
+  FRONTMATTER="$(extract_frontmatter "$SKILL_MD")"
   echo "$FRONTMATTER" | grep -qE '^name:\s*twl:tool-architect'
 }
 
 @test "tool-architect SKILL.md frontmatter type=tool" {
-  FRONTMATTER="$(sed -n '/^---$/,/^---$/p' "$SKILL_MD")"
+  FRONTMATTER="$(extract_frontmatter "$SKILL_MD")"
   echo "$FRONTMATTER" | grep -qE '^type:\s*tool'
 }
 
 @test "tool-architect SKILL.md allowed-tools includes Agent (single-line or list format)" {
-  FRONTMATTER="$(sed -n '/^---$/,/^---$/p' "$SKILL_MD")"
+  FRONTMATTER="$(extract_frontmatter "$SKILL_MD")"
   # 単行 format (allowed-tools: [Bash, Agent]) または list format (allowed-tools: \n  - Agent) のどちらも accept
   # single-line: 'allowed-tools' と 'Agent' が同一行で OK
   # list: 'allowed-tools:' 行以降、次の non-indented field まで Agent が listing されている

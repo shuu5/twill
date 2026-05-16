@@ -64,7 +64,7 @@ for c in data.get('components', []):
 @test "3 review agents (vocabulary/structure/ssot) all have model=opus (R-13)" {
   for axis in vocabulary structure ssot; do
     AGENT="$AGENTS_DIR/specialist-spec-review-$axis.md"
-    FRONTMATTER="$(sed -n '/^---$/,/^---$/p' "$AGENT")"
+    FRONTMATTER="$(extract_frontmatter "$AGENT")"
     echo "$FRONTMATTER" | grep -qE '^model:\s*opus'
   done
 }
@@ -72,7 +72,7 @@ for c in data.get('components', []):
 @test "explorer and architect agents have model=sonnet (not opus)" {
   for name in explorer architect; do
     AGENT="$AGENTS_DIR/specialist-spec-$name.md"
-    FRONTMATTER="$(sed -n '/^---$/,/^---$/p' "$AGENT")"
+    FRONTMATTER="$(extract_frontmatter "$AGENT")"
     echo "$FRONTMATTER" | grep -qE '^model:\s*sonnet'
   done
 }

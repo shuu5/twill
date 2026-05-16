@@ -18,22 +18,22 @@ teardown() {
 }
 
 @test "specialist-spec-architect frontmatter has type=specialist" {
-  FRONTMATTER="$(sed -n '/^---$/,/^---$/p' "$AGENT_MD")"
+  FRONTMATTER="$(extract_frontmatter "$AGENT_MD")"
   echo "$FRONTMATTER" | grep -qE '^type:\s*specialist'
 }
 
 @test "specialist-spec-architect frontmatter name has twl: prefix" {
-  FRONTMATTER="$(sed -n '/^---$/,/^---$/p' "$AGENT_MD")"
+  FRONTMATTER="$(extract_frontmatter "$AGENT_MD")"
   echo "$FRONTMATTER" | grep -qE '^name:\s*twl:specialist-spec-architect'
 }
 
 @test "specialist-spec-architect frontmatter model=sonnet" {
-  FRONTMATTER="$(sed -n '/^---$/,/^---$/p' "$AGENT_MD")"
+  FRONTMATTER="$(extract_frontmatter "$AGENT_MD")"
   echo "$FRONTMATTER" | grep -qE '^model:\s*sonnet'
 }
 
 @test "specialist-spec-architect no Edit/Write in tools" {
-  FRONTMATTER="$(sed -n '/^---$/,/^---$/p' "$AGENT_MD")"
+  FRONTMATTER="$(extract_frontmatter "$AGENT_MD")"
   TOOLS_SECTION="$(echo "$FRONTMATTER" | awk '/^tools:/{flag=1; next} /^[a-z]/{flag=0} flag')"
   ! echo "$TOOLS_SECTION" | grep -qE '^\s*-\s*(Edit|Write)'
 }
@@ -55,6 +55,6 @@ teardown() {
 }
 
 @test "specialist-spec-architect skills includes ref-specialist-output-schema" {
-  FRONTMATTER="$(sed -n '/^---$/,/^---$/p' "$AGENT_MD")"
+  FRONTMATTER="$(extract_frontmatter "$AGENT_MD")"
   echo "$FRONTMATTER" | grep -qE 'ref-specialist-output-schema'
 }

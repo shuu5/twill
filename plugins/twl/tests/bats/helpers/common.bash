@@ -12,6 +12,18 @@ load "${TESTS_DIR}/lib/bats-support/load"
 load "${TESTS_DIR}/lib/bats-assert/load"
 
 # ---------------------------------------------------------------------------
+# Frontmatter helpers (added 2026-05-16 for tool-architect bats DRY、F4)
+# ---------------------------------------------------------------------------
+
+# extract_frontmatter <file_path>
+# Extract YAML frontmatter block (between --- markers) from a markdown file.
+# Output: frontmatter content (excluding the --- delimiters themselves not stripped)
+# Usage: FRONTMATTER="$(extract_frontmatter "$AGENT_MD")"
+extract_frontmatter() {
+  sed -n '/^---$/,/^---$/p' "$1"
+}
+
+# ---------------------------------------------------------------------------
 # Sandbox management
 # ---------------------------------------------------------------------------
 

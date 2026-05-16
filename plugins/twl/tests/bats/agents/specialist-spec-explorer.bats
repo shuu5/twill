@@ -18,33 +18,33 @@ teardown() {
 }
 
 @test "specialist-spec-explorer frontmatter has type=specialist" {
-  FRONTMATTER="$(sed -n '/^---$/,/^---$/p' "$AGENT_MD")"
+  FRONTMATTER="$(extract_frontmatter "$AGENT_MD")"
   echo "$FRONTMATTER" | grep -qE '^type:\s*specialist'
 }
 
 @test "specialist-spec-explorer frontmatter name has twl: prefix" {
-  FRONTMATTER="$(sed -n '/^---$/,/^---$/p' "$AGENT_MD")"
+  FRONTMATTER="$(extract_frontmatter "$AGENT_MD")"
   echo "$FRONTMATTER" | grep -qE '^name:\s*twl:specialist-spec-explorer'
 }
 
 @test "specialist-spec-explorer frontmatter model=sonnet" {
-  FRONTMATTER="$(sed -n '/^---$/,/^---$/p' "$AGENT_MD")"
+  FRONTMATTER="$(extract_frontmatter "$AGENT_MD")"
   echo "$FRONTMATTER" | grep -qE '^model:\s*sonnet'
 }
 
 @test "specialist-spec-explorer frontmatter tools field exists" {
-  FRONTMATTER="$(sed -n '/^---$/,/^---$/p' "$AGENT_MD")"
+  FRONTMATTER="$(extract_frontmatter "$AGENT_MD")"
   echo "$FRONTMATTER" | grep -q '^tools:'
 }
 
 @test "specialist-spec-explorer no Edit in tools (Read-only enforcement)" {
-  FRONTMATTER="$(sed -n '/^---$/,/^---$/p' "$AGENT_MD")"
+  FRONTMATTER="$(extract_frontmatter "$AGENT_MD")"
   TOOLS_SECTION="$(echo "$FRONTMATTER" | awk '/^tools:/{flag=1; next} /^[a-z]/{flag=0} flag')"
   ! echo "$TOOLS_SECTION" | grep -qE '^\s*-\s*Edit'
 }
 
 @test "specialist-spec-explorer no Write in tools (Read-only enforcement)" {
-  FRONTMATTER="$(sed -n '/^---$/,/^---$/p' "$AGENT_MD")"
+  FRONTMATTER="$(extract_frontmatter "$AGENT_MD")"
   TOOLS_SECTION="$(echo "$FRONTMATTER" | awk '/^tools:/{flag=1; next} /^[a-z]/{flag=0} flag')"
   ! echo "$TOOLS_SECTION" | grep -qE '^\s*-\s*Write'
 }
@@ -55,7 +55,7 @@ teardown() {
 }
 
 @test "specialist-spec-explorer NotebookRead in tools" {
-  FRONTMATTER="$(sed -n '/^---$/,/^---$/p' "$AGENT_MD")"
+  FRONTMATTER="$(extract_frontmatter "$AGENT_MD")"
   echo "$FRONTMATTER" | grep -qE 'NotebookRead'
 }
 
@@ -68,6 +68,6 @@ teardown() {
 }
 
 @test "specialist-spec-explorer skills includes ref-specialist-output-schema" {
-  FRONTMATTER="$(sed -n '/^---$/,/^---$/p' "$AGENT_MD")"
+  FRONTMATTER="$(extract_frontmatter "$AGENT_MD")"
   echo "$FRONTMATTER" | grep -qE 'ref-specialist-output-schema'
 }
