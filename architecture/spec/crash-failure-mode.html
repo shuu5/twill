@@ -13,7 +13,7 @@
 
 <header class="doc-header">
   <h1>twill plugin rebuild — crash failure mode</h1>
-  <div class="meta">status: <span class="badge done">done</span> &middot; draft-v3 (2026-05-15、Phase I 2026-05-15 確定 + Q3 整合化反映) &middot; 3 階層 (administrator/phaser/L2-3) crash 検知 + recovery + SLA &middot; 不変条件 G の強化</div>
+  <div class="meta">status: <span class="badge done">done</span> &middot; 3 階層 (administrator/phaser/L2-3) crash 検知 + recovery + SLA &middot; 不変条件 G の強化</div>
 </header>
 
 <h2>1. 目的</h2>
@@ -118,7 +118,7 @@
 <tbody>
 <tr><td>L2-3 workflow+atomic+specialist</td><td>3 min (各 atomic exec 終了時 touch)</td><td>10 min (mail 不在 + heartbeat 古い)</td><td>L1 phaser (mailbox poll cycle で確認)</td></tr>
 <tr><td>L1 phaser</td><td>5 min (各 cycle で touch)</td><td>15 min</td><td>L0 administrator (CronCreate 25 min cycle で確認)</td></tr>
-<tr><td>L0 administrator</td><td>25 min (CronCreate fire ごとに touch <code>.supervisor/admin-heartbeat</code>)</td><td>40 min (CronCreate skip 1 回 + 余裕)、Phase I 2026-05-15 確定で 10 min stale 検知に短縮</td><td><strong>machine-scoped Linux crontab</strong> (admin process と独立、Phase I 2026-05-15 確定) + user 手動 fallback</td></tr>
+<tr><td>L0 administrator</td><td>25 min (CronCreate fire ごとに touch <code>.supervisor/admin-heartbeat</code>)</td><td>10 min stale (§4.5 machine-scoped cron による短縮)</td><td><strong>machine-scoped Linux crontab</strong> (admin process と独立) + user 手動 fallback</td></tr>
 </tbody>
 </table>
 
@@ -131,27 +131,20 @@
 </ul>
 
 <div class="warning">
-<strong>注意</strong>: SLA は新 spec の <strong>初期値</strong>。<code>Phase 1 PoC</code> で実測して調整。atomic exec によっては 10 min 超 (例: 大規模 test execution) もあり得るため、atomic ごとの timeout 個別調整が必要 (<code>Phase 2</code> で atomic SKILL.md に timeout フィールド追加)。
+<strong>注意</strong>: SLA は初期値。実機運用で atomic exec の特性 (大規模 test execution で 10 min 超 等) に合わせて atomic ごとの timeout を個別調整する (atomic SKILL.md の timeout field 設計は <a href="../migration/rebuild-plan.html">rebuild-plan.html</a> 参照)。
 </div>
 
-<h3>4.5 L0 administrator crash 自動検知 (Phase I 2026-05-15 dig Q3 確定、Inv G 部分保証化)</h3>
+<h3>4.5 L0 administrator crash 自動検知 (Inv G 部分保証化)</h3>
 
 <div class="info">
-<strong>問題</strong>: L0 administrator が crash すると CronCreate task も巻き添えで停止 (session-scoped)、L0 自己検知機構は原理的に成立しない (循環依存)。Phase I dig で 2 段防御を確定。
+<strong>問題</strong>: L0 administrator が crash すると CronCreate task も巻き添えで停止 (session-scoped)、L0 自己検知機構は原理的に成立しない (循環依存)。2 段防御を採用する。
 
 <dl>
   <dt>1 段目 (session-scoped、admin 内)</dt><dd>admin polling cycle ごとに <code>.supervisor/admin-heartbeat</code> を touch。admin が alive な限り mtime 更新、admin dead で mtime stale</dd>
-  <dt>2 段目 (machine-scoped、admin 外、新規)</dt><dd><strong>Linux crontab</strong> (admin process と独立) で 5 min 毎に <code>.supervisor/admin-heartbeat</code> mtime check。10 min 以上 stale なら Discord DM via <code>mcp__discord__reply</code> (chat_id は reference_discord_dm.md 参照) で user escalate</dd>
+  <dt>2 段目 (machine-scoped、admin 外)</dt><dd><strong>Linux crontab</strong> (admin process と独立) で 5 min 毎に <code>.supervisor/admin-heartbeat</code> mtime check。10 min 以上 stale なら Discord DM via <code>mcp__discord__reply</code> (chat_id は reference 系 memory 参照) で user escalate。同 stale を複数回通知しないよう last-notified state file で idempotent 化する。</dd>
 </dl>
 
-<strong>実装 (Phase 1 PoC scope)</strong>:
-<ul>
-  <li><code>plugins/twl/scripts/admin-health-check.sh</code> (~30 行) を新規作成。content: <code>STALE=$(find .supervisor/admin-heartbeat -mmin +10 2&gt;/dev/null | wc -l); [[ $STALE -gt 0 ]] &amp;&amp; mcp_discord_reply "admin stale &gt; 10min"</code></li>
-  <li><code>crontab -e</code> で <code>*/5 * * * * bash /path/to/admin-health-check.sh</code> を user が manual 登録 (machine-scoped、admin process 独立稼働)</li>
-  <li>script 自身も idempotent (同 stale を複数回通知しないように last-notified state file 管理)</li>
-</ul>
-
-<strong>判断根拠</strong>: machine-scoped cron は admin process と独立で稼働、admin crash で fire 不能にならない。session-scoped CronCreate のみでは循環依存で検知不能 (admin dead → cron も dead)、machine-scoped で外部観測点を確保。
+<strong>判断根拠</strong>: machine-scoped cron は admin process と独立で稼働、admin crash で fire 不能にならない。session-scoped CronCreate のみでは循環依存で検知不能 (admin dead → cron も dead)、machine-scoped で外部観測点を確保する。
 
 <strong>残課題 (本質的に解消不能)</strong>: 完全 crash 検知は不可能 (host down / network down / Discord MCP server down / user 通知経路 down のいずれかで検知 break)。Inv G は「部分保証 (host alive + Discord MCP alive な範囲で 10 min 内検知)」として認識する。
 </div>
@@ -189,14 +182,14 @@
 <table>
 <thead><tr><th>crash 種別</th><th>検知</th><th>recovery 手順</th><th>SLA</th></tr></thead>
 <tbody>
-<tr><td>process exit (non-zero)</td><td>外部 <code>admin-health-check.sh</code> (Linux crontab 5 min 毎) が admin heartbeat 古い検知 (Phase I 2026-05-15 確定、§4.5 参照)、または user の手動確認</td><td>user が <code>tmux new-window administrator</code> で再起動 → administrator は session.json + memory MCP + mailbox archive から復元</td><td>10 min (外部 cron 5 min + 余裕、Phase I 2026-05-15 確定)</td></tr>
+<tr><td>process exit (non-zero)</td><td>外部 machine-scoped cron (§4.5、5 min 毎) が admin heartbeat 古い検知、または user の手動確認</td><td>user が <code>tmux new-window administrator</code> で再起動 → administrator は session.json + memory MCP + mailbox archive から復元</td><td>10 min (外部 cron 5 min + 余裕)</td></tr>
 <tr><td>hang (CronCreate fire 不在)</td><td>同上 (heartbeat 古い)</td><td>同上</td><td>10 min (外部 cron 5 min + 余裕)</td></tr>
 <tr><td>tmux server crash (#1360)</td><td>tmux server プロセス死亡 → 全 window 巻き添え死。外部 daemon が <code>tmux ls</code> で検知</td><td>user (or ADR-042 の crash recovery 機構) が tmux server 再起動 → administrator + 各 phaser を再 spawn (state は file 永続なので復元可能)</td><td>~60-120 min</td></tr>
 </tbody>
 </table>
 
 <div class="critical">
-<strong>administrator crash は最も影響大</strong>: 全 system が orchestration 不在になる。<code>Phase 1 PoC</code> で <strong>外部 heartbeat-watcher.sh</strong> (cron 5 min) を必須実装、ADR-042 (tmux crash recovery) との統合を <code>Phase 2</code> で完了する。
+<strong>administrator crash は最も影響大</strong>: 全 system が orchestration 不在になる。machine-scoped cron による外部 heartbeat watch (§4.5) を必須とし、tmux server crash の自動 recovery は ADR-042 統合で扱う。
 </div>
 
 <h2>6. 周辺 failure mode</h2>
@@ -214,14 +207,14 @@
 <ul>
   <li><strong>状況</strong>: phaser が GitHub Project Board status を更新 + mail を書く間に administrator poll が走る</li>
   <li><strong>対応</strong>: administrator は <strong>mail と status の両方を確認</strong>、不整合 (mail なし + status 変化) の場合は 1 cycle 遅延 + 再 poll</li>
-  <li><strong>不変条件 reference</strong>: <a href="admin-cycle.html">admin-cycle.html</a> 実装 で確定する不変条件群を参照予定。過去 session 時点では仮置きで「mail と status の AND check」原則のみ確定</li>
+  <li><strong>不変条件 reference</strong>: <a href="admin-cycle.html">admin-cycle.html</a> の不変条件群を参照。本 spec では「mail と status の AND check」原則を採用する</li>
 </ul>
 
 <h3>CronCreate skip / delay</h3>
 
 <ul>
   <li><strong>状況</strong>: admin の CronCreate が claude code internal で skip / delay</li>
-  <li><strong>対応</strong>: CronCreate `durable=true` は <strong>BROKEN (#40228)</strong> のため session 再起動で fire 不能 (admin-cycle.html §1 参照)。tmux session 再起動時は administrator が <code>--continue</code> で復帰し CronCreate を再登録する。skip 検知は heartbeat file mtime &gt; 10 min で外部 <code>admin-health-check.sh</code> が user notify (Phase I 2026-05-15 確定)</li>
+  <li><strong>対応</strong>: CronCreate `durable=true` は <strong>BROKEN (#40228)</strong> のため session 再起動で fire 不能 (admin-cycle.html §1 参照)。tmux session 再起動時は administrator が <code>--continue</code> で復帰し CronCreate を再登録する。skip 検知は heartbeat file mtime &gt; 10 min で machine-scoped cron (§4.5) が user notify する</li>
 </ul>
 
 <h3>API rate limit / external service 障害</h3>
@@ -243,7 +236,7 @@
 </ul>
 </div>
 
-<h2>8. <code>Phase 1 PoC</code> での verify points</h2>
+<h2>8. verify points (PoC scope)</h2>
 
 <table>
 <thead><tr><th>項目</th><th>verify 方法</th></tr></thead>
@@ -253,7 +246,7 @@
 <tr><td>phaser crash 検知</td><td>phaser session を `tmux kill-window` → administrator が 25 min cycle 内に検知 + re-spawn</td></tr>
 <tr><td>file mailbox 永続性</td><td>L2-3 (atomic/specialist) が mail 書き直後に kill → 新 phaser 起動 → mail を正しく読めることを verify</td></tr>
 <tr><td>state SSoT 整合</td><td>phaser crash 時、GitHub Project Board status と mailbox state が一致することを administrator が verify</td></tr>
-<tr><td>tmux server crash recovery (#1360)</td><td>tmux server kill → 外部 cron が検知 → user の手動 recovery 手順が <code>rebuild-plan.html</code> に記載 (<code>Phase 2</code> で自動化)</td></tr>
+<tr><td>tmux server crash recovery (#1360)</td><td>tmux server kill → 外部 cron が検知 → user の手動 recovery 手順は <code>rebuild-plan.html</code> に記載 (自動化は ADR-042 統合 scope)</td></tr>
 </tbody>
 </table>
 
@@ -270,10 +263,10 @@
 <h2>10. 残課題</h2>
 
 <ul>
-  <li>各 atomic exec の timeout 個別調整 (atomic SKILL.md の timeout field 設計、<code>Phase 2</code>)</li>
-  <li>tmux server crash 自動 recovery 機構 (ADR-042 統合、<code>Phase 2</code>)</li>
-  <li>API rate limit / MCP 障害時の retry policy 詳細仕様 (<code>Phase 2</code>)</li>
-  <li>外部 heartbeat-watcher.sh の実装 (<code>Phase 1 PoC</code> で必須)</li>
+  <li>各 atomic exec の timeout 個別調整 (atomic SKILL.md の timeout field 設計)</li>
+  <li>tmux server crash 自動 recovery 機構 (ADR-042 統合 scope)</li>
+  <li>API rate limit / MCP 障害時の retry policy 詳細仕様</li>
+  <li>machine-scoped heartbeat-watcher の実装 (§4.5 の 2 段目防御の具体化、本 spec scope 内では declarative まで)</li>
   <li>disk 故障 / network partition の failure mode (本 spec scope 外、別 ADR)</li>
 </ul>
 
