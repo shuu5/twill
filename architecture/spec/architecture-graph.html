@@ -69,7 +69,7 @@
     font-size: 11px;
     fill: var(--gray-900);
   }
-  /* 5 dir base color + spec/ 4 sub-intensity (Okabe-Ito colorblind-safe palette、2026-05-15 Q1) */
+  /* 5 dir base color + spec/ 4 sub-intensity (Okabe-Ito colorblind-safe palette) */
   .cat-spec-ori { fill: #aedfd9; }     /* brand-light、orientation */
   .cat-spec-core { fill: #5ac8b8; }    /* brand、core */
   .cat-spec-pol { fill: #8edcd0; }     /* brand-medium、policy */
@@ -270,7 +270,7 @@
       <text x="360" y="343">deletion</text>
     </g>
   </a>
-  <a xlink:href="../migration/rebuild-plan.html"><title>rebuild-plan.html — 4 phase plan + Phase 1 PoC + 8 verify points (hub)</title>
+  <a xlink:href="../migration/rebuild-plan.html"><title>rebuild-plan.html — 4 phase plan + PoC + 8 verify points (hub)</title>
     <g class="node">
       <circle class="cat-mig" cx="360" cy="420" r="28" />
       <text x="360" y="423">rebuild</text>
@@ -282,7 +282,7 @@
       <text x="360" y="503">regression</text>
     </g>
   </a>
-  <a xlink:href="../migration/dual-stack-routing.html"><title>dual-stack-routing.html — su-observer 旧 vs administrator 新 共存ルール</title>
+  <a xlink:href="../migration/dual-stack-routing.html"><title>dual-stack-routing.html — su-observer ↔ administrator 共存ルール</title>
     <g class="node">
       <circle class="cat-mig" cx="360" cy="580" r="22" />
       <text x="360" y="583">dual-stack</text>
@@ -316,7 +316,7 @@
       <text x="620" y="103">draft-v1</text>
     </g>
   </a>
-  <a xlink:href="../archive/changelog-impl.html"><title>changelog-impl.html — 実装作業 log (Phase F-J / Phase 1 PoC Cluster N 等)</title>
+  <a xlink:href="../archive/changelog-impl.html"><title>changelog-impl.html — 実装作業 log の歴史保存</title>
     <g class="node">
       <circle class="cat-arc" cx="620" cy="180" r="20" />
       <text x="620" y="183">chglog-impl</text>
@@ -365,7 +365,7 @@
   <line class="edge cross-dir" x1="90" y1="100" x2="360" y2="420" />   <!-- README → rebuild-plan -->
   <line class="edge cross-dir" x1="90" y1="100" x2="490" y2="260" />   <!-- README → exp-index -->
   <line class="edge cross-dir" x1="90" y1="100" x2="620" y2="100" />   <!-- README → draft-v1 -->
-  <line class="edge cross-dir" x1="90" y1="100" x2="750" y2="100" />   <!-- README → ADR-0012 (2026-05-15 Q1 追加) -->
+  <line class="edge cross-dir" x1="90" y1="100" x2="750" y2="100" />   <!-- README → ADR-0012 -->
 
   <!-- within-cluster edges (gray、cluster 内構造) -->
   <!-- spec/ orientation (vertical chain) -->
@@ -436,7 +436,7 @@
     <line class="edge" x1="10" y1="266" x2="40" y2="266" />
     <text x="46" y="270">within</text>
 
-    <!-- node size 凡例 (regular vs hub、2026-05-15 Q1 size 比較追加) -->
+    <!-- node size 凡例 (regular vs hub) -->
     <text x="6" y="290" style="font-size: 10px; font-weight: 600;">node size:</text>
     <circle class="cat-spec-core" cx="20" cy="312" r="11" stroke="var(--gray-700)" stroke-width="1" />
     <text x="40" y="316">regular (r=22)</text>
@@ -459,10 +459,10 @@
   <dd>research-findings (verified 集約) + sandbox-experiment (4-state status + EXP-id) + experiment-index (hub、全 EXP listing)</dd>
 
   <dt><strong>archive/</strong> (旧資産 rollback 保持、2 node)</dt>
-  <dd>draft-v1 (spec 原案) + changelog-impl (実装作業 log)。MD 群 (旧 ADR、TWiLL DDD 資産、dig artifact MD/HTML 版) は graph では非表示</dd>
+  <dd>draft-v1 (spec 原案) + changelog-impl (実装作業 log)。MD 群 (archive/decisions/ ADR-0006〜0011a/0011b + TWiLL DDD 資産 + dig artifact MD/HTML 版) は graph では非表示</dd>
 
   <dt><strong>decisions/</strong> (新 architecture ADR、1 node)</dt>
-  <dd>ADR-0012 (administrator rebrand、Proposed)。今後の ADR は順次追加</dd>
+  <dd>ADR-0012 (administrator rebrand、Proposed) + ADR-0013 (spec clean architecture、Accepted)</dd>
 </dl>
 
 <h2 id="hub-files">hub file (大型 r=28 で表示、regular r=22 との 6px 差で視認性向上)</h2>
