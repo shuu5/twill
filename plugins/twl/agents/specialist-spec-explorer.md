@@ -75,7 +75,7 @@ focus 別の対象:
 
 #### focus=history の場合
 - `architecture/decisions/` 配下 .md 全 Read、関連 ADR の status (Proposed/Accepted/Superseded) 把握
-- `architecture/migration/invariant-fate-table.html` で関連 Inv 把握
+- `architecture/archive/migration/invariant-fate-table.html` で関連 Inv 把握
 - `architecture/research/experiment-index.html` で関連 EXP 把握
 - `architecture/spec/changelog.html` で直近 entry 確認
 
@@ -130,7 +130,7 @@ focus に関わらず、edit が以下に link する場合 listing:
     "architecture/spec/boundary-matrix.html",
     "architecture/spec/registry-schema.html",
     "architecture/decisions/ADR-0012-administrator-rebrand.md",
-    "architecture/migration/invariant-fate-table.html"
+    "architecture/archive/migration/invariant-fate-table.html"
   ],
   "findings": [
     {

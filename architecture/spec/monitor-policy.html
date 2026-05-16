@@ -88,28 +88,23 @@ tail -F .mailbox/administrator/inbox.jsonl 2&gt;/dev/null \
 
 <h3>4.2 例: IDLE-COMPLETED composite event</h3>
 
-<p>composite condition (debounce 60s + pane content + mtime + completion phrase regex の 4 AND) は mail emitter side で評価し、成立時に 1 mail emit する:</p>
+<p>composite condition (debounce 60s + pane content + mtime + completion phrase regex の 4 AND) は mail emitter side で評価し、成立時に 1 mail emit する。具体的な indicator schema:</p>
 
-<pre><code># administrator polling cycle 内で composite check (admin-cycle.sh)
-check_idle_completed {
-  local target_window=$1
-  local debounce_sec=60
-  local now=$(date +%s)
+<table>
+  <thead>
+    <tr><th>indicator</th><th>data source</th><th>成立条件</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>pane_state</code></td><td><code>tmux display-message -p '#{pane_in_mode}'</code></td><td><code>== "0"</code> (pane が copy-mode 等の interactive mode に入っていない)</td></tr>
+    <tr><td><code>phrase_match</code></td><td><code>tmux capture-pane | tail -5 | grep -cE '^✓|^完了|^Done'</code></td><td><code>≥ 1</code> (直近 5 行に完了 marker)</td></tr>
+    <tr><td><code>last_mail_age</code></td><td><code>jq -r '.ts' .mailbox/administrator/inbox.jsonl | tail -1</code> から <code>now</code> 差分</td><td><code>≥ debounce_sec</code> (default 60s)</td></tr>
+    <tr><td><code>mail emit</code></td><td><code>mailbox_emit()</code> (<code>plugins/twl/scripts/lib/mailbox.sh</code>、verified 実装)</td><td>上記 3 indicator AND 成立時に 1 mail emit (<code>event: "idle-completed"</code>)</td></tr>
+  </tbody>
+</table>
 
-  # 4 indicator AND
-  local pane_state=$(tmux display-message -t "$target_window" -p '#{pane_in_mode}' 2&gt;/dev/null || echo "1")
-  local last_mail_ts=$(jq -r 'select(.from == "'$target_window'") | .ts' .mailbox/administrator/inbox.jsonl | tail -1)
-  local last_mail_age=$((now - $(date -d "$last_mail_ts" +%s 2&gt;/dev/null || echo 0)))
-  local phrase_match=$(tmux capture-pane -t "$target_window" -p | tail -5 | grep -cE '^✓|^完了|^Done')
-  local debounce_passed=$((last_mail_age &gt;= debounce_sec))
-
-  if [[ "$pane_state" == "0" &amp;&amp; "$phrase_match" -ge 1 &amp;&amp; "$debounce_passed" == "1" ]]; then
-    # composite condition 成立 → 1 mail emit (mailbox_emit 関数を使用)
-    source plugins/twl/scripts/lib/mailbox.sh
-    mailbox_emit "$target_window" "administrator" "idle-completed" \
-      "$(jq -nc '{debounce_passed: true, pane_state: "idle", phrase_matched: true}')"
-  fi
-}</code></pre>
+<aside class="ednote" data-status="proposed">
+本 composite check 関数の具体実装は <code>admin-cycle.sh</code> 内 helper として配置予定 (現状未実装、HIGH defer item)。<code>mailbox_emit</code> のみ <code>plugins/twl/scripts/lib/mailbox.sh</code> で verified 実装済。
+</aside>
 
 <h3>4.3 Monitor pattern は単純 filter</h3>
 
@@ -141,26 +136,22 @@ tail -F .mailbox/administrator/inbox.jsonl \
 
 <h3>5.2 administrator Step 0 health-check</h3>
 
-<p>plugin loader が起動失敗した場合に備え、administrator SKILL.md Step 0 で daemon 生存を確認:</p>
+<p>plugin loader が起動失敗した場合に備え、administrator SKILL.md Step 0 で daemon 生存を確認する。確認 step:</p>
 
-<pre><code># administrator SKILL.md Step 0 (session 起動時) — Monitor daemon health-check
-MONITOR_LIFECYCLE_FILE=".supervisor/monitor-lifecycle.json"
+<table>
+  <thead>
+    <tr><th>step</th><th>data source</th><th>action</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1. lifecycle file 読み込み</td><td><code>.supervisor/monitor-lifecycle.json</code></td><td><code>jq -r '.daemon_pids."admin-inbox-tail"'</code> で PID 取得</td></tr>
+    <tr><td>2. 生存確認</td><td><code>kill -0 $PID</code> (signal 0、process 存在チェック)</td><td>exit 0 → alive、exit ≠ 0 → crash 検知 (step 3)</td></tr>
+    <tr><td>3. crash 検知時の escalation</td><td>未実装 helper <code>record-detection-gap.sh</code> (HIGH defer item)</td><td><code>--type missing-monitor --severity high</code> で gap log + administrator 自己 restart は循環依存のため user escalate</td></tr>
+  </tbody>
+</table>
 
-# 1. lifecycle file 読み込み
-if [[ -f "$MONITOR_LIFECYCLE_FILE" ]]; then
-  ADMIN_INBOX_PID=$(jq -r '.daemon_pids."admin-inbox-tail" // empty' "$MONITOR_LIFECYCLE_FILE")
-
-  # 2. 生存確認
-  if [[ -n "$ADMIN_INBOX_PID" ]] && kill -0 "$ADMIN_INBOX_PID" 2&gt;/dev/null; then
-    echo "[MONITOR-HEALTH] admin-inbox-tail PID=$ADMIN_INBOX_PID alive"
-  else
-    # 3. crash 検知 → user escalate (administrator 自己 restart は循環依存)
-    bash plugins/twl/scripts/record-detection-gap.sh \
-      --type missing-monitor \
-      --detail "admin-inbox-tail daemon not found (PID=$ADMIN_INBOX_PID)" \
-      --severity high
-  fi
-fi</code></pre>
+<aside class="ednote" data-status="proposed">
+<code>record-detection-gap.sh</code> helper は未実装 (HIGH defer item、本 wave scope 外)。crash 検知時の escalation 経路は仕様だけ確定 (現状は user 手動 escalate)。実装は別 change package で扱う。
+</aside>
 
 <h3>5.3 monitor-lifecycle.json schema</h3>
 

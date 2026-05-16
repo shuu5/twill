@@ -144,4 +144,4 @@ graph LR
 - `plugins/twl/skills/tool-architect/SKILL.md` — spec edit entry
 - `plugins/twl/skills/tool-architect/refs/spec-management-rules.md` — R-1〜R-20 詳細
 - `architecture/decisions/ADR-0013-spec-clean-architecture.md` — 本 steering を確立した ADR
-- `architecture/changes/001-spec-purify/` — 本 steering を反映する change package
+- `architecture/archive/changes/2026-05-16-001-spec-purify/` — 本 steering を反映する change package (R-17 lifecycle 完遂で archive 移動済)

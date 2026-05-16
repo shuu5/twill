@@ -22,7 +22,7 @@ user の品質要求 (2026-05-16): 「メンテナンス性 + 論理構造再現
 
 ## Decision
 
-`change 001-spec-purify` (architecture/changes/001-spec-purify/) で **案 F (clean architecture)** を採用、以下を確立する:
+`change 001-spec-purify` (archive/changes/2026-05-16-001-spec-purify/、R-17 lifecycle 完遂で archive 移動済) で **案 F (clean architecture)** を採用、以下を確立する:
 
 1. **OpenSpec 3 階層 lifecycle 採用** — `architecture/changes/<NNN>-<slug>/` (進行中) / `archive/changes/YYYY-MM-DD-<NNN>-<slug>/` (完了) / `archive/migration/` (D3 / Z1、旧 migration/ 統合)
 
@@ -130,7 +130,7 @@ user の品質要求 (2026-05-16): 「メンテナンス性 + 論理構造再現
 
 - `plugins/twl/skills/tool-architect/refs/spec-management-rules.md` — R-1〜R-20 詳細 (本 ADR で R-14〜R-20 を確定)
 - `plugins/twl/skills/tool-architect/SKILL.md` — 7-phase multi-agent PR cycle (本 ADR で Phase F 4 軸目を確定)
-- `architecture/changes/001-spec-purify/` — 本 ADR を反映する change package (proposal/design/tasks/spec-delta)
+- `architecture/archive/changes/2026-05-16-001-spec-purify/` — 本 ADR を反映する change package (proposal/design/tasks/spec-delta、R-17 lifecycle 完遂で archive 移動済)
 - `architecture/spec/tool-architecture.html` — tool-* 3 件 spec (§3.3 7-phase、§3.7 6 agent (explorer/architect/review-vocabulary/structure/ssot/temporal、Phase F 4 軸)、§3.8 fix loop SLA、§3.9 業界 BP 採用、§3.10 transposition 根拠)
 
 ### 関連 ADR

@@ -206,32 +206,22 @@
 
 <h3>5.1 起動時 set</h3>
 
-<pre><code># administrator/SKILL.md Step 0 (session 起動時)
-# 1. CronList で既存 task 確認 (resume 時)
-existing = CronList
-admin_cycle_task = existing.filter(lambda t: t.prompt.startswith("admin-cycle"))
+<p>administrator/SKILL.md Step 0 (session 起動時) で実施する 3 step:</p>
 
-# 2. 不在なら CronCreate (recurring=true、durable 引数なし)
-if not admin_cycle_task:
-    CronCreate(
-        cron="*/25 * * * *",         # 25 分ごと (jitter で up to 12.5 min ずれる)
-        prompt="run admin-cycle.sh polling iteration",
-        recurring=true
-        # durable は使わない (#40228 BROKEN、session-scoped で十分)
-    )
-print("admin-cycle CronCreate set (session-scoped)")
+<table>
+  <thead>
+    <tr><th>step</th><th>action</th><th>tool / data source</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1. 既存 task 確認 (resume 時)</td><td><code>CronList</code> から <code>admin-cycle</code> prompt prefix の task を filter</td><td>built-in <code>CronList</code> tool</td></tr>
+    <tr><td>2. 不在なら <code>CronCreate</code> set</td><td>cron=<code>"*/25 * * * *"</code> (25 分間隔、jitter ≤ 12.5 min) / prompt=<code>"run admin-cycle.sh polling iteration"</code> / recurring=<code>true</code></td><td>built-in <code>CronCreate</code> tool (<code>durable</code> 引数は #40228 BROKEN のため未使用、session-scoped で十分)</td></tr>
+    <tr><td>3. Monitor daemon health-check</td><td><code>.supervisor/monitor-lifecycle.json</code> から <code>daemon_pids."admin-inbox-tail"</code> 取得 → <code>kill -0 $PID</code> で生存確認 → crash 時に escalate</td><td><code>plugins/twl/monitors.json</code> daemon (plugin loader で auto-start) + <a href="monitor-policy.html#s5">monitor-policy.html §5.2</a></td></tr>
+  </tbody>
+</table>
 
-# 3. Monitor daemon health-check (monitor-policy.html §5.2)
-# plugins/twl/monitors.json daemon が plugin loader で auto-start されているはず
-MONITOR_LIFECYCLE_FILE=".supervisor/monitor-lifecycle.json"
-if [[ -f "$MONITOR_LIFECYCLE_FILE" ]]; then
-    ADMIN_INBOX_PID=$(jq -r '.daemon_pids."admin-inbox-tail" // empty' "$MONITOR_LIFECYCLE_FILE")
-    if [[ -z "$ADMIN_INBOX_PID" ]] || ! kill -0 "$ADMIN_INBOX_PID" 2>/dev/null; then
-        bash plugins/twl/scripts/record-detection-gap.sh \
-            --type missing-monitor --severity high \
-            --detail "admin-inbox-tail daemon dead/missing (PID=$ADMIN_INBOX_PID)"
-    fi
-fi</code></pre>
+<aside class="ednote" data-status="proposed">
+crash 検知時の <code>record-detection-gap.sh</code> escalation helper は未実装 (HIGH defer item、別 change package で扱う)。現状は user 手動 escalate で運用。
+</aside>
 
 <h3>5.2 7 日 expiry 対応</h3>
 
