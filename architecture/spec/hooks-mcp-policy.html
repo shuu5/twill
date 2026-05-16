@@ -104,7 +104,7 @@
 
 <p>mcp_tool hook の template 変数展開 (<code>${tool_input.command}</code> 等) は公式 docs に明示なし。現状仕様: <code>command</code> hook で script 起動し、script が stdin JSON を parse して <code>additionalContext</code> で LLM に memory_store を促進する形式を採用する。</p>
 
-<pre><code># plugins/twl/hooks/hooks.json (公式 verified 入れ子 schema)
+<pre data-status="verified"><code># plugins/twl/hooks/hooks.json (公式 verified 入れ子 schema)
 {
   "hooks": {
     "PostToolUseFailure": [
@@ -170,7 +170,7 @@
 <ul>
   <li><a href="boundary-matrix.html">boundary-matrix.html</a> (hook independence invariant Inv H-1〜3、5 entity boundary)</li>
   <li><a href="gate-hook.html">gate-hook.html</a> (phase-gate 特化、不変条件 W tier 1+2 防御)</li>
-  <li><a href="tool-architecture.html">tool-architecture.html</a> §9 pending (tool-architect spec-write-boundary hook)</li>
+  <li><a href="tool-architecture.html">tool-architecture.html</a> §9 (tool-architect spec-write-boundary hook、Editor notes / defer items)</li>
   <li><a href="../archive/migration/rebuild-plan.html">rebuild-plan.html</a> STEP -1 (hook 無効化 + 残す 3 hook id audit)</li>
   <li><a href="../research/experiment-index.html">experiment-index.html</a> EXP-039/040/041/042/043 (smoke 候補)</li>
   <li><a href="../archive/migration/invariant-fate-table.html">invariant-fate-table.html</a> Inv H-1〜3 (hook independence)</li>

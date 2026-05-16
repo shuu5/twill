@@ -158,24 +158,20 @@
 <h3>5.1 呼び出し chain (公式仕様 verified)</h3>
 
 <div class="diagram">
-<pre style="background: #1a2025; color: #e3e8eb; padding: 12px; text-align: left;">
-[user / administrator が直接 invoke]
-    │ slash command
-    ▼
-[administrator skill] ← description あり
-    │ tmux new-window + claude --plugin-dir + slash command
-    ▼
-[phaser-impl skill] ← 別 session window、description あり
-    │ Skill(workflow-test-ready)
-    ▼
-[workflow-test-ready skill] ← disable-model-invocation: true (Skill tool は使える、<span class="vs inferred">inferred</span>、EXP-010 で smoke 検証予定)
-    │ Skill(atomic-test-scaffold) → Skill(atomic-green-impl) → ...
-    ▼
-[atomic-test-scaffold skill] ← disable-model-invocation: true、4-phase lifecycle inline
-    │ Agent(specialist-prompt-reviewer) ← 必要時のみ
-    ▼
-[specialist-prompt-reviewer agent] ← Agent tool、subagent context
-</pre>
+<pre class="mermaid" data-status="deduced"><code>sequenceDiagram
+  actor User as user / administrator
+  participant Admin as administrator skill<br/>(description あり)
+  participant Phaser as phaser-impl skill<br/>(別 session window、description あり)
+  participant Workflow as workflow-test-ready skill<br/>(disable-model-invocation: true)
+  participant Atomic as atomic-test-scaffold skill<br/>(disable-model-invocation: true、4-phase lifecycle inline)
+  participant Specialist as specialist-prompt-reviewer<br/>(Agent tool、subagent context)
+
+  User->>Admin: slash command 直接 invoke
+  Admin->>Phaser: tmux new-window + claude --plugin-dir + slash command
+  Phaser->>Workflow: Skill(workflow-test-ready)
+  Workflow->>Atomic: Skill(atomic-test-scaffold) → Skill(atomic-green-impl) → ...
+  Atomic->>Specialist: Agent(specialist-prompt-reviewer)<br/>必要時のみ
+  Specialist-->>Atomic: findings return</code></pre>
 </div>
 
 <h3>5.2 atomic SKILL.md inline 4-phase lifecycle</h3>

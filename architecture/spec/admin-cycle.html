@@ -139,7 +139,7 @@
 
 <p>各 phaser が emit した mail を読み、未読 line を line 番号で track。flock 共有 lock で read。format:</p>
 
-<pre><code>{"from":"phaser-impl-1660","ts":"&lt;ISO8601&gt;","event":"phase-completed","detail":{"issue":1660,"status":"Implementing"}}
+<pre data-status="deduced"><code>{"from":"phaser-impl-1660","ts":"&lt;ISO8601&gt;","event":"phase-completed","detail":{"issue":1660,"status":"Implementing"}}
 {"from":"phaser-pr-1660","ts":"&lt;ISO8601&gt;","event":"merge-gate-failed","detail":{"issue":1660,"reason":"specialist FAIL"}}
 {"from":"phase-gate","ts":"&lt;ISO8601&gt;","event":"phase-gate-denied","detail":{"skill":"phaser-impl-1700","issue":1700,"expected":"Refined","actual":"Todo"}}</code></pre>
 
@@ -155,7 +155,7 @@
 
 <p>各 Issue について「次 phase を起動すべきか?」を判定。判断ロジック:</p>
 
-<pre><code>FOR each issue IN board_items:
+<pre data-status="deduced"><code>FOR each issue IN board_items:
   current_status = issue.status
   has_active_phaser = ANY tmux window prefix "phaser-*" matches issue
   next_phase = STATUS_TRANSITION_MAP[current_status]  # 例: Refined → phaser-impl

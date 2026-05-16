@@ -42,7 +42,7 @@
 
 <h3>1.1 正しい hook config schema (公式 verified)</h3>
 
-<pre><code>{
+<pre data-status="verified"><code>{
   "hooks": {
     "PreToolUse": [
       {
@@ -102,7 +102,7 @@
 
 <p>command hook は <strong>stdin JSON</strong> で context を受信する。template 変数展開は非サポート。</p>
 
-<pre><code># PreToolUse の場合の stdin JSON 構造 (公式 verified)
+<pre data-status="verified"><code># PreToolUse の場合の stdin JSON 構造 (公式 verified)
 {
   "session_id": "abc123",
   "transcript_path": "/home/user/.claude/projects/.../transcript.jsonl",
@@ -137,7 +137,7 @@
 
 <h3>3.1 JSON 出力 schema (exit 0 時、公式 verified)</h3>
 
-<pre><code>{
+<pre data-status="verified"><code>{
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
     "permissionDecision": "allow|deny|ask|defer",
@@ -255,7 +255,7 @@
   <li>deny 受信 → administrator が mail を読み、状況を user に報告</li>
   <li>user 判断:
     <ul>
-      <li>前 status-transition が未完了 → 該当 <code>phaser-*</code> を先に実行</li>
+      <li>前 status-transition が未到達 → 該当 <code>phaser-*</code> を先に実行</li>
       <li>status 遷移漏れ → user 手動で Project Board status 更新</li>
       <li>緊急 → <code>TWL_PHASE_GATE_BYPASS=1</code> で bypass</li>
     </ul>

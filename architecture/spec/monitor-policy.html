@@ -47,7 +47,7 @@
 
 <h3>3.1 canonical Monitor pattern</h3>
 
-<pre><code># Monitor task 起動 (administrator 用、monitors.json entry)
+<pre data-status="deduced"><code># Monitor task 起動 (administrator 用、monitors.json entry)
 tail -F .mailbox/administrator/inbox.jsonl 2&gt;/dev/null \
   | jq -rc --unbuffered 'select(.event != null) | "[\(.event)] from=\(.from) ts=\(.ts) detail=\(.detail // {} | tojson)"'
 
@@ -56,7 +56,7 @@ tail -F .mailbox/administrator/inbox.jsonl 2&gt;/dev/null \
 
 <h3>3.2 mail schema (glossary.html canonical)</h3>
 
-<pre><code>{
+<pre data-status="deduced"><code>{
   "from": "&lt;sender-id&gt;",          // e.g. "phaser-impl-1234"
   "to": "administrator",            // recipient
   "ts": "2026-05-15T12:34:56+09:00",
@@ -108,7 +108,7 @@ tail -F .mailbox/administrator/inbox.jsonl 2&gt;/dev/null \
 
 <h3>4.3 Monitor pattern は単純 filter</h3>
 
-<pre><code># Monitor が watch する pattern (monitors.json entry)
+<pre data-status="deduced"><code># Monitor が watch する pattern (monitors.json entry)
 tail -F .mailbox/administrator/inbox.jsonl \
   | jq -rc --unbuffered 'select(.event == "idle-completed") | "[IDLE-COMPLETED] window=\(.from)"'
 
@@ -120,7 +120,7 @@ tail -F .mailbox/administrator/inbox.jsonl \
 
 <p><strong>primary 方式</strong>: <code>plugins/twl/monitors.json</code> entry で Plugin loader が plugin load 時に background process を自動起動・cleanup する。</p>
 
-<pre><code>// plugins/twl/monitors.json
+<pre data-status="deduced"><code>// plugins/twl/monitors.json
 {
   "monitors": [
     {
@@ -155,7 +155,7 @@ tail -F .mailbox/administrator/inbox.jsonl \
 
 <h3>5.3 monitor-lifecycle.json schema</h3>
 
-<pre><code>{
+<pre data-status="deduced"><code>{
   "daemon_pids": {
     "admin-inbox-tail": 12345,
     "&lt;channel-id&gt;": &lt;pid&gt;

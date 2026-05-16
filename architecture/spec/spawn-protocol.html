@@ -38,7 +38,7 @@
 
 <h3>1.1 plugin 構造 (verified)</h3>
 
-<pre><code>plugins/twl/
+<pre data-status="deduced"><code>plugins/twl/
 ├── .claude-plugin/
 │   └── plugin.json                # manifest: name="twl", version, description
 ├── skills/                        # skill 群 (旧 .claude/skills/ から移行)
@@ -147,7 +147,7 @@
 
 <h3>4.1 path 規約</h3>
 
-<pre><code>.mailbox/
+<pre data-status="deduced"><code>.mailbox/
 ├── administrator/
 │   └── inbox.jsonl              # administrator が読む mail (旧 admin/ から rename)
 ├── phaser-impl-1660/
@@ -163,7 +163,7 @@
 
 <p>既存 <code>plugins/twl/scripts/session-atomic-write.sh</code> L41-50 で verified pattern <span class="vs verified">verified</span>:</p>
 
-<pre><code># 既存 pattern (verified): fd 9 + timeout 10s + mktemp + mv
+<pre data-status="deduced"><code># 既存 pattern (verified): fd 9 + timeout 10s + mktemp + mv
 flock -x -w 10 9 || exit 1
 # ... atomic write ...
 } 9&gt;&gt;"$LOCK_FILE"</code></pre>
