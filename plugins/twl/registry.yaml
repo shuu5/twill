@@ -125,6 +125,7 @@ glossary:
       - specialist-spec-review-vocabulary  # Phase F 軸 1、opus、用語整合性
       - specialist-spec-review-structure   # Phase F 軸 2、opus、構造整合性
       - specialist-spec-review-ssot        # Phase F 軸 3、opus、SSoT 整合性
+      - specialist-spec-review-temporal    # Phase F 軸 4、opus、content semantic (R-14〜R-18)
 
   reference:
     canonical: reference
@@ -394,6 +395,7 @@ components:
       - "Agent(specialist-spec-review-vocabulary)"
       - "Agent(specialist-spec-review-structure)"
       - "Agent(specialist-spec-review-ssot)"
+      - "Agent(specialist-spec-review-temporal)"
     description_required: true
 
   - name: phaser-impl
@@ -460,7 +462,7 @@ components:
       - "Skill(tool-architect)"
     model: opus
     description: |
-      tool-architect Phase F の 3 並列 review specialist (R-13 で opus 固定、sonnet downgrade 禁止)。
+      tool-architect Phase F の 4 並列 review specialist (R-13 で opus 固定、sonnet downgrade 禁止)。
       軸 1: 用語整合性 (vocabulary table forbidden synonym detection、glossary §11 deprecated entries 整合、
       word boundary 検出、legitimate context は exclusion)。
       output category: spec-vocabulary、confidence ≥80 filter (feature-dev:code-reviewer pattern 継承)。
@@ -474,7 +476,7 @@ components:
       - "Skill(tool-architect)"
     model: opus
     description: |
-      tool-architect Phase F の 3 並列 review specialist (R-13 opus 固定)。
+      tool-architect Phase F の 4 並列 review specialist (R-13 opus 固定)。
       軸 2: 構造整合性 (cross-ref / id anchor / table column / changelog timeline / R-1/R-2 適用確認)。
       output category: spec-structure、confidence ≥80 filter。
     description_required: true
@@ -487,9 +489,22 @@ components:
       - "Skill(tool-architect)"
     model: opus
     description: |
-      tool-architect Phase F の 3 並列 review specialist (R-13 opus 固定)。
+      tool-architect Phase F の 4 並列 review specialist (R-13 opus 固定)。
       軸 3: SSoT 整合性 (ADR / 不変条件 / EXP status / registry-schema との整合)。
       output category: spec-ssot、confidence ≥80 filter。
+    description_required: true
+
+  - name: specialist-spec-review-temporal
+    role: specialist
+    file: agents/specialist-spec-review-temporal.md
+    concern: content semantic (R-14 時系列 + R-15 デモコード + R-16 archive + R-17 lifecycle + R-18 ReSpec markup) (Phase F 軸 4)
+    spawnable_by:
+      - "Skill(tool-architect)"
+    model: opus
+    description: |
+      tool-architect Phase F の 4 並列 review specialist (R-13 opus 固定、change 001-spec-purify C7 で新規追加)。
+      軸 4: content semantic (過去 narration / デモコード正当性 / archive 移動 / changes/ lifecycle / ReSpec markup)。
+      output category: spec-temporal、confidence ≥80 filter。
     description_required: true
 
   # === workflow / atomic / 他 specialist (Phase 2 dual-stack で full listing) ===
