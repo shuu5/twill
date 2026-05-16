@@ -391,7 +391,9 @@ components:
     next_status: Refined
     can_spawn:
       - "Skill(workflow-refine)"
-      - "Agent(specialist-spec-review)"
+      - "Agent(specialist-spec-review-vocabulary)"
+      - "Agent(specialist-spec-review-structure)"
+      - "Agent(specialist-spec-review-ssot)"
     description_required: true
 
   - name: phaser-impl
