@@ -37,7 +37,39 @@ fi
 
 caller="${TWL_TOOL_CONTEXT:-}"
 case "$caller" in
-    ""|tool-architect)
+    "")
+        # user manual edit、warning skip (人間の判断を尊重)
+        exit 0
+        ;;
+    tool-architect)
+        # === R-14 時系列パターン warning (2026-05-16 追加、change 001-spec-purify C9b) ===
+        # tool-architect caller の場合、content semantic warning を返す
+        # deny ではなく allow + additionalContext (Phase E twl_spec_content_check との連携)
+
+        # 例外パス (R-14 例外: changelog.html / archive/ / changes/ / decisions/ は narrative 許容)
+        case "$file_path" in
+            */architecture/spec/changelog.html|*/architecture/archive/*|*/architecture/changes/*|*/architecture/decisions/*)
+                exit 0
+                ;;
+        esac
+
+        # tool_input から content 取得 (Edit: new_string / Write: content)
+        content=$(echo "$payload" | jq -r '.tool_input.new_string // .tool_input.content // empty')
+        if [[ -z "$content" ]]; then
+            exit 0
+        fi
+
+        # 時系列マーカー / 未完了マーカー / 過去形 narration 検出 (Vale rule と同期)
+        if echo "$content" | grep -qE '\([0-9]{4}-[0-9]{1,2}-[0-9]{1,2}\)|Phase [0-9]+ で|以前は|を確認した|により実施した|を行った|であった|していた|\bTODO\b|\bFIXME\b|\bWIP\b|未作成|\bstub\b|未完了|未決定|未確定'; then
+            jq -nc '
+            {
+              hookSpecificOutput: {
+                hookEventName: "PreToolUse",
+                permissionDecision: "allow",
+                additionalContext: "R-14 warning (spec content semantic): 時系列マーカー / 未完了マーカー / 過去形 narration を検出。現在形 declarative に書き換えるか、archive/ または changes/<NNN>-<slug>/ に移動を検討。Phase E で twl_spec_content_check を実行して詳細確認推奨。"
+              }
+            }'
+        fi
         exit 0
         ;;
     *)
