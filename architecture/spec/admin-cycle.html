@@ -335,7 +335,7 @@ fi</code></pre>
 
 <h2>§9. dual-stack routing (su-observer ↔ administrator)</h2>
 
-<p>詳細は <a href="../migration/dual-stack-routing.html">dual-stack-routing.html</a>。本 file で重要な点:</p>
+<p>詳細は <a href="../archive/migration/dual-stack-routing.html">dual-stack-routing.html</a>。本 file で重要な点:</p>
 
 <ul>
   <li><strong>state 分離</strong>: legacy stack <code>.supervisor/</code> と new stack <code>.admin/</code> を別 directory で管理 (session.json / cld-observe-any.log)</li>
@@ -348,12 +348,12 @@ fi</code></pre>
 <ul>
   <li><a href="overview.html">overview.html</a> §3 (3 階層 architecture 全体図、administrator L0 図解)</li>
   <li><a href="monitor-policy.html">monitor-policy.html</a> (Monitor primitive 規定 — actor / signal / composite / lifecycle)</li>
-  <li><a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> 不変条件 G (crash 検知) + T (mailbox atomic) + V (per-specialist scope)</li>
+  <li><a href="../archive/migration/invariant-fate-table.html">invariant-fate-table.html</a> 不変条件 G (crash 検知) + T (mailbox atomic) + V (per-specialist scope)</li>
   <li><a href="crash-failure-mode.html">crash-failure-mode.html</a> §3 (heartbeat 検知 + 3 階層 SLA)</li>
   <li><a href="gate-hook.html">gate-hook.html</a> (phase-gate 経由の deny 受信処理)</li>
   <li><a href="spawn-protocol.html">spawn-protocol.html</a> (tmux + mailbox spec 詳細)</li>
-  <li><a href="../migration/dual-stack-routing.html">dual-stack-routing.html</a> (outline、su-observer ↔ administrator routing)</li>
-  <li><a href="../migration/rebuild-plan.html">rebuild-plan.html</a> (PoC implementation 手順)</li>
+  <li><a href="../archive/migration/dual-stack-routing.html">dual-stack-routing.html</a> (outline、su-observer ↔ administrator routing)</li>
+  <li><a href="../archive/migration/rebuild-plan.html">rebuild-plan.html</a> (PoC implementation 手順)</li>
   <li><a href="../research/research-findings.html">research-findings.html</a> (CronCreate + Project Board の verified 制約)</li>
   <li>既存 ADR-014 (Supervisor redesign su-observer) — administrator の前身、rebrand 計画</li>
 </ul>

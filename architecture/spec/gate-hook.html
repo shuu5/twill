@@ -21,7 +21,7 @@
 <div class="info">hook の <code>if</code> field 内 SKILL pattern は <code>Skill(phaser-*)</code> を採用する。gate hook handler (tier 1 command hook + tier 2 MCP shadow) の概念名は「gate hook handler」(vocabulary <code>hook</code> entity の一部、forbidden synonym: <code>phase-gate</code>)。tier 2 MCP handler の <code>_extract_issue_num(skill_name)</code> regex は <code>phaser-(explore|refine|impl|pr)-(\d+)</code> 形式。<a href="registry-schema.html">registry-schema.html</a> hooks section が SSoT。</div>
 
 <div class="info">
-  <strong>目的</strong>: <a href="../migration/invariant-fate-table.html#inv-w">不変条件 W (PreToolUse hook で status gate 機械化)</a> の具体実装を仕様化する。phaser-* invocation 時に GitHub Project Board status を verify し、不一致なら deny + administrator notify。<br>
+  <strong>目的</strong>: <a href="../archive/migration/invariant-fate-table.html#inv-w">不変条件 W (PreToolUse hook で status gate 機械化)</a> の具体実装を仕様化する。phaser-* invocation 時に GitHub Project Board status を verify し、不一致なら deny + administrator notify。<br>
   <br>
   <strong>verified source</strong>: Claude Code 公式 docs (<a href="https://code.claude.com/docs/en/hooks">hooks reference</a>) + research session bce9c4e4 (120 sources、Critique PASS、doobidoo hash 6fdf1d0b)。<br>
   <br>
@@ -315,7 +315,7 @@
 
 <h3>11.2 verify points</h3>
 
-<p><a href="../migration/rebuild-plan.html">rebuild-plan.html</a> verify points に gate hook 関連として以下を追加:</p>
+<p><a href="../archive/migration/rebuild-plan.html">rebuild-plan.html</a> verify points に gate hook 関連として以下を追加:</p>
 
 <ul>
   <li>tier 1 + tier 2 hook が parallel 実行され、deny &gt; allow の最 restrictive 勝ち (§3.2) が成立する (<code>additionalContext</code> に両 tier の reason が含まれる)</li>
@@ -327,12 +327,12 @@
 <h2>§12. 関連 spec ファイル</h2>
 
 <ul>
-  <li><a href="../migration/invariant-fate-table.html#inv-w">不変条件 W (PreToolUse hook で status gate 機械化)</a></li>
+  <li><a href="../archive/migration/invariant-fate-table.html#inv-w">不変条件 W (PreToolUse hook で status gate 機械化)</a></li>
   <li><a href="failure-analysis.html">failure-analysis.html</a> Bug #1660/1662/1663/1684 (横断要因 F-2)</li>
   <li><a href="twl-mcp-integration.html">twl-mcp-integration.html</a> §5 (tier 階層) + §6.2 phaser 用 tool に <code>twl_phase_gate_check</code></li>
   <li><a href="overview.html">overview.html</a> 図 1 + 原則 7 (status gate は PreToolUse hook で機械化)</li>
   <li><a href="admin-cycle.html">admin-cycle.html</a> (deny 受信 → administrator mailbox 処理)</li>
-  <li><a href="../migration/regression-test-strategy.html">regression-test-strategy.html</a> (<code>phase-gate-hook.bats</code> 新規)</li>
+  <li><a href="../archive/migration/regression-test-strategy.html">regression-test-strategy.html</a> (<code>phase-gate-hook.bats</code> 新規)</li>
   <li><a href="../research/research-findings.html">research-findings.html</a> §4 (本 file の根拠 research session)</li>
 </ul>
 

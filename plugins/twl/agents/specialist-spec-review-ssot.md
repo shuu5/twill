@@ -71,14 +71,14 @@ PR diff の追加行から:
 
 ```bash
 ls architecture/decisions/ archive/decisions/
-grep -n "ADR-XXX" architecture/migration/adr-fate-table.html
+grep -n "ADR-XXX" architecture/archive/migration/adr-fate-table.html
 ```
 
 設計判断が ADR と直接矛盾 → CRITICAL。
 
 ### Step 3: 不変条件 (Invariant) 反映確認
 
-`architecture/migration/invariant-fate-table.html` を Read、A-X 24 件 listing 取得。spec 内 Inv 言及との整合:
+`architecture/archive/migration/invariant-fate-table.html` を Read、A-X 24 件 listing 取得。spec 内 Inv 言及との整合:
 - Inv 番号が範囲外 (Y/Z 等) → CRITICAL (架空 Inv)
 - Inv の rename (例: U Atomic skill verification) と spec 記述の整合
 - 不変条件数 (19 件 A-S vs 24 件 A-X) の snapshot 一致

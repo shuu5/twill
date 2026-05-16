@@ -281,17 +281,17 @@
   </thead>
   <tbody>
     <tr>
-      <td><a href="../migration/adr-fate-table.html"><code>adr-fate-table.html</code></a></td>
+      <td><a href="../archive/migration/adr-fate-table.html"><code>adr-fate-table.html</code></a></td>
       <td><span class="badge done">done</span></td>
       <td>ADR 43 件 1 件ずつ fate audit (保全 / Superseded / 削除 / 統合)</td>
     </tr>
     <tr>
-      <td><a href="../migration/invariant-fate-table.html"><code>invariant-fate-table.html</code></a></td>
+      <td><a href="../archive/migration/invariant-fate-table.html"><code>invariant-fate-table.html</code></a></td>
       <td><span class="badge done">done</span></td>
       <td>不変条件 A-S 19 件 + 新規 T-X 5 件 = 24 件 (A-X) 継承戦略 + drift 訂正課題</td>
     </tr>
     <tr>
-      <td><a href="../migration/pitfalls-inheritance.html"><code>pitfalls-inheritance.html</code></a></td>
+      <td><a href="../archive/migration/pitfalls-inheritance.html"><code>pitfalls-inheritance.html</code></a></td>
       <td><span class="badge done">done</span></td>
       <td>既存 pitfalls-catalog 継承戦略 + 構造的不能化 mapping</td>
     </tr>
@@ -306,22 +306,22 @@
   </thead>
   <tbody>
     <tr>
-      <td><a href="../migration/deletion-inventory.html"><code>deletion-inventory.html</code></a></td>
+      <td><a href="../archive/migration/deletion-inventory.html"><code>deletion-inventory.html</code></a></td>
       <td><span class="badge done">done</span></td>
       <td>削除対象 60+ 件 + 新規 helper 5 本</td>
     </tr>
     <tr>
-      <td><a href="../migration/rebuild-plan.html"><code>rebuild-plan.html</code></a></td>
+      <td><a href="../archive/migration/rebuild-plan.html"><code>rebuild-plan.html</code></a></td>
       <td><span class="badge done">done</span></td>
       <td>4 phase rebuild plan + Phase 1 PoC (#1660 sanitize 詳細) + 8 verify points</td>
     </tr>
     <tr>
-      <td><a href="../migration/regression-test-strategy.html"><code>regression-test-strategy.html</code></a></td>
+      <td><a href="../archive/migration/regression-test-strategy.html"><code>regression-test-strategy.html</code></a></td>
       <td><span class="badge done">done</span></td>
       <td>既存 bats 90+ 継承 + 新 architecture 追加 test 計画</td>
     </tr>
     <tr>
-      <td><a href="../migration/dual-stack-routing.html"><code>dual-stack-routing.html</code></a></td>
+      <td><a href="../archive/migration/dual-stack-routing.html"><code>dual-stack-routing.html</code></a></td>
       <td><span class="badge done">done</span></td>
       <td>su-observer 旧 vs administrator 新 共存ルール + state 分離 + 移行完了判定</td>
     </tr>
@@ -387,7 +387,7 @@
     <tr>
       <td><code>archive/decisions/ADR-0006〜0011a/0011b.md</code></td>
       <td><span class="badge archive">archive</span></td>
-      <td>旧 ADR 7 件 (fate 議論済、<a href="../migration/adr-fate-table.html">adr-fate-table.html</a> 参照)</td>
+      <td>旧 ADR 7 件 (fate 議論済、<a href="../archive/migration/adr-fate-table.html">adr-fate-table.html</a> 参照)</td>
     </tr>
     <tr>
       <td><code>archive/contexts/ + archive/domain/ + archive/migrations/ + archive/vision.md</code></td>
@@ -442,11 +442,11 @@
 
 <h3>既存 plugin を知る人 (継承戦略確認)</h3>
 <ol>
-  <li><code>[migration/]</code> <a href="../migration/adr-fate-table.html">adr-fate-table.html</a> — 既存 ADR 43 件の fate</li>
-  <li><code>[migration/]</code> <a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> — 既存 invariant の継承 + 新規 5 件</li>
+  <li><code>[migration/]</code> <a href="../archive/migration/adr-fate-table.html">adr-fate-table.html</a> — 既存 ADR 43 件の fate</li>
+  <li><code>[migration/]</code> <a href="../archive/migration/invariant-fate-table.html">invariant-fate-table.html</a> — 既存 invariant の継承 + 新規 5 件</li>
   <li><code>[spec/]</code> <a href="twl-mcp-integration.html">twl-mcp-integration.html</a> — MCP / audit / types.yaml の継承</li>
   <li><code>[spec/]</code> <a href="ssot-design.html">ssot-design.html</a> — registry.yaml 統合 SSoT (案 4)</li>
-  <li><code>[migration/]</code> <a href="../migration/deletion-inventory.html">deletion-inventory.html</a> — 何を消すか</li>
+  <li><code>[migration/]</code> <a href="../archive/migration/deletion-inventory.html">deletion-inventory.html</a> — 何を消すか</li>
 </ol>
 
 <h3>実装する人 (実装参照)</h3>
@@ -459,7 +459,7 @@
   <li><code>[spec/]</code> <a href="monitor-policy.html">monitor-policy.html</a> — Monitor primitive 規定</li>
   <li><code>[spec/]</code> <a href="hooks-mcp-policy.html">hooks-mcp-policy.html</a> — Hooks 14 type + MCP 8 pattern</li>
   <li><code>[spec/]</code> <a href="admin-cycle.html">admin-cycle.html</a> — administrator polling cycle</li>
-  <li><code>[migration/]</code> <a href="../migration/rebuild-plan.html">rebuild-plan.html</a> — 4 phase plan + Phase 1 PoC 手順</li>
+  <li><code>[migration/]</code> <a href="../archive/migration/rebuild-plan.html">rebuild-plan.html</a> — 4 phase plan + Phase 1 PoC 手順</li>
 </ol>
 
 <h2 id="extensibility">拡張性 (新 file 追加 scenario)</h2>
@@ -483,8 +483,8 @@
   <li><code>architecture/steering/</code> = <strong>project-wide 規律 SSoT</strong> (product vision / tech constraint / structure rule)。spec が "なに" を、steering が "なぜ・どう" を規定</li>
   <li><code>architecture/changes/</code> = <strong>in-flight 変更提案 SSoT</strong> (OpenSpec lifecycle、proposal → design → tasks → spec-delta → archive)</li>
   <li><code>architecture/decisions/</code> = <strong>新 architecture 正典 ADR</strong> (ADR-0012〜、本 spec を supplement として link)</li>
-  <li>旧 ADR (<code>architecture/archive/decisions/ADR-0006〜0011a/0011b</code> 計 7 件) は <a href="../migration/adr-fate-table.html">adr-fate-table.html</a> で fate を議論済</li>
-  <li>旧 invariant (<code>plugins/twl/refs/ref-invariants.md</code>、19 件) は <a href="../migration/invariant-fate-table.html">invariant-fate-table.html</a> で継承戦略を決定 + drift 訂正</li>
+  <li>旧 ADR (<code>architecture/archive/decisions/ADR-0006〜0011a/0011b</code> 計 7 件) は <a href="../archive/migration/adr-fate-table.html">adr-fate-table.html</a> で fate を議論済</li>
+  <li>旧 invariant (<code>plugins/twl/refs/ref-invariants.md</code>、19 件) は <a href="../archive/migration/invariant-fate-table.html">invariant-fate-table.html</a> で継承戦略を決定 + drift 訂正</li>
   <li>旧 twl MCP server (<code>cli/twl/src/twl/mcp_server/</code>) は <a href="twl-mcp-integration.html">twl-mcp-integration.html</a> で継承戦略決定</li>
   <li>旧 chain SSoT 三重化 (<code>chain.py</code> + <code>chain-steps.sh</code> + <code>deps.yaml.chains</code>) は <a href="ssot-design.html">ssot-design.html</a> で <strong>registry.yaml 統合 SSoT</strong> に統一</li>
   <li><code>common.css</code> は <strong>HTML/MD boundary R-6 の例外</strong>、spec/ 配下に存続する唯一の CSS file (R-6 rationale および exception は <code>plugins/twl/skills/tool-architect/refs/spec-management-rules.md</code> R-6 参照)</li>
