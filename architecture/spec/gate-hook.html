@@ -15,10 +15,10 @@
 
 <header class="doc-header">
   <h1>PreToolUse gate hook — 不変条件 W 機械化 (公式 verified)</h1>
-  <div class="meta">draft-v3 (2026-05-13、(2026-05-13) 反映) &middot; tier 1 (command hook) + tier 2 (MCP shadow) 階層防御 &middot; 全 schema 公式 docs verified &middot; phaser-* SKILL invoke gate (旧 phase-* から rename)</div>
+  <div class="meta">status: <span class="badge done">done</span> &middot; tier 1 (command hook) + tier 2 (MCP shadow) 階層防御 &middot; 全 schema 公式 docs verified &middot; phaser-* SKILL invoke gate</div>
 </header>
 
-<div class="info"><strong>(2026-05-13) 反映</strong>: hook の <code>if</code> field 内 SKILL pattern を <code>Skill(phase-*)</code> から <code>Skill(phaser-*)</code> に rename (sed 機械化)。<code>phase-gate.sh</code> handler は概念的に「gate hook handler」と呼ぶ (vocabulary <code>hook</code> entity の一部、forbidden synonym: <code>phase-gate</code>)。tier 2 MCP handler の <code>_extract_issue_num(skill_name)</code> regex も <code>phaser-(explore|refine|impl|pr)-(\d+)</code> に更新する必要 (実装段階)。<a href="registry-schema.html">registry-schema.html</a> hooks section が SSoT。</div>
+<div class="info">hook の <code>if</code> field 内 SKILL pattern は <code>Skill(phaser-*)</code> を採用する。gate hook handler (tier 1 command hook + tier 2 MCP shadow) の概念名は「gate hook handler」(vocabulary <code>hook</code> entity の一部、forbidden synonym: <code>phase-gate</code>)。tier 2 MCP handler の <code>_extract_issue_num(skill_name)</code> regex は <code>phaser-(explore|refine|impl|pr)-(\d+)</code> 形式。<a href="registry-schema.html">registry-schema.html</a> hooks section が SSoT。</div>
 
 <div class="info">
   <strong>目的</strong>: <a href="../migration/invariant-fate-table.html#inv-w">不変条件 W (PreToolUse hook で status gate 機械化)</a> の具体実装を仕様化する。phaser-* invocation 時に GitHub Project Board status を verify し、不一致なら deny + administrator notify。<br>
@@ -28,15 +28,15 @@
   <strong>不能化対象</strong>: 9 P0 bug の Bug #1660 (SKIP_*_REASON) / #1662 (OBSERVER_PARALLEL_CHECK_STATES <code>:-</code>) / #1663 (env override) / #1684 (IS_AUTOPILOT cwd-guard) — 横断要因 F-2 (env var 限界)
 </div>
 
-<h2>§1. 公式 hook schema (verified、draft-v1 から訂正)</h2>
+<h2>§1. 公式 hook schema (verified)</h2>
 
 <div class="critical">
-<strong>draft-v1 の誤り</strong> (verified):
+<strong>公式 schema の重要 point</strong> (verified、誤用しやすい箇所):
 <ul>
-  <li><code>"matchers"</code> (複数形) は <strong>誤</strong> → 公式は <code>"matcher"</code> (単数)</li>
+  <li><code>"matcher"</code> (単数) を使う。<code>"matchers"</code> (複数形) は採用しない</li>
   <li><code>{{tool.skill_name}}</code> / <code>{{matcher.expected_status}}</code> の template 変数展開は <strong>非サポート</strong>。すべての context は stdin JSON で渡される</li>
-  <li><code>exit 1</code> = deny は <strong>誤</strong>。exit 1 は non-blocking error、deny は <code>exit 2</code> または <code>exit 0</code> + JSON 出力</li>
-  <li><code>decision: "approve" / "block"</code> は <strong>古い enum</strong> → 公式は <code>permissionDecision: "allow"|"deny"|"ask"|"defer"</code></li>
+  <li><code>exit 1</code> は non-blocking error (= allow)、deny は <code>exit 2</code> または <code>exit 0</code> + JSON 出力で表現する</li>
+  <li>permission decision の enum は <code>permissionDecision: "allow"|"deny"|"ask"|"defer"</code>。<code>decision: "approve" / "block"</code> 形式は採用しない</li>
 </ul>
 </div>
 
@@ -155,123 +155,56 @@
 <strong>重要</strong>: PreToolUse は permission mode より <strong>先に発火</strong>、<code>bypassPermissions</code> や <code>--dangerously-skip-permissions</code> でも <code>deny</code> は効く。これが Inv W の構造的保証。
 </div>
 
-<h2>§4. tier 1 phase-gate.sh 実装 (~40 行、verified pattern)</h2>
+<h2>§4. tier 1 gate hook handler 仕様 (command hook、~40 行 規模)</h2>
 
-<pre><code>#!/usr/bin/env bash
-# tier 1: 粗フィルタ + fast path (50ms 以内、stdin JSON 受信)
-# 公式 hook schema 準拠 (matcher 単数、exit 0 + JSON 出力 で deny)
+<p>tier 1 は粗フィルタ + fast path として動作する command hook handler。詳細判定は tier 2 (mcp_tool) に委譲し、tier 1 では <strong>50 ms 以内</strong> の早期 return を実現する。</p>
 
-set -euo pipefail
+<table>
+  <thead>
+    <tr><th>項目</th><th>仕様</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>input</td><td>stdin JSON (§2 で定義: <code>tool_name</code> / <code>tool_input.skill</code> / <code>session_id</code> 等)</td></tr>
+    <tr><td>抽出 field</td><td><code>.tool_name</code>、<code>.tool_input.skill</code>、<code>.session_id</code> (<code>jq -r</code> で安全に取得、未定義は空文字列 fallback)</td></tr>
+    <tr><td>粗フィルタ</td><td><code>tool_name != "Skill"</code> または <code>skill</code> が <code>phaser-*</code> 形式でない場合は exit 0 (allow、JSON なし) で早期 return</td></tr>
+    <tr><td>bypass</td><td>env <code>TWL_PHASE_GATE_BYPASS</code> が非空の場合のみ <code>permissionDecision: "allow"</code> + reason 付き JSON で明示 allow (debug 用 escape hatch、§8 bypass policy 参照)</td></tr>
+    <tr><td>正常 path</td><td>tier 1 自身は判定せず exit 0 (pass)。tier 2 (MCP shadow) が deny を返した場合、deny &gt; allow の最 restrictive 勝ち (§3.2) で全体 deny になる</td></tr>
+    <tr><td>output</td><td>exit 0 (JSON 省略時 allow) または <code>permissionDecision</code> field 付き JSON (§3.1 schema)</td></tr>
+    <tr><td>fail-safe</td><td><code>set -euo pipefail</code>、jq 失敗時も exit 0 (gate を fail open にして tool 実行を妨げない、tier 2 で確実 deny される設計)</td></tr>
+  </tbody>
+</table>
 
-# === stdin JSON から必要 field を抽出 ===
-INPUT_JSON=$(cat /dev/stdin)
-SKILL_NAME=$(echo "$INPUT_JSON" | jq -r '.tool_input.skill // ""')
-SESSION_ID=$(echo "$INPUT_JSON" | jq -r '.session_id // ""')
-TOOL_NAME=$(echo "$INPUT_JSON" | jq -r '.tool_name // ""')
+<h2>§5. tier 2 twl_phase_gate_check 仕様 (MCP shadow、stateful 判定)</h2>
 
-# === 粗フィルタ: phaser-* 以外は素通り (Skill 以外の tool は早期 return) ===
-if [[ "$TOOL_NAME" != "Skill" ]] || [[ "$SKILL_NAME" != phaser-* ]]; then
-  exit 0   # allow (JSON なし)
-fi
+<h3>5.1 handler 仕様 (純 Python、in-process テスト可能)</h3>
 
-# === bypass policy: user 手動指定時のみ allow ===
-if [[ -n "${TWL_PHASE_GATE_BYPASS:-}" ]]; then
-  jq -n --arg reason "user-bypass via TWL_PHASE_GATE_BYPASS" '{
-    hookSpecificOutput: {
-      hookEventName: "PreToolUse",
-      permissionDecision: "allow",
-      permissionDecisionReason: $reason
-    }
-  }'
-  exit 0
-fi
+<table>
+  <thead>
+    <tr><th>項目</th><th>仕様</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>handler name</td><td><code>twl_phase_gate_check_handler(args: dict) -&gt; dict</code> (in-process Python 関数として実装、MCP wrapper は薄い)</td></tr>
+    <tr><td>args schema</td><td><code>expected_status</code>: <code>"Idea"|"Explored"|"Refined"|"Implementing"</code> / <code>skill_name</code>: <code>phaser-impl-1660</code> 等の string</td></tr>
+    <tr><td>動作</td><td>(1) <code>_extract_issue_num(skill_name)</code> で issue 番号抽出 (regex: <code>phaser-(explore|refine|impl|pr)-(\d+)</code>) → 不能なら allow (gate 対象外、log のみ) / (2) <code>_get_project_status(issue_num)</code> で Project Board の current_status 取得 / (3) <code>current_status == expected_status</code> なら allow、不一致なら deny</td></tr>
+    <tr><td>output (deny 時)</td><td><code>hookSpecificOutput.permissionDecision: "deny"</code> + <code>permissionDecisionReason</code> (skill / expected / current / issue を含む human-readable string、TWL_PHASE_GATE_BYPASS 案内含む) + <code>additionalContext</code> (Inv W enforcement + administrator mailbox notify 通知)</td></tr>
+    <tr><td>output (allow 時)</td><td><code>permissionDecision: "allow"</code> + status match 確認 reason</td></tr>
+    <tr><td>MCP annotation</td><td><code>readOnlyHint: True</code> / <code>destructiveHint: False</code> / <code>idempotentHint: True</code> / <code>openWorldHint: False</code> (advisory hint、Project Board query は read-only)</td></tr>
+  </tbody>
+</table>
 
-# === 詳細判定は tier 2 (mcp_tool hook) に委譲、ここでは pass ===
-exit 0  # tier 2 が deny を返した場合、最 restrictive 勝ちで全体 deny
-</code></pre>
+<h3>5.2 _get_project_status helper 仕様 (Project Board query + cache)</h3>
 
-<h2>§5. tier 2 twl_phase_gate_check 実装 (MCP shadow、verified pattern)</h2>
-
-<h3>5.1 handler 関数 (純 Python、in-process テスト可能)</h3>
-
-<pre><code># cli/twl/src/twl/mcp_server/tools.py に追加
-def twl_phase_gate_check_handler(args: dict) -> dict:
-    """tier 2: stateful 判定 (Project Board status query)
-
-    Args:
-        expected_status: "Idea"|"Explored"|"Refined"|"Implementing"
-        skill_name: phaser-impl-1660 等
-
-    Returns:
-        hookSpecificOutput を含む dict
-    """
-    expected_status = args.get("expected_status")
-    skill_name = args.get("skill_name", "")
-
-    # phase-N から issue 番号を抽出 (e.g. "phaser-impl-1660" → 1660)
-    issue_num = _extract_issue_num(skill_name)
-    if not issue_num:
-        # issue 番号特定不能 → allow (gate 対象外、log のみ)
-        return _allow("gate skipped: no issue number")
-
-    # Project Board status query (gh CLI 経由、キャッシュあり)
-    current_status = _get_project_status(issue_num)
-
-    if current_status != expected_status:
-        return {
-            "hookSpecificOutput": {
-                "hookEventName": "PreToolUse",
-                "permissionDecision": "deny",
-                "permissionDecisionReason": (
-                    f"Phase gate: skill '{skill_name}' requires status "
-                    f"'{expected_status}', but Project Board shows "
-                    f"'{current_status}' for issue #{issue_num}. "
-                    f"Transition status manually or set TWL_PHASE_GATE_BYPASS=1."
-                ),
-                "additionalContext": (
-                    f"Inv W enforcement: status mismatch denied phase invocation. "
-                    f"Mail will be sent to administrator mailbox."
-                )
-            }
-        }
-    return _allow(f"status {current_status} matches expected")
-
-# MCP wrapper (薄い、annotations は advisory hint)
-if mcp is not None:
-    @mcp.tool(
-        annotations={
-            "title": "Phase Gate Status Check",
-            "readOnlyHint": True,
-            "destructiveHint": False,
-            "idempotentHint": True,
-            "openWorldHint": False
-        }
-    )
-    def twl_phase_gate_check(args: dict) -> str:
-        return json.dumps(twl_phase_gate_check_handler(args))</code></pre>
-
-<h3>5.2 _get_project_status helper (Project Board GraphQL or cache)</h3>
-
-<pre><code>def _get_project_status(issue_num: int) -&gt; str:
-    """gh project item-list でキャッシュ、5 min TTL"""
-    cache = _load_cache
-    if cache.get(issue_num, {}).get("ttl") &gt; time.time:
-        return cache[issue_num]["status"]
-
-    # gh project field-list で field_id を 1 回キャッシュ
-    proj_num = _resolve_project_number
-    result = subprocess.run(
-        ["gh", "project", "item-list", str(proj_num),
-         "--owner", "shuu5", "--format", "json"],
-        capture_output=True, check=True
-    )
-    items = json.loads(result.stdout)["items"]
-    for item in items:
-        if item.get("content", {}).get("number") == issue_num:
-            status = item.get("status", "Unknown")
-            _save_cache(issue_num, status)
-            return status
-    return "NotInBoard"</code></pre>
+<table>
+  <thead>
+    <tr><th>項目</th><th>仕様</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>signature</td><td><code>_get_project_status(issue_num: int) -&gt; str</code></td></tr>
+    <tr><td>data source</td><td><code>gh project item-list &lt;PROJ_NUM&gt; --owner &lt;OWNER&gt; --format json</code> (subprocess 呼び出し、project number と owner は config から resolve)</td></tr>
+    <tr><td>cache</td><td>memory cache + 5 min TTL。<code>{issue_num: {"status": str, "ttl": epoch_seconds}}</code> dict、cache hit で gh subprocess 省略</td></tr>
+    <tr><td>return</td><td>Project Board の status string (<code>"Idea"</code>/<code>"Explored"</code>/<code>"Refined"</code>/<code>"Implementing"</code>/<code>"PR Reviewed"</code>/<code>"Done"</code> 等)、Board 未登録 issue は <code>"NotInBoard"</code></td></tr>
+  </tbody>
+</table>
 
 <h2>§6. 4 phase の前提 status mapping (verified、ADR-024 拡張)</h2>
 
@@ -287,18 +220,26 @@ if mcp is not None:
   </tbody>
 </table>
 
-<p>各 phaser invocation 前に対応 status を確認、不一致なら deny。tool-* (tool-architect / tool-project / tool-sandbox-runner、(2026-05-13) で tool-utility 廃止 + tool-self-improve → tool-sandbox-runner rename) は gate 対象外 (status と無関係、ADR-040 で別系統 gate)。</p>
+<p>各 phaser invocation 前に対応 status を確認、不一致なら deny。tool-* (tool-architect / tool-project / tool-sandbox-runner) は gate 対象外 (status と無関係、ADR-040 で別系統 gate)。</p>
 
 <h2>§7. deny 経路 (administrator notify)</h2>
 
-<p>tier 2 が deny を返した場合、phase-gate.sh が並列で <code>mailbox::emit</code> で administrator に notify mail を送る:</p>
+<p>tier 2 が deny を返した場合、tier 1 gate hook handler が並列で administrator mailbox に notify mail を送る。mail schema は <a href="monitor-policy.html#s3">monitor-policy.html §3.2</a> の canonical schema に従う:</p>
 
-<pre><code># phase-gate.sh の deny 路径
-if [[ "$DENY_REASON" != "" ]]; then
-  # administrator mailbox に notify mail を書き込み
-  echo "{\"from\":\"phase-gate\",\"ts\":\"$(date -Iseconds)\",\"event\":\"phase-gate-denied\",\"detail\":{\"skill\":\"$SKILL_NAME\",\"issue\":$ISSUE_NUM,\"expected\":\"$EXPECTED\",\"actual\":\"$CURRENT\"}}" \
-    | flock -x .mailbox/administrator/inbox.jsonl cat &gt;&gt; .mailbox/administrator/inbox.jsonl
-fi</code></pre>
+<table>
+  <thead>
+    <tr><th>field</th><th>値</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>from</code></td><td><code>"phase-gate"</code> (gate hook handler の固定 sender id)</td></tr>
+    <tr><td><code>to</code></td><td><code>"administrator"</code></td></tr>
+    <tr><td><code>ts</code></td><td>ISO8601 timestamp (<code>date -Iseconds</code>)</td></tr>
+    <tr><td><code>event</code></td><td><code>"phase-gate-denied"</code></td></tr>
+    <tr><td><code>detail</code></td><td><code>{ skill: &lt;skill_name&gt;, issue: &lt;issue_num&gt;, expected: &lt;expected_status&gt;, actual: &lt;current_status&gt; }</code></td></tr>
+  </tbody>
+</table>
+
+<p>書き込み path は <code>.mailbox/administrator/inbox.jsonl</code>、Inv T (flock atomic write) を遵守する (<code>flock -x</code> 経由)。</p>
 
 <h2>§8. bypass policy</h2>
 
@@ -354,64 +295,33 @@ fi</code></pre>
 
 <h2>§11. verify 方法 (bats test)</h2>
 
-<h3>11.1 <code>phase-gate-hook.bats</code> (新規)</h3>
+<h3>11.1 <code>phase-gate-hook.bats</code> test scenarios</h3>
 
-<pre><code>#!/usr/bin/env bats
-# Inv W enforcement test (新規 bats)
+<p>Inv W enforcement を verify する bats test の必要 scenario。stdin JSON を pipe で gate hook handler に流し、出力 JSON の <code>permissionDecision</code> を assert する:</p>
 
-@test "phaser-impl on Refined Issue is allowed" {
-  # setup: Issue #1660 を Refined にする
-  mock_project_status 1660 "Refined"
+<table>
+  <thead>
+    <tr><th>scenario</th><th>setup</th><th>expected</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>phaser-impl on Refined Issue is allowed</td><td>Issue Status = Refined</td><td>exit 0 + JSON なし (allow) or <code>permissionDecision: "allow"</code></td></tr>
+    <tr><td>phaser-impl on Todo Issue is denied (Inv W)</td><td>Issue Status = Todo</td><td>exit 0 + <code>permissionDecision: "deny"</code> 出力</td></tr>
+    <tr><td>bypassPermissions does not bypass tier 2 deny</td><td>permission_mode=bypassPermissions + Status = Todo</td><td><code>permissionDecision: "deny"</code> (Inv W 構造的保証: tier 2 deny は permission mode より優先)</td></tr>
+    <tr><td>TWL_PHASE_GATE_BYPASS env allows phaser-impl</td><td>env <code>TWL_PHASE_GATE_BYPASS=1</code> + Status = Todo</td><td><code>permissionDecision: "allow"</code> (debug escape hatch、§8)</td></tr>
+  </tbody>
+</table>
 
-  # exec
-  echo '{"tool_name":"Skill","tool_input":{"skill":"phaser-impl-1660"}}' \
-    | bash plugins/twl/scripts/phase-gate.sh
+<p><strong>mock 戦略</strong>: <code>_get_project_status</code> 内の <code>gh project item-list</code> subprocess を bats helper でモックし、test fixture の status を returnable にする (<code>mock_project_status 1660 "Refined"</code> 形式の helper)。</p>
 
-  [ "$status" -eq 0 ]
-  # JSON 出力なし (allow)、または "allow" を含む
-}
+<h3>11.2 verify points</h3>
 
-@test "phaser-impl on Todo Issue is denied (Inv W)" {
-  # setup
-  mock_project_status 1660 "Todo"
-
-  # exec
-  output=$(echo '{"tool_name":"Skill","tool_input":{"skill":"phaser-impl-1660"}}' \
-    | bash plugins/twl/scripts/phase-gate.sh)
-
-  [ "$status" -eq 0 ]
-  echo "$output" | jq -e '.hookSpecificOutput.permissionDecision == "deny"'
-}
-
-@test "bypassPermissions does not bypass tier 2 deny" {
-  # setup: bypassPermissions mode でも tier 2 deny は効く (Inv W 構造的保証)
-  mock_project_status 1660 "Todo"
-
-  output=$(echo '{"permission_mode":"bypassPermissions","tool_name":"Skill","tool_input":{"skill":"phaser-impl-1660"}}' \
-    | bash plugins/twl/scripts/phase-gate.sh)
-
-  echo "$output" | jq -e '.hookSpecificOutput.permissionDecision == "deny"'
-}
-
-@test "TWL_PHASE_GATE_BYPASS env allows phaser-impl" {
-  export TWL_PHASE_GATE_BYPASS=1
-  mock_project_status 1660 "Todo"
-
-  output=$(echo '{"tool_name":"Skill","tool_input":{"skill":"phaser-impl-1660"}}' \
-    | bash plugins/twl/scripts/phase-gate.sh)
-
-  echo "$output" | jq -e '.hookSpecificOutput.permissionDecision == "allow"'
-}</code></pre>
-
-<h3>11.2 <code>Phase 1 PoC</code> verify points (新規 #9-#12)</h3>
-
-<p><a href="../migration/rebuild-plan.html">rebuild-plan.html</a> の <code>Phase 1 PoC</code> verify points に以下を追加:</p>
+<p><a href="../migration/rebuild-plan.html">rebuild-plan.html</a> verify points に gate hook 関連として以下を追加:</p>
 
 <ul>
-  <li>VP-9: tier 1 + tier 2 hook が parallel 実行されることを確認 (<code>additionalContext</code> に両方の reason が含まれる)</li>
-  <li>VP-10: <code>bypassPermissions</code> mode でも tier 2 の <code>deny</code> が効くことを確認 (<code>TWL_PHASE_GATE_BYPASS</code> 未設定で実証)</li>
-  <li>VP-11: status mismatch 時に administrator mailbox に notify mail が書き込まれることを確認</li>
-  <li>VP-12: <code>gh project item-list</code> キャッシュが 5 min TTL で正しく invalidate されることを確認</li>
+  <li>tier 1 + tier 2 hook が parallel 実行され、deny &gt; allow の最 restrictive 勝ち (§3.2) が成立する (<code>additionalContext</code> に両 tier の reason が含まれる)</li>
+  <li><code>bypassPermissions</code> mode でも tier 2 の <code>deny</code> が効く (<code>TWL_PHASE_GATE_BYPASS</code> 未設定で実証)</li>
+  <li>status mismatch 時に administrator mailbox (§7) に <code>phase-gate-denied</code> mail が書き込まれる</li>
+  <li><code>gh project item-list</code> キャッシュが 5 min TTL で invalidate される</li>
 </ul>
 
 <h2>§12. 関連 spec ファイル</h2>
