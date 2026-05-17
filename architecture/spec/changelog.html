@@ -21,6 +21,63 @@
   <strong>関連</strong>: <a href="README.html">README</a> / <a href="architecture-graph.html">architecture-graph</a>
 </div>
 
+<h2 id="2026-05-17-visual-rule-compliance">2026-05-17: change 003-visual-rule-compliance wave (visual rendering 復活 + 残存 rule 違反 fix + 前 wave defer 統合、10 commit + Phase F 4 並列 review + fix loop 1 回)</h2>
+
+<h3>核心成果</h3>
+
+<p>ユーザー指示「architecture spec 全体のさらなる refactoring を進めて。CSS が適用されていないページとか単純に見づらい部分もまだある。基本ルールにちゃんと従っていない部分もしっかり確認」を契機に、tool-architect 7-phase PR cycle (Phase A-G、Phase B 3 並列 spec-explorer + Phase F 4 並列 spec-review-* + scope-based fix loop) で <strong>(a) mermaid 完全未レンダリング (9 block) 復活</strong>、<strong>(b) common.css 視覚 class 4 種 + mermaid container 追加</strong>、<strong>(c) R-22/R-23/R-24 個別違反 6 件 fix</strong>、<strong>(d) 前 wave priority 4 aside wrap 5 箇所 upgrade</strong>、<strong>(e) 002 package R-17 lifecycle 補正 + 003 package 起票</strong> を完遂。10 commit 累積 (772b935a → ad235e70 → 0e94eafb → 8bf4724e → 661a02c8 → d93a95ca → afcccea3 → c3cc1320 → d99e23ca → 本 commit)、Phase F findings 10 件 (vocabulary PASS 0 + structure 5 (CRITICAL 2 + WARN 3) + ssot PASS 0 + temporal 5) を fix loop 1 回で resolve 6 件、残 4 件は Phase G defer 完遂 (changelog entry + README index) + 別 wave defer (architecture-graph node 追加 R-2 解釈ぶれ + registry-schema verified 昇格候補)。</p>
+
+<h3>commit timeline (10 commit)</h3>
+
+<table>
+  <thead><tr><th>commit</th><th>scope</th></tr></thead>
+  <tbody>
+    <tr><td><code>772b935a</code></td><td>commit A+B 統合: 002 archive 遡及作成 (proposal.md + tasks.md、R-17 Step 1+3 補正) + 003 changes 起票 (proposal.md + tasks.md)</td></tr>
+    <tr><td><code>ad235e70</code></td><td>commit C: mermaid CDN script include (3 file × <code>&lt;/body&gt;</code> 直前) + <code>&lt;code&gt;</code> wrap 除去 (9 block: tool-architecture 5 + registry-schema 3 + ssot-design 1)、rendering 復活</td></tr>
+    <tr><td><code>0e94eafb</code></td><td>commit D: common.css に R-18 markup 4 class 追加 (<code>.normative</code> / <code>.informative</code> / <code>aside.example</code> / <code>aside.ednote</code>) + <code>pre.mermaid</code> container styling (97 行追加、border + label + WCAG AA contrast)</td></tr>
+    <tr><td><code>8bf4724e</code></td><td>commit E: <code>data-status</code> 二重定義 fix (proposed|implemented|deprecated → inferred|deduced|verified|experiment-verified、glossary L107 + tool-architecture L626) + heading 階層 skip 解消 (tool-architecture h5→h4 × 2、h4→h3 × 6、WCAG 2.1 SC 1.3.1)</td></tr>
+    <tr><td><code>661a02c8</code></td><td>commit F: R-22 violation fix (tool-architecture L535 裸日付 "2026-05-16" 削除、他箇所は file path / ADR Status / JSON timestamp で legitimate)</td></tr>
+    <tr><td><code>d93a95ca</code></td><td>commit G: R-23 incomplete marker 削除 (monitor-policy L148 「未実装→予定」/ registry-schema L302 「stub→planned」/ admin-cycle L287 「未実装→未配置」、ednote 内例外は保持)</td></tr>
+    <tr><td><code>afcccea3</code></td><td>commit H: R-24 fix (registry-schema §1.5.2 空 <code>&lt;span class="vs verified"&gt;</code> × 2 → deduced 降格 + path 誤り訂正 "architecture/spec/" → "architecture/archive/migration/" + evidence "archive 配備済 (file existence audit)")</td></tr>
+    <tr><td><code>c3cc1320</code></td><td>commit I: aside.example wrap upgrade × 5 箇所 (admin-cycle L158 17 行 pseudocode / monitor-policy L50 shell 5 行 + L111 Monitor 3 行 / spawn-protocol L166 flock 3 行 / twl-mcp-integration L47 Python 12 行)、前 wave priority 4 defer 統合</td></tr>
+    <tr><td><code>d99e23ca</code></td><td>commit J: fix loop 1 (Phase F findings 解消、CRITICAL 2 = README changes/archive entry 追加 + WARNING 4 = tool-architecture L535/L599/L1103 narration fix + 003 design.md 追加)</td></tr>
+    <tr><td><strong>本 commit</strong></td><td>commit K/10: Phase G Summary (本 changelog entry)</td></tr>
+  </tbody>
+</table>
+
+<h3>Phase F 実行証跡 (4 並列固定 spec-review-{vocabulary,structure,ssot,temporal}、opus 固定 R-13)</h3>
+
+<table>
+  <thead><tr><th>軸</th><th>agent</th><th>findings</th><th>status</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td><code>specialist-spec-review-vocabulary</code></td><td>0</td><td>PASS</td></tr>
+    <tr><td>2</td><td><code>specialist-spec-review-structure</code></td><td>5 (CRITICAL 2 + WARN 3)</td><td>FAIL → fix loop 1 で CRITICAL 2 解消、WARN 3 のうち changelog entry は本 commit で resolve、残 2 件 (architecture-graph R-2 解釈ぶれ / registry-schema verified 昇格) は別 wave defer</td></tr>
+    <tr><td>3</td><td><code>specialist-spec-review-ssot</code></td><td>0</td><td>PASS</td></tr>
+    <tr><td>4</td><td><code>specialist-spec-review-temporal</code></td><td>5 (WARN 4 + INFO 1)</td><td>WARN → fix loop 1 で 4/4 resolve、INFO 1 (tasks.md archive 日付 drift) は Phase G で実 archive 時に対応</td></tr>
+  </tbody>
+</table>
+
+<h3>機械検証 sanity check</h3>
+
+<ul>
+  <li><code>scripts/spec-anchor-link-check.py --check-orphan</code>: <strong>broken: 0 / orphan: 0</strong> 達成 (R-3 + R-4 + R-8)</li>
+  <li><code>twl_spec_content_check</code> MCP tool 全 18 spec file: <strong>ok=true</strong> 維持 (R-20)</li>
+  <li>aside open/close balance: 4 修正 file (admin-cycle 2/2 + monitor-policy 4/4 + spawn-protocol 1/1 + twl-mcp-integration 1/1)、HTML parse error なし</li>
+</ul>
+
+<h3>新規 R-X rule 追加 / 既存 rule 適用拡大</h3>
+
+<p>本 wave は新規 rule 追加なし。既存 R-14〜R-25 + R-1〜R-13 の適用補完が中心。</p>
+
+<h3>defer items (本 wave で対応せず、次 wave (change 004 候補) で実施候補)</h3>
+
+<ol>
+  <li><strong>architecture-graph.html § changes/ cluster の R-2 解釈ぶれ</strong>: 新 active/archive package 追加時に逐次 node 増殖 vs 集約 entry 表示の運用方針を spec-management-rules.md に R-2 例外規定として明文化要</li>
+  <li><strong>registry-schema.html §1.5.2 verified 昇格候補</strong>: invariant-fate-table.html / adr-fate-table.html が archive/migration/ 実在 → file existence audit が evidence なら verified 化候補 (本 wave は deduced 降格に留めた)</li>
+  <li><strong>tasks.md L47 archive 日付 drift</strong>: 003 package 完遂時の実 archive 日付が「2026-05-17」固定で記載されているが、Phase G が日跨ぎした場合の handling note 追加候補</li>
+  <li><strong>前 wave defer 11 件のうち本 wave で未統合</strong>: R-21 grandfather 例外明示 / R-17 recursive meta-PR 例外明示 / tools_spec.py PAST_NARRATION_PATTERNS / R-21〜R-25 bats tests / EXP-044 smoke / EXP-027〜039 smoke / spec-anchor-link-check.py R-25 EXP semantic 拡張 / GitHub Issue 化</li>
+</ol>
+
 <h2 id="2026-05-17-spec-residual-fix">2026-05-17: change 002-spec-residual-fix wave (R-14/R-15 残存 fix + R-21〜R-25 rule 追加、9 commit + Phase F 4 並列 review + fix loop 1 回)</h2>
 
 <h3>核心成果</h3>
