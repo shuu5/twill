@@ -532,7 +532,7 @@ Phase F は 1 file ではなく <strong>4 軸 = 4 file 別</strong>で実装す�
 <h4 id="s3-7-3-4">3.7.3.4 <code>specialist-spec-review-temporal</code> (Phase F 軸 4)</h4>
 <dl>
   <dt>file path</dt>
-  <dd><code>plugins/twl/agents/specialist-spec-review-temporal.md</code> <span class="vs deduced">deduced</span> (change 001-spec-purify で実装完遂、L2 bats verify は <code>plugins/twl/tests/bats/agents/specialist-spec-review-temporal.bats</code> PASS。実機 agent invoke smoke は EXP-029 で experiment-verified 化)</dd>
+  <dd><code>plugins/twl/agents/specialist-spec-review-temporal.md</code> <span class="vs deduced">deduced</span> (L2 bats verify は <code>plugins/twl/tests/bats/agents/specialist-spec-review-temporal.bats</code> PASS。実機 agent invoke smoke は EXP-029 で experiment-verified 化)</dd>
   <dt>役割</dt>
   <dd>spec edit の <strong>時制整合性</strong>を専任で検証する。R-14 (現在形 declarative): 過去/未来時制混入の検出 / R-15 (code block 制限): 架空 script 例示の検出 / R-16 (archive movement): 廃案 / 旧 phase 完了文書の archive/ 移動漏れの検出 / R-17 (changes lifecycle): <code>architecture/changes/NNN-slug/</code> package の 3 文書 (proposal/design/tasks) 揃いの検証 / R-18 (ReSpec markup): semantic markup 適用の検証。同型 cross-file drift 予防のため、Phase F 4 軸 review の 1 軸として独立 context window で audit する</dd>
   <dt>input</dt>
@@ -596,7 +596,7 @@ Phase F は 1 file ではなく <strong>4 軸 = 4 file 別</strong>で実装す�
   <dt>verify</dt>
   <dd><code>twl_spec_content_check</code> の <code>changes_lifecycle</code> check で 3 文書揃い + R-17 frontmatter (status: proposed → in-progress → completed) を強制</dd>
   <dt>適用例</dt>
-  <dd><code>architecture/archive/changes/2026-05-16-001-spec-purify/</code> (change 001-spec-purify package、22 commit + F1-F7+F8 fix で完遂)</dd>
+  <dd><code>architecture/archive/changes/2026-05-16-001-spec-purify/</code> (change 001-spec-purify package、spec clean architecture 確立 + L1-L5 多層防御 + R-14〜R-20 規律導入)</dd>
 </dl>
 
 <h4 id="s3-9-2">3.9.2 GitHub Spec Kit steering directory</h4>
@@ -1100,7 +1100,7 @@ $TWL_SANDBOX_DIR/.audit/&lt;run-id&gt;/</code></pre>
   <li><code>plugins/twl/scripts/hooks/pre-tool-use-spec-write-boundary.sh</code> (spec edit boundary enforce、§3.4 + R-7)</li>
   <li><code>.github/workflows/spec-content-check.yml</code> + <code>spec-respec-build.yml</code> + <code>spec-link-check.yml</code> (L5 CI gate、§3.2.2)</li>
   <li><code>.vale.ini</code> + <code>styles/TwillSpec/{PastTense,DeclarativeOnly,CodeBlock}.yml</code> (L4 pre-commit/CI 規律検証、§3.2.2)</li>
-  <li><code>plugins/twl/agents/specialist-spec-explorer.md</code> + <code>specialist-spec-architect.md</code> + <code>specialist-spec-review-{vocabulary,structure,ssot,temporal}.md</code> (7-phase PR cycle 用 6 agent、<span class="vs deduced">deduced</span> (change 001-spec-purify で実装完遂、2026-05-16。L2 bats PASS、実機 agent invoke smoke は EXP-029 で experiment-verified 化)、<a href="#s3-7">§3.7</a> 参照)</li>
+  <li><code>plugins/twl/agents/specialist-spec-explorer.md</code> + <code>specialist-spec-architect.md</code> + <code>specialist-spec-review-{vocabulary,structure,ssot,temporal}.md</code> (7-phase PR cycle 用 6 agent、<span class="vs deduced">deduced</span> (L2 bats PASS、実機 agent invoke smoke は EXP-029 で experiment-verified 化)、<a href="#s3-7">§3.7</a> 参照)</li>
   <li>feature-dev (claude-plugins-official): <code>~/.claude/plugins/marketplaces/claude-plugins-official/plugins/feature-dev/</code> (transposition 元 reference、<code>commands/feature-dev.md</code> + <code>agents/code-{explorer,architect,reviewer}.md</code>)</li>
 </ul>
 
