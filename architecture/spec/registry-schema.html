@@ -299,7 +299,7 @@
         "hooks":    {"type": "array", "description": "各 entry: {name, event, matcher?, handler_type, handler, concern}"},
         "monitors": {"type": "array", "description": "各 entry: {name, command, description, concern}"}
     }},
-    "integrity_rules": {"type": "array",  "description": "audit rule (7 rule seed: critical=no_duplicate_concern/prefix_role_match、warning=vocabulary_forbidden_use/official_name_collision/description_required_consistency/ssot_authority_unique(stub)/derived_drift_check(stub))"},
+    "integrity_rules": {"type": "array",  "description": "audit rule (7 rule seed: critical=no_duplicate_concern/prefix_role_match、warning=vocabulary_forbidden_use/official_name_collision/description_required_consistency/ssot_authority_unique(planned)/derived_drift_check(planned))"},
     "token_thresholds":{"type": "object", "description": "token budget 警告/critical 閾値 (6 role 分)。types.py _FALLBACK_TOKEN_THRESHOLDS の Authority"}
   },
   "required": ["version", "plugin", "glossary", "components", "chains", "hooks-monitors", "integrity_rules", "token_thresholds"]

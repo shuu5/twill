@@ -145,7 +145,7 @@ tail -F .mailbox/administrator/inbox.jsonl \
   <tbody>
     <tr><td>1. lifecycle file 読み込み</td><td><code>.supervisor/monitor-lifecycle.json</code></td><td><code>jq -r '.daemon_pids."admin-inbox-tail"'</code> で PID 取得</td></tr>
     <tr><td>2. 生存確認</td><td><code>kill -0 $PID</code> (signal 0、process 存在チェック)</td><td>exit 0 → alive、exit ≠ 0 → crash 検知 (step 3)</td></tr>
-    <tr><td>3. crash 検知時の escalation</td><td>未実装 helper <code>record-detection-gap.sh</code> (HIGH defer item)</td><td><code>--type missing-monitor --severity high</code> で gap log + administrator 自己 restart は循環依存のため user escalate</td></tr>
+    <tr><td>3. crash 検知時の escalation</td><td>予定 helper <code>record-detection-gap.sh</code> (HIGH defer item、別 change package で実装)</td><td><code>--type missing-monitor --severity high</code> で gap log + administrator 自己 restart は循環依存のため user escalate</td></tr>
   </tbody>
 </table>
 
