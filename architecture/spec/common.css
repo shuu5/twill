@@ -366,3 +366,100 @@ hr {
   pre { background: #f5f5f5; color: #000; border: 1px solid #ccc; }
   a { color: var(--gray-900); text-decoration: none; }
 }
+
+/* R-18 ReSpec semantic markup 視覚化 (003-visual-rule-compliance で追加) */
+
+section.normative {
+  border-left: 4px solid var(--brand, #4a90e2);
+  padding-left: 1em;
+  background: linear-gradient(to right, rgba(74,144,226,0.04), transparent 6em);
+  margin: 1em 0;
+}
+section.normative > h2:first-child::before,
+section.normative > h3:first-child::before {
+  content: "Normative · ";
+  font-size: 0.7em;
+  font-weight: bold;
+  color: var(--brand, #4a90e2);
+  background: rgba(74,144,226,0.08);
+  padding: 1px 6px;
+  border-radius: 3px;
+  margin-right: 0.4em;
+  vertical-align: middle;
+  letter-spacing: 0.04em;
+}
+
+section.informative {
+  border-left: 4px solid #9b9b9b;
+  padding-left: 1em;
+  background: linear-gradient(to right, rgba(155,155,155,0.04), transparent 6em);
+  margin: 1em 0;
+}
+section.informative > h2:first-child::before,
+section.informative > h3:first-child::before {
+  content: "Informative · ";
+  font-size: 0.7em;
+  font-weight: bold;
+  color: #555;
+  background: rgba(155,155,155,0.08);
+  padding: 1px 6px;
+  border-radius: 3px;
+  margin-right: 0.4em;
+  vertical-align: middle;
+  letter-spacing: 0.04em;
+}
+
+aside.example {
+  border-left: 4px solid #2ca02c;
+  background: rgba(44,160,44,0.06);
+  padding: 0.5em 0.75em 0.5em 1em;
+  margin: 0.8em 0;
+  border-radius: 0 4px 4px 0;
+}
+aside.example::before {
+  content: "Example";
+  display: block;
+  font-size: 0.72em;
+  font-weight: bold;
+  color: #2ca02c;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.3em;
+}
+
+aside.ednote {
+  border-left: 4px solid #f0a30a;
+  background: rgba(240,163,10,0.07);
+  padding: 0.5em 0.75em 0.5em 1em;
+  margin: 0.8em 0;
+  border-radius: 0 4px 4px 0;
+}
+aside.ednote::before {
+  content: "Editor's Note";
+  display: block;
+  font-size: 0.72em;
+  font-weight: bold;
+  color: #c07b00;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.3em;
+}
+
+/* mermaid container 視覚境界 (rendering 復活後の余白整理) */
+pre.mermaid {
+  background: #fafafa;
+  border: 1px solid var(--gray-300, #d0d0d0);
+  padding: 12px 16px;
+  margin: 1em 0;
+  border-radius: 4px;
+  text-align: center;
+  overflow-x: auto;
+}
+pre.mermaid:not([data-rendered])::before {
+  content: "(loading mermaid diagram...)";
+  display: block;
+  font-size: 0.8em;
+  color: #888;
+  font-style: italic;
+  margin-bottom: 0.5em;
+}
