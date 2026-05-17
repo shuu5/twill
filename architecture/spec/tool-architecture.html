@@ -719,7 +719,7 @@ Phase F は 1 file ではなく <strong>4 軸 = 4 file 別</strong>で実装す�
 
 <p><strong>dry-run default + file のみ add (既存上書き禁止) + rollback snapshot</strong>:</p>
 
-<pre class="mermaid" data-status="deduced"><code>flowchart TD
+<pre class="mermaid" data-status="deduced">flowchart TD
   A[tool-project apply-template --stack] --> B[dry-run: file 一覧 + conflict listing]
   B --> C{user approve?}
   C -->|yes| D["git tag pre-template-&lt;ts&gt; (rollback snapshot)"]
@@ -727,7 +727,7 @@ Phase F は 1 file ではなく <strong>4 軸 = 4 file 別</strong>で実装す�
   D --> E["file add only (既存 skip、conflict は user override のみ overwrite)"]
   E --> F{error?}
   F -->|yes| G["git reset --hard pre-template-&lt;ts&gt;"]
-  F -->|no| H[done]</code></pre>
+  F -->|no| H[done]</pre>
 
 <p><strong>EXP-026</strong>: template を 2 回 apply して同一 state を verify (idempotent、destructive 操作なし)</p>
 
@@ -735,13 +735,13 @@ Phase F は 1 file ではなく <strong>4 軸 = 4 file 別</strong>で実装す�
 
 <p><strong>default skip + verify diff 提示 + user 確認</strong>:</p>
 
-<pre class="mermaid" data-status="deduced"><code>flowchart TD
+<pre class="mermaid" data-status="deduced">flowchart TD
   A[detect 既存 setting] --> B["verify mode (diff: expected vs actual)"]
   B --> C["AskUserQuestion: skip / overwrite / merge"]
   C --> D{destructive?}
   D -->|yes ・kanban 順位変更 ・label 削除| E[user approve 必須]
   D -->|no| F[適用]
-  E --> F</code></pre>
+  E --> F</pre>
 
 <h3>4.6 sub-command 設計 (<strong>init 統合 + 別個コマンド</strong>)</h3>
 
@@ -908,13 +908,13 @@ $TWL_SANDBOX_DIR/.audit/&lt;run-id&gt;/</code></pre>
 
 <p><strong>flow</strong> (semantic search + similarity &gt; 0.75 で link):</p>
 
-<pre class="mermaid" data-status="deduced"><code>flowchart TD
+<pre class="mermaid" data-status="deduced">flowchart TD
   A[problem 配列を反復] --> B["query = title + detail (200 chars)"]
   B --> C[doobidoo memory_search mode=hybrid]
   C --> D{similarity &gt; 0.75?}
   D -->|yes| E[重複 → doobidoo hash を log、Issue 起票しない]
   D -->|no| F[新規 → gh issue create label=discovered-by-sandbox-runner]
-  F --> G[doobidoo memory_store new problem]</code></pre>
+  F --> G[doobidoo memory_store new problem]</pre>
 
 <p><strong>Issue 起票条件</strong>: severity = <strong>critical</strong> のみ Idea Issue 起票、minor は doobidoo のみ。</p>
 
@@ -928,7 +928,7 @@ $TWL_SANDBOX_DIR/.audit/&lt;run-id&gt;/</code></pre>
 
 <p><strong>timeout flow</strong>:</p>
 
-<pre class="mermaid" data-status="deduced"><code>stateDiagram-v2
+<pre class="mermaid" data-status="deduced">stateDiagram-v2
   [*] --> log_collect: timeout 検知
   log_collect --> graceful_stop: log 収集完了
   graceful_stop --> wait_5min: tmux send-keys C-c
@@ -937,7 +937,7 @@ $TWL_SANDBOX_DIR/.audit/&lt;run-id&gt;/</code></pre>
   kill_window --> cleanup: tmux kill-window
   cleanup --> admin_mail: worktree remove + branch delete
   admin_mail --> user_decision: 'sandbox-timeout' mail to admin
-  user_decision --> [*]: AskUserQuestion: continue / abort</code></pre>
+  user_decision --> [*]: AskUserQuestion: continue / abort</pre>
 
 <p><strong>implementation</strong>: admin polling で sandbox window 存在 + duration check、budget は <a href="../archive/migration/invariant-fate-table.html#inv-q">Inv Q format</a> で解釈</p>
 
@@ -977,13 +977,13 @@ $TWL_SANDBOX_DIR/.audit/&lt;run-id&gt;/</code></pre>
 
 <p>administrator (admin-cycle.sh polling) が Board の Idea status Issue を見て tool-architect spawn を判断する場合、または sandbox-runner で定期検証する場合:</p>
 
-<pre class="mermaid" data-status="deduced"><code>flowchart TD
+<pre class="mermaid" data-status="deduced">flowchart TD
   A[administrator polling iteration] --> B{board.filter status=Idea}
   B --> C{idea_issue.labels contains 'feature-dev'?}
   C -->|yes| D["ADR-040 gate: user ack or autonomous"]
   D --> E["spawn_tmux window=tool-architect-NNN skill=twl:tool-architect args=idea_issue.body"]
   C -->|no| F[skip]
-  G[定期 sandbox-runner 週次] --> H["spawn_tmux window=tool-sandbox-runner-twill-self skill=twl:tool-sandbox-runner args=--sandbox=twill-self --features=admin/phaser/workflow/atomic/specialist"]</code></pre>
+  G[定期 sandbox-runner 週次] --> H["spawn_tmux window=tool-sandbox-runner-twill-self skill=twl:tool-sandbox-runner args=--sandbox=twill-self --features=admin/phaser/workflow/atomic/specialist"]</pre>
 
 <h3>7.3 禁止経路 (Inv 関連)</h3>
 
@@ -1127,5 +1127,9 @@ $TWL_SANDBOX_DIR/.audit/&lt;run-id&gt;/</code></pre>
   </tbody>
 </table>
 
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true });
+</script>
 </body>
 </html>

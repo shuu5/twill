@@ -513,7 +513,7 @@
 <h3>5.2 階層図</h3>
 
 <div class="diagram">
-<pre class="mermaid" data-status="deduced"><code>graph TD
+<pre class="mermaid" data-status="deduced">graph TD
   user["user / 設計者 (author)"] --> spec[architecture spec]
   spec -.supplement of.-> dig["archive/research/dig-report-ssot-2026-05-13.html"]
   spec --> adr["ADR-043 (正典)"]
@@ -539,7 +539,7 @@
   subgraph Derived["Derived (自動生成、drift は twl audit で検出)"]
     types["types.py _FALLBACK_TOKEN_THRESHOLDS<br/>(registry.yaml §6 由来)"]
     rdme["README/CLAUDE.md listing<br/>(twl update-readme 経由)"]
-  end</code></pre>
+  end</pre>
 <p class="diagram-caption">図 1: Authority / Reference / Derived 3 段階 SSoT 分類と registry.yaml 内部 6 section の位置付け。各実 file (SKILL.md / agents/specialist-*.md) は Implementation 扱いで SSoT hierarchy 外 (registry.yaml components が role/path を listing、EXP-034 で機械検証)。</p>
 </div>
 
@@ -549,7 +549,7 @@
 
 <h3>6.1 audit_vocabulary pseudo-code</h3>
 
-<pre class="mermaid" data-status="deduced"><code>flowchart TD
+<pre class="mermaid" data-status="deduced">flowchart TD
   A[registry.yaml.glossary を load] --> B[各 entity の forbidden list を iterate]
   B --> C[各 forbidden word について glob_files spec html + py + sh + md を grep]
   C --> D{word boundary match? &#92;b 厳密}
@@ -560,7 +560,7 @@
   G --> F
   F --> H{全 entity 完了?}
   H -->|no| B
-  H -->|yes| I[items list 返却]</code></pre>
+  H -->|yes| I[items list 返却]</pre>
 
 <h3>6.2 integrity_rules との対応 (Section 11/12 formal mapping)</h3>
 
@@ -750,7 +750,7 @@
 
 <h3>10.2 status transition lattice (単方向、降格は audit 発覚時のみ)</h3>
 
-<pre class="mermaid" data-status="deduced"><code>stateDiagram-v2
+<pre class="mermaid" data-status="deduced">stateDiagram-v2
   [*] --> inferred: 設計初期
   inferred --> deduced: spec / docs 読みで推論
   deduced --> verified: 公式 docs / 仕様で直接確認
@@ -758,7 +758,7 @@
   inferred: inferred (推測のみ)
   deduced: deduced (spec 推論)
   verified: verified (公式明記)
-  experiment_verified: experiment-verified (実機 empirical)</code></pre>
+  experiment_verified: experiment-verified (実機 empirical)</pre>
 
 <ul>
   <li><strong>昇格</strong>: より強い evidence が得られた時のみ upgrade (例: 公式 docs で確認できたら <code>deduced → verified</code>、実機検証できたら <code>verified → experiment-verified</code>)</li>
@@ -823,5 +823,9 @@
   <li>plugins/twl/architecture/decisions/ADR-045-naming-policy.md (Accepted、本 file の formal ADR 化)</li>
 </ul>
 
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true });
+</script>
 </body>
 </html>

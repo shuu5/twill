@@ -158,7 +158,7 @@
 <h3>5.1 呼び出し chain (公式仕様 verified)</h3>
 
 <div class="diagram">
-<pre class="mermaid" data-status="deduced"><code>sequenceDiagram
+<pre class="mermaid" data-status="deduced">sequenceDiagram
   actor User as user / administrator
   participant Admin as administrator skill<br/>(description あり)
   participant Phaser as phaser-impl skill<br/>(別 session window、description あり)
@@ -171,7 +171,7 @@
   Phaser->>Workflow: Skill(workflow-test-ready)
   Workflow->>Atomic: Skill(atomic-test-scaffold) → Skill(atomic-green-impl) → ...
   Atomic->>Specialist: Agent(specialist-prompt-reviewer)<br/>必要時のみ
-  Specialist-->>Atomic: findings return</code></pre>
+  Specialist-->>Atomic: findings return</pre>
 </div>
 
 <h3>5.2 atomic SKILL.md inline 4-phase lifecycle</h3>
@@ -248,5 +248,9 @@
   <li><a href="../archive/decisions/0001-ssot-design-rejected-alternatives.md">archive/decisions/0001-ssot-design-rejected-alternatives.md</a> (採用に至らなかった 3 廃案 (deps.yaml SSoT / chain.py SSoT / step.sh 単一 SSoT) の判断経緯)</li>
 </ul>
 
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true });
+</script>
 </body>
 </html>
