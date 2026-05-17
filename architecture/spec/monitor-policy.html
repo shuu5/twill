@@ -47,12 +47,15 @@
 
 <h3>3.1 canonical Monitor pattern</h3>
 
+<aside class="example">
+<p><strong>例</strong>: administrator 用 Monitor task 起動 (monitors.json entry)</p>
 <pre data-status="deduced"><code># Monitor task 起動 (administrator 用、monitors.json entry)
 tail -F .mailbox/administrator/inbox.jsonl 2&gt;/dev/null \
   | jq -rc --unbuffered 'select(.event != null) | "[\(.event)] from=\(.from) ts=\(.ts) detail=\(.detail // {} | tojson)"'
 
 # Monitor が match した line は administrator の notification として
 # conversation context に挿入される (token 消費あり)</code></pre>
+</aside>
 
 <h3>3.2 mail schema (glossary.html canonical)</h3>
 
@@ -108,11 +111,14 @@ tail -F .mailbox/administrator/inbox.jsonl 2&gt;/dev/null \
 
 <h3>4.3 Monitor pattern は単純 filter</h3>
 
+<aside class="example">
+<p><strong>例</strong>: idle-completed event 受信 Monitor pattern</p>
 <pre data-status="deduced"><code># Monitor が watch する pattern (monitors.json entry)
 tail -F .mailbox/administrator/inbox.jsonl \
   | jq -rc --unbuffered 'select(.event == "idle-completed") | "[IDLE-COMPLETED] window=\(.from)"'
 
 # Monitor 側は composite logic を持たない、emit された 1 mail だけ受信</code></pre>
+</aside>
 
 <h2 id="s5">§5. Monitor daemon lifecycle</h2>
 

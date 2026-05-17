@@ -44,6 +44,8 @@
 
 <p>tool 登録機構の核心は <code>tools.py</code> 末尾 (line 2311) の <strong>deferred-tool パターン</strong>:</p>
 
+<aside class="example">
+<p><strong>例</strong>: deferred-tool pattern (FastMCP optional import + handler 純 Python 関数化)</p>
 <pre data-status="deduced"><code>try:
     from fastmcp import FastMCP
     mcp = FastMCP(...)
@@ -60,6 +62,7 @@ if mcp is not None:
     @mcp.tool
     def twl_validate(args):
         return json.dumps(twl_validate_handler(args))</code></pre>
+</aside>
 
 <p>この設計により:</p>
 <ul>

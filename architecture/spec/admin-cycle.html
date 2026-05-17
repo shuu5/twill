@@ -155,6 +155,8 @@
 
 <p>各 Issue について「次 phase を起動すべきか?」を判定。判断ロジック:</p>
 
+<aside class="example">
+<p><strong>例</strong>: status 遷移 + Inv I-1/I-2/I-3 idempotent guard 適用 pseudocode</p>
 <pre data-status="deduced"><code>FOR each issue IN board_items:
   current_status = issue.status
   has_active_phaser = ANY tmux window prefix "phaser-*" matches issue
@@ -173,6 +175,7 @@
     PROCESS_MAIL_FIRST  # Inv I-3 mail check prerequisite
 
   spawn_tmux phaser-{next_phase}-{issue_num}</code></pre>
+</aside>
 
 <h3>3.5 Step 5: failure / escalate</h3>
 
